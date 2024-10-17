@@ -27,7 +27,7 @@ public:
 	int n_StorageBuldings_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TArray<AActor*> StorageBuldings;
+	TArray<AActor*> StorageBuldings_;
 
 	void FindStorageBuildingsOnScene();
 };

@@ -38,7 +38,7 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 		{
 			if (actor)
 			{
-				StorageBuldings.Add(actor);
+				StorageBuldings_.Add(actor);
 				n_StorageBuldings_++;
 			}
 		}
