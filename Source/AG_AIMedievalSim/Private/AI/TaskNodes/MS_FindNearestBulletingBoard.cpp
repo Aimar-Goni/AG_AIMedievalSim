@@ -14,18 +14,17 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 	{
 		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn())) 
 		{
-			int i = 0;
 			TArray<AActor*> Pool = Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_;
-			AActor* Closest = Pool[i];
-			float Distance = AICharacter->GetDistanceTo(Pool[i]);
-			for (AActor* actor : Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_) 
+			AActor* Closest = Pool[0];
+			float Distance = AICharacter->GetDistanceTo(Pool[0]);
+			for (size_t i = 1; i < Pool.Num(); i++)
 			{
-				if (AICharacter->GetDistanceTo(actor) < Distance) {
-					Distance = AICharacter->GetDistanceTo(actor);
+				if (AICharacter->GetDistanceTo(Pool[i]) < Distance) {
+					Distance = AICharacter->GetDistanceTo(Pool[i]);
 					Closest = Pool[i];
 					i++;
 				}
-			}	
+			}
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
 			return EBTNodeResult::Succeeded;
 

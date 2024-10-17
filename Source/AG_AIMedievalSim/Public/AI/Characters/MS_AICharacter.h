@@ -6,9 +6,6 @@
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Placeables/Buildings/MS_StorageBuilding.h"
-#include "Placeables/Interactables/MS_BaseWorkPlace.h"
-#include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "MS_AICharacter.generated.h"
 
 USTRUCT(BlueprintType)

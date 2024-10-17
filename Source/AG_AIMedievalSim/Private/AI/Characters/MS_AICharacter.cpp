@@ -5,7 +5,7 @@
 #include "AI/Characters/MS_AICharacterController.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
-#include "Placeables/Buildings/MS_StorageBuildingPool.h"
+#include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -40,12 +40,12 @@ void AMS_AICharacter::BeginPlay()
 			WorkPlacesPool_ = world->SpawnActor<AMS_WorkpPlacePool>(AMS_WorkpPlacePool::StaticClass());
 		}
 
-		FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_BulletingBoard::StaticClass());
+		FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_BulletingBoardPool::StaticClass());
 		if (FoundActor) {
 			BulletingBoardPool_ = FoundActor;
 		}
 		else {
-			BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoard>(AMS_BulletingBoard::StaticClass());
+			BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 		}
 	}
 
