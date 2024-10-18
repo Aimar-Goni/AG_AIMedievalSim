@@ -22,6 +22,9 @@ void AMS_AICharacterController::OnPossess(APawn* pawn) {
                 blackboard_->InitializeBlackboard(*ch->behaviorTree_->BlackboardAsset);
                 blackboard_->SetValueAsObject("SelfActor", ch);
                 blackboard_->SetValueAsObject("Target", ch->target_);
+                blackboard_->SetValueAsBool("GettingTask", true);
+                blackboard_->SetValueAsBool("DoingTask", false);
+
             }
         }
         behaviorTree_->StartTree(*ch->behaviorTree_);

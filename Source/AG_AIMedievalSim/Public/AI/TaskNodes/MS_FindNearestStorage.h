@@ -4,14 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "MS_GetTask.generated.h"
+#include "MS_FindNearestStorage.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AG_AIMEDIEVALSIM_API UMS_GetTask : public UBTTaskNode
+class AG_AIMEDIEVALSIM_API UMS_FindNearestStorage : public UBTTaskNode
 {
 	GENERATED_BODY()
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
 };
