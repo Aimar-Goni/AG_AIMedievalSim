@@ -6,6 +6,7 @@
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -13,6 +14,7 @@ AMS_AICharacter::AMS_AICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
 
 }
 
@@ -65,3 +67,8 @@ void AMS_AICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 }
 
+void AMS_AICharacter::OnEnterShop()
+{
+	// Logic when AI character enters the shop
+	UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the shop!"));
+}
