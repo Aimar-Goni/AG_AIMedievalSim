@@ -6,6 +6,9 @@
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
+#include "Placeables/Buildings/MS_StorageBuilding.h"
+#include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -15,7 +18,12 @@ AMS_AICharacter::AMS_AICharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	ShopCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("ShopCollision"));
+	ShopCollision->SetupAttachment(RootComponent);
+	ShopCollision->SetCollisionProfileName(TEXT("Trigger"));
 
+	// Bind the overlap event
+	ShopCollision->OnComponentBeginOverlap.AddDynamic(this, &AMS_AICharacter::OnOverlapBegin);
 }
 
 // Called when the game starts or when spawned
@@ -67,8 +75,33 @@ void AMS_AICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 }
 
-void AMS_AICharacter::OnEnterShop()
+
+
+void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Logic when AI character enters the shop
-	UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the shop!"));
+
+	// Check if the overlapping actor is your AI character
+	if (OtherActor && OtherActor != this)
+	{
+		AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
+		if (StorageBuilding)
+		{
+			StorageBuilding->ResourceSystem_->SetBerries(3);
+			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+		}
+
+		AMS_BulletingBoard* BulletingBoard = Cast<AMS_BulletingBoard>(OtherActor);
+		if (BulletingBoard)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
+		}
+
+		AMS_BaseWorkPlace* WorkPlac = Cast<AMS_BaseWorkPlace>(OtherActor);
+		if (WorkPlac)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
+		}
+	}
 }

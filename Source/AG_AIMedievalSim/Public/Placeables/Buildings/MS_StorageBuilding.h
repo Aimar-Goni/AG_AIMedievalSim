@@ -7,6 +7,7 @@
 #include "Systems/MS_ResourceSystem.h"
 #include "MS_StorageBuilding.generated.h"
 
+
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_StorageBuilding : public AActor
 {
@@ -16,13 +17,13 @@ public:
 	// Sets default values for this actor's properties
 	AMS_StorageBuilding();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	AMS_ResourceSystem* ResourceSystem_;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	AActor* ResourceSystem_;
 
 public:	
 	// Called every frame
@@ -32,5 +33,6 @@ public:
 
 	void TakeResources();
 
-
+	UFUNCTION()
+	void OnBerriesAmountChanged(int32 NewAmount);
 };
