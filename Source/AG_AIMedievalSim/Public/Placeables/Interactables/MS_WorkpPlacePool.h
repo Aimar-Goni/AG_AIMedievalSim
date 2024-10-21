@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "MS_WorkpPlacePool.generated.h"
 
 UCLASS()
@@ -31,7 +32,7 @@ public:
 	TSubclassOf<AActor> BushWorkPlace_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	TArray<AActor*> Workplaces_;
+	TArray<AMS_BaseWorkPlace*> Workplaces_;
 
 
 	void FindWorkplacesOnScene();

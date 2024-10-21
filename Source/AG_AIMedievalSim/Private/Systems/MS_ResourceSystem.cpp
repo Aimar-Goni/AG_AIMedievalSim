@@ -31,12 +31,26 @@ void AMS_ResourceSystem::SetBerries(int32 NewBerries)
 {
     if (0 != NewBerries)
     {
-        Berries_ += NewBerries;
-        OnBerriesChanged.Broadcast(Berries_);
+        Inventory_.Berries_ += NewBerries;
+        OnBerriesChanged.Broadcast(Inventory_.Berries_);
     }
 }
 
 int32  AMS_ResourceSystem::GetBerries()
 {
-    return Berries_;
+    return Inventory_.Berries_;
+}
+
+void AMS_ResourceSystem::SetWood(int32 NewWood)
+{
+    if (0 != NewWood)
+    {
+        Inventory_.Wood_ += NewWood;
+        OnWoodChanged.Broadcast(Inventory_.Wood_);
+    }
+}
+
+int32  AMS_ResourceSystem::GetWood()
+{
+    return Inventory_.Wood_;
 }

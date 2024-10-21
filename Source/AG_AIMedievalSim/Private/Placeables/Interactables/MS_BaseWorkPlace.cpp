@@ -15,7 +15,9 @@ AMS_BaseWorkPlace::AMS_BaseWorkPlace()
 void AMS_BaseWorkPlace::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	bWorkPlaceOcupied_ = false;
+	ResourceAvaliable_ = true;
+
 }
 
 // Called every frame

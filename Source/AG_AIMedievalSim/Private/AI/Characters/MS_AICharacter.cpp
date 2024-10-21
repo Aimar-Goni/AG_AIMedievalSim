@@ -89,6 +89,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		if (StorageBuilding)
 		{
 			StorageBuilding->ResourceSystem_->SetBerries(Inventory_.Berries_);
+			StorageBuilding->ResourceSystem_->SetWood(Inventory_.Wood_);
+			Inventory_.ResetInventory();
 			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 		}
 

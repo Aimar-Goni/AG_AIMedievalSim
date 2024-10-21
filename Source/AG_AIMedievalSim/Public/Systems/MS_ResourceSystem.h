@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "MS_ResourceSystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBerriesChanged, int32, newAmmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWoodChanged, int32, newAmmount);
 
 
 UCLASS()
@@ -26,22 +28,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Food_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Wood_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Pelts_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Berries_;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	FInventory Inventory_;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBerriesChanged OnBerriesChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnWoodChanged OnWoodChanged;
+
+
+	void SetWood(int32 NewBerries);
+	int32  GetWood();
 
 	void SetBerries(int32 NewBerries);
 	int32  GetBerries();

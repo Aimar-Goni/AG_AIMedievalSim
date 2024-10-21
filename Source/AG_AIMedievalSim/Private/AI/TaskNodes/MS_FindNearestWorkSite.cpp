@@ -3,6 +3,7 @@
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
+#include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "AI/TaskNodes/MS_FindNearestWorkSite.h"
 
 EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -13,24 +14,33 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 	{
 		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn()))
 		{
-			TArray<AActor*> Pool = Cast<AMS_WorkpPlacePool>(AICharacter->WorkPlacesPool_)->Workplaces_;
+			TArray<AMS_BaseWorkPlace*> Pool = Cast<AMS_WorkpPlacePool>(AICharacter->WorkPlacesPool_)->Workplaces_;
 
 			if (Pool.Num() == 0)
 			{
 				return EBTNodeResult::Failed;
 			}
 
-			AActor* Closest = Pool[0];
-			float ClosestDistance = AICharacter->GetDistanceTo(Closest);
+			AActor* Closest = NULL;
+			float ClosestDistance = 999999999;
 
-			for (AActor* Workplace : Pool)
+			for (AMS_BaseWorkPlace* Workplace : Pool)
 			{
-				float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
-				if (CurrentDistance < ClosestDistance)
-				{
-					ClosestDistance = CurrentDistance;
-					Closest = Workplace;
+				
+				if (!Workplace->IsPlaceOccupied()) {
+					if (Workplace->ResourceAvaliable_ == true) {
+						float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
+						if (CurrentDistance < ClosestDistance)
+						{
+							ClosestDistance = CurrentDistance;
+							Closest = Workplace;
+						}
+					}
 				}
+
+				
+
+				
 			}
 
 			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);

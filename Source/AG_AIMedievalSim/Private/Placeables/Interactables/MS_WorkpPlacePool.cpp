@@ -39,7 +39,9 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 		{
 			if (actor)
 			{
-				Workplaces_.Add(actor);
+				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
+
+				Workplaces_.Add(workPlace);
 				n_workplaces_++;
 			}
 		}

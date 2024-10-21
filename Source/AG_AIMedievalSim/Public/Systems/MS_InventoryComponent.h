@@ -35,6 +35,15 @@ struct FInventory
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int Wheat_;
+
+	void ResetInventory()
+	{
+		Food_ = 0;
+		Wood_ = 0;
+		Pelts_ = 0;
+		Berries_ = 0;
+		Wheat_ = 0;
+	}
 };
 
 USTRUCT(BlueprintType)
