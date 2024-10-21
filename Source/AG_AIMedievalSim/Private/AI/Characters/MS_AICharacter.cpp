@@ -88,7 +88,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
 		if (StorageBuilding)
 		{
-			StorageBuilding->ResourceSystem_->SetBerries(3);
+			StorageBuilding->ResourceSystem_->SetBerries(Inventory_.Berries_);
 			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 		}
 
@@ -98,9 +98,26 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
 		}
 
-		AMS_BaseWorkPlace* WorkPlac = Cast<AMS_BaseWorkPlace>(OtherActor);
-		if (WorkPlac)
+		AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor);
+		if (WorkPlace)
 		{
+			FResource recieved = WorkPlace->TakeResources();
+
+			switch (recieved.Type)
+			{
+			case ResourceType::BERRIES:
+				Inventory_.Berries_ += recieved.Ammount;
+				break;
+			case ResourceType::WOOD:
+				Inventory_.Wood_ += recieved.Ammount;
+				break;
+			case ResourceType::WHEAT:
+				Inventory_.Wheat_ += recieved.Ammount;
+				break;
+			default:
+				break;
+			}
+
 			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
 		}
 	}

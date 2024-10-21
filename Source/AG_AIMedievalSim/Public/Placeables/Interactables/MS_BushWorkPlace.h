@@ -16,8 +16,6 @@ class AG_AIMEDIEVALSIM_API AMS_BushWorkPlace : public AMS_BaseWorkPlace
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
-	virtual void ExecuteAction() override;
 
 protected:
 	// Called when the game starts or when spawned

@@ -7,26 +7,9 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/BoxComponent.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "MS_AICharacter.generated.h"
 
-USTRUCT(BlueprintType)
-struct FInventory
-
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Food_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Wood_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Pelts_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Berries_;
-};
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_AICharacter : public ACharacter
@@ -51,7 +34,7 @@ public:
 	AActor* BulletingBoardPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	FInventory Inventory;
+	FInventory Inventory_;
 
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	UBoxComponent* ShopCollision;

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "Engine.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
 
 // Sets default values
@@ -27,10 +27,25 @@ void AMS_BaseWorkPlace::Tick(float DeltaTime)
 
 bool AMS_BaseWorkPlace::IsPlaceOccupied()
 {
-	return bWorkPlaceOcupied;
+	return bWorkPlaceOcupied_;
 }
 
-void AMS_BaseWorkPlace::ExecuteAction()
+void AMS_BaseWorkPlace::ReservePlace()
 {
+	bWorkPlaceOcupied_ = true;
+}
 
+FResource AMS_BaseWorkPlace::TakeResources()
+{
+	bWorkPlaceOcupied_ = false;
+	ResourceAvaliable_ = false;
+
+	GetWorld()->GetTimerManager().SetTimer(TH_ResourceReset_, this, &AMS_BaseWorkPlace::ResetWorkPlace, RespawnTime_, false);
+
+	return { ResourceType_ , ResourceAmmount_ };
+}
+
+void AMS_BaseWorkPlace::ResetWorkPlace() 
+{
+	ResourceAvaliable_ = true;
 }

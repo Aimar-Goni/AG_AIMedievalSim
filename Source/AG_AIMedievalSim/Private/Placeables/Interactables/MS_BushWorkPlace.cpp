@@ -19,10 +19,3 @@ void AMS_BushWorkPlace::Tick(float DeltaTime)
 }
 
 
-void AMS_BushWorkPlace::ExecuteAction()
-{
-	Super::ExecuteAction();
-
-}
-
-
