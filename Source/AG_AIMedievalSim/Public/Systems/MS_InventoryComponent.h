@@ -11,7 +11,7 @@ enum class ResourceType : uint8 {
 
 	BERRIES UMETA(DisplayName = "Berries"),
 	WOOD UMETA(DisplayName = "Wood"),
-	WHEAT UMETA(DisplayName = "Wheat"),
+	//WHEAT UMETA(DisplayName = "Wheat"),
 
 };
 
@@ -22,27 +22,21 @@ struct FInventory
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Food_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int Wood_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Pelts_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int Berries_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Wheat_;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	//int Wheat_;
 
 	void ResetInventory()
 	{
-		Food_ = 0;
+
 		Wood_ = 0;
-		Pelts_ = 0;
 		Berries_ = 0;
-		Wheat_ = 0;
+
 	}
 };
 
@@ -53,7 +47,7 @@ struct FResource
 	GENERATED_BODY()
 	ResourceType Type;
 
-	int32 Ammount;
+	int32 Amount;
 
 };
 

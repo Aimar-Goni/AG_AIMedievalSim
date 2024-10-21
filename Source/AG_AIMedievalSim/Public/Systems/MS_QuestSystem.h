@@ -3,6 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Systems/MS_InventoryComponent.h"
+
+
 
 /**
  * 

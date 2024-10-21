@@ -8,7 +8,22 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/BoxComponent.h"
 #include "Systems/MS_InventoryComponent.h"
+#include "Systems/MS_QuestSystem.h"
 #include "MS_AICharacter.generated.h"
+
+USTRUCT(BlueprintType)
+struct FQuest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	ResourceType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	int32 Amount;
+
+
+};
 
 
 UCLASS()
@@ -33,11 +48,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
 	AActor* BulletingBoardPool_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
 	FInventory Inventory_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	FQuest Quest_;
 
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	UBoxComponent* ShopCollision;
+
+
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

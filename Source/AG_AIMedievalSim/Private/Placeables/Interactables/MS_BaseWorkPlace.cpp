@@ -44,7 +44,7 @@ FResource AMS_BaseWorkPlace::TakeResources()
 
 	GetWorld()->GetTimerManager().SetTimer(TH_ResourceReset_, this, &AMS_BaseWorkPlace::ResetWorkPlace, RespawnTime_, false);
 
-	return { ResourceType_ , ResourceAmmount_ };
+	return { ResourceType_ , ResourceAmount_ };
 }
 
 void AMS_BaseWorkPlace::ResetWorkPlace() 

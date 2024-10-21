@@ -7,8 +7,8 @@
 #include "Systems/MS_InventoryComponent.h"
 #include "MS_ResourceSystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBerriesChanged, int32, newAmmount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWoodChanged, int32, newAmmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBerriesChanged, int32, newAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWoodChanged, int32, newAmount);
 
 
 UCLASS()

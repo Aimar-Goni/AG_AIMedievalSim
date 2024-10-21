@@ -25,20 +25,25 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 			float ClosestDistance = 999999999;
 
 			for (AMS_BaseWorkPlace* Workplace : Pool)
-			{
-				
-				if (!Workplace->IsPlaceOccupied()) {
-					if (Workplace->ResourceAvaliable_ == true) {
-						float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
-						if (CurrentDistance < ClosestDistance)
-						{
-							ClosestDistance = CurrentDistance;
-							Closest = Workplace;
-						}
-					}
+			{			
+				if (Workplace->IsPlaceOccupied()) 
+				{
+					continue;
 				}
-
-				
+				if (Workplace->ResourceAvaliable_ == false) 
+				{
+					continue;
+				}
+				if (Workplace->ResourceType_ != AICharacter->Quest_.Type)
+				{
+					continue;
+				}
+				float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
+				if (CurrentDistance < ClosestDistance)
+				{
+					ClosestDistance = CurrentDistance;
+					Closest = Workplace;
+				}
 
 				
 			}

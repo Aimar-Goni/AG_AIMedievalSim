@@ -27,7 +27,7 @@ public:
 	ResourceType ResourceType_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design | Resources")
-	int32 ResourceAmmount_;
+	int32 ResourceAmount_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design | Resources")
 	bool InfiniteResource_;

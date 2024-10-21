@@ -88,39 +88,54 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
 		if (StorageBuilding)
 		{
-			StorageBuilding->ResourceSystem_->SetBerries(Inventory_.Berries_);
-			StorageBuilding->ResourceSystem_->SetWood(Inventory_.Wood_);
-			Inventory_.ResetInventory();
-			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == StorageBuilding)
+			{
+				StorageBuilding->ResourceSystem_->SetBerries(Inventory_.Berries_);
+				StorageBuilding->ResourceSystem_->SetWood(Inventory_.Wood_);
+				Inventory_.ResetInventory();
+				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+			}
 		}
 
 		AMS_BulletingBoard* BulletingBoard = Cast<AMS_BulletingBoard>(OtherActor);
 		if (BulletingBoard)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
+			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == BulletingBoard)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
+				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 1));
+				Quest_.Amount = FMath::RandRange(1, 15);
+			}
 		}
-
+		
 		AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor);
 		if (WorkPlace)
 		{
-			FResource recieved = WorkPlace->TakeResources();
-
-			switch (recieved.Type)
+			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == WorkPlace)
 			{
-			case ResourceType::BERRIES:
-				Inventory_.Berries_ += recieved.Ammount;
-				break;
-			case ResourceType::WOOD:
-				Inventory_.Wood_ += recieved.Ammount;
-				break;
-			case ResourceType::WHEAT:
-				Inventory_.Wheat_ += recieved.Ammount;
-				break;
-			default:
-				break;
-			}
+				FResource recieved = WorkPlace->TakeResources();
 
-			UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
+				switch (recieved.Type)
+				{
+				case ResourceType::BERRIES:
+					Inventory_.Berries_ += recieved.Amount;
+					break;
+				case ResourceType::WOOD:
+					Inventory_.Wood_ += recieved.Amount;
+					break;
+					/*	case ResourceType::WHEAT:
+							Inventory_.Wheat_ += recieved.Amount;
+							break;*/
+				default:
+					break;
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
+			
+			}
 		}
 	}
 }
