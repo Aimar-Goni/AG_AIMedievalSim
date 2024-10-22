@@ -39,11 +39,15 @@ void AMS_BaseWorkPlace::ReservePlace()
 
 FResource AMS_BaseWorkPlace::TakeResources()
 {
-	bWorkPlaceOcupied_ = false;
-	ResourceAvaliable_ = false;
+	if(!InfiniteResource_)
+	{
 
-	GetWorld()->GetTimerManager().SetTimer(TH_ResourceReset_, this, &AMS_BaseWorkPlace::ResetWorkPlace, RespawnTime_, false);
+		bWorkPlaceOcupied_ = false;
+		ResourceAvaliable_ = false;
 
+		GetWorld()->GetTimerManager().SetTimer(TH_ResourceReset_, this, &AMS_BaseWorkPlace::ResetWorkPlace, RespawnTime_, false);
+
+	}
 	return { ResourceType_ , ResourceAmount_ };
 }
 

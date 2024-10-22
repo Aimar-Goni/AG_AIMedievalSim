@@ -21,34 +21,32 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 				return EBTNodeResult::Failed;
 			}
 
-			AActor* Closest = NULL;
-			float ClosestDistance = 999999999;
-
+			AActor* Closest = Pool[0];
+			float ClosestDistance = AICharacter->GetDistanceTo(Pool[0]);
+			bool found = false;
 			for (AMS_BaseWorkPlace* Workplace : Pool)
 			{			
-				if (Workplace->IsPlaceOccupied()) 
-				{
-					continue;
-				}
-				if (Workplace->ResourceAvaliable_ == false) 
-				{
-					continue;
-				}
-				if (Workplace->ResourceType_ != AICharacter->Quest_.Type)
-				{
-					continue;
-				}
-				float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
-				if (CurrentDistance < ClosestDistance)
-				{
-					ClosestDistance = CurrentDistance;
-					Closest = Workplace;
-				}
 
+				if (Workplace->ResourceType_ == AICharacter->Quest_.Type)
+				{
+					if (Workplace->ResourceAvaliable_) 
+					{
+						float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
+						if (CurrentDistance < ClosestDistance)
+						{
+
+							ClosestDistance = CurrentDistance;
+							Closest = Workplace;
+							found = true;
+						}
+					}
+
+				}
 				
 			}
+			UE_LOG(LogTemp, Warning, TEXT("Closest: %f"), ClosestDistance);
 
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+			if(found)OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
 			return EBTNodeResult::Succeeded;
 
 		}

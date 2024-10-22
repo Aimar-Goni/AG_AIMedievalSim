@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Kismet/GameplayStatics.h"
 #include "AI/Manager/MS_AIManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMS_AIManager::AMS_AIManager()

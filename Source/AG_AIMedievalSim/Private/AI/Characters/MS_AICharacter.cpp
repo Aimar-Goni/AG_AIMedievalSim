@@ -106,7 +106,9 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
 				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 1));
+				//Quest_.Type = ResourceType::BERRIES;
 				Quest_.Amount = FMath::RandRange(1, 15);
+				//Quest_.Amount = 6;
 			}
 		}
 		
@@ -114,7 +116,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		if (WorkPlace)
 		{
 			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
-			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == WorkPlace)
+			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == WorkPlace && WorkPlace->ResourceAvaliable_)
 			{
 				FResource recieved = WorkPlace->TakeResources();
 

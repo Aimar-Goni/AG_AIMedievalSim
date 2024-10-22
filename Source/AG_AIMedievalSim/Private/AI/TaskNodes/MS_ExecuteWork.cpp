@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AI/Characters/MS_AICharacterController.h"
-#include "AI/Characters/MS_AICharacter.h"
 #include "AI/TaskNodes/MS_ExecuteWork.h"
+#include "AI/Characters/MS_AICharacterController.h"
+#include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "AI/Characters/MS_AICharacter.h"
 
 EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -12,6 +13,9 @@ EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	{
 		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn()))
 		{
+
+			AMS_BaseWorkPlace* Workplace = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
+			
 			switch (AICharacter->Quest_.Type)
 			{
 			case ResourceType::BERRIES:
