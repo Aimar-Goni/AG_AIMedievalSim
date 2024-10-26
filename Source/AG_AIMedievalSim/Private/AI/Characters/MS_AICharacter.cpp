@@ -24,6 +24,20 @@ AMS_AICharacter::AMS_AICharacter()
 
 	// Bind the overlap event
 	ShopCollision->OnComponentBeginOverlap.AddDynamic(this, &AMS_AICharacter::OnOverlapBegin);
+
+	// Stat Component
+	PawnStats_ = CreateDefaultSubobject<UMS_PawnStatComponent>(TEXT("StatsComponent"));
+
+	// Widget Component
+	WidgetComponent_ = CreateDefaultSubobject<UWidgetComponent>(TEXT("Stats"));
+	WidgetComponent_->SetupAttachment(RootComponent);
+	WidgetComponent_->SetWidgetSpace(EWidgetSpace::World);
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass{ TEXT("/Game/Dynamic/UI/UI_PawnStats") };
+	if (WidgetClass.Succeeded())
+	{
+		WidgetComponent_->SetWidgetClass((WidgetClass.Class));
+
+	}
 }
 
 // Called when the game starts or when spawned
