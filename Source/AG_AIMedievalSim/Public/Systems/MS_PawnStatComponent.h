@@ -29,13 +29,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	float HappinessDecreaseRate = 0.03f;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Hunger = 100.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Thirst = 100.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Energy = 100.0f;
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Happiness = 100.0f;
 
 	void DecreaseStats();
