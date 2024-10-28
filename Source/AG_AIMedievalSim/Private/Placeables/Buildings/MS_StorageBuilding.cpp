@@ -29,14 +29,6 @@ void AMS_StorageBuilding::BeginPlay()
 		}
 	}
 
-	if (ResourceSystem_)
-	{
-		// Remove any existing bindings to prevent double calls
-		ResourceSystem_->OnBerriesChanged.RemoveDynamic(this, &AMS_StorageBuilding::OnBerriesAmountChanged);
-
-		// Now bind the delegate to the listener function
-		ResourceSystem_->OnBerriesChanged.AddDynamic(this, &AMS_StorageBuilding::OnBerriesAmountChanged);
-	}
 }
 
 // Called every frame
@@ -56,7 +48,3 @@ void AMS_StorageBuilding::TakeResources()
 
 }
 
-void AMS_StorageBuilding::OnBerriesAmountChanged(int32 NewAmount)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Berries amount has changed to: %d"), NewAmount);
-}

@@ -23,21 +23,29 @@ struct FInventory
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Wood_;
+	TMap<ResourceType, int32> Resources_;
 
+	FInventory()
+	{
+		Resources_.Add(ResourceType::BERRIES, 0);
+		Resources_.Add(ResourceType::WOOD, 0);
+		Resources_.Add(ResourceType::WATER, 0);
+	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Berries_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int Water_;
 
 	void ResetInventory()
 	{
 
-		Wood_ = 0;
-		Berries_ = 0;
-		Water_ = 0;
+		for (auto& Resource : Resources_)
+		{
+			Resource.Value = 0;
+		}
+	}
+
+	int32 GetResourceAmount(ResourceType Type) const
+	{
+		const int32* Amount = Resources_.Find(Type);
+		return Amount ? *Amount : 0;
 	}
 };
 

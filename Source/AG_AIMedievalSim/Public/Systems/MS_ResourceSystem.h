@@ -7,9 +7,7 @@
 #include "Systems/MS_InventoryComponent.h"
 #include "MS_ResourceSystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBerriesChanged, int32, newAmount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWoodChanged, int32, newAmount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaterChanged, int32, newAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, ResourceType, Resource, int32, NewAmount);
 
 
 UCLASS()
@@ -33,21 +31,11 @@ public:
 	FInventory Inventory_;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnBerriesChanged OnBerriesChanged;
+	FOnResourceChanged OnResourceChanged;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnWoodChanged OnWoodChanged;
+	void SetResource(ResourceType Type, int32 NewAmount);
+	int32 GetResource(ResourceType Type);
 
-	UPROPERTY(BlueprintAssignable)
-	FOnWaterChanged OnWaterChanged;
-
-	void SetWood(int32 NewBerries);
-	int32  GetWood();
-
-	void SetBerries(int32 NewBerries);
-	int32  GetBerries();
-
-	void SetWater(int32 NewWater);
-	int32  GetWater();
-
+	UFUNCTION(BlueprintPure, Category = "Utilities|Resources")
+	static FText ConvertResourceTypeToText(ResourceType Type);
 };

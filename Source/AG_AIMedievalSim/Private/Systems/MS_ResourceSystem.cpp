@@ -9,7 +9,7 @@ AMS_ResourceSystem::AMS_ResourceSystem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-   
+
 }
 
 // Called when the game starts or when spawned
@@ -27,44 +27,32 @@ void AMS_ResourceSystem::Tick(float DeltaTime)
 
 }
 
-void AMS_ResourceSystem::SetBerries(int32 NewBerries)
+void AMS_ResourceSystem::SetResource(ResourceType Type, int32 NewAmount)
 {
-    if (0 != NewBerries)
+    if (0 != NewAmount)
     {
-        Inventory_.Berries_ += NewBerries;
-        OnBerriesChanged.Broadcast(Inventory_.Berries_);
+        int32& ResourceValue = Inventory_.Resources_.FindOrAdd(Type);
+        ResourceValue += NewAmount;
+
+        // Broadcast changes based on the resource type
+        OnResourceChanged.Broadcast(Type, ResourceValue);
     }
 }
 
-int32  AMS_ResourceSystem::GetBerries()
+int32 AMS_ResourceSystem::GetResource(ResourceType Type)
 {
-    return Inventory_.Berries_;
+    return Inventory_.GetResourceAmount(Type);
 }
 
-void AMS_ResourceSystem::SetWood(int32 NewWood)
+
+FText AMS_ResourceSystem::ConvertResourceTypeToText(ResourceType Type)
 {
-    if (0 != NewWood)
+    switch (Type)
     {
-        Inventory_.Wood_ += NewWood;
-        OnWoodChanged.Broadcast(Inventory_.Wood_);
+    case ResourceType::BERRIES: return FText::FromString("Berries");
+    case ResourceType::WOOD: return FText::FromString("Wood");
+    case ResourceType::WATER: return FText::FromString("Water");
+        // Add more cases as needed
+    default: return FText::FromString("Unknown");
     }
-}
-
-int32  AMS_ResourceSystem::GetWood()
-{
-    return Inventory_.Wood_;
-}
-
-void AMS_ResourceSystem::SetWater(int32 NewWater)
-{
-    if (0 != NewWater)
-    {
-        Inventory_.Water_ += NewWater;
-        OnWaterChanged.Broadcast(Inventory_.Water_);
-    }
-}
-
-int32  AMS_ResourceSystem::GetWater()
-{
-    return Inventory_.Water_;
 }

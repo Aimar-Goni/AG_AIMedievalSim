@@ -33,6 +33,5 @@ public:
 
 	void TakeResources();
 
-	UFUNCTION()
-	void OnBerriesAmountChanged(int32 NewAmount);
+
 };
