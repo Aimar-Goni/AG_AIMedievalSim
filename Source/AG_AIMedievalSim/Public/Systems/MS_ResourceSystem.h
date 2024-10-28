@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBerriesChanged, int32, newAmount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWoodChanged, int32, newAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaterChanged, int32, newAmount);
 
 
 UCLASS()
@@ -37,11 +38,16 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnWoodChanged OnWoodChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnWaterChanged OnWaterChanged;
 
 	void SetWood(int32 NewBerries);
 	int32  GetWood();
 
 	void SetBerries(int32 NewBerries);
 	int32  GetBerries();
+
+	void SetWater(int32 NewWater);
+	int32  GetWater();
 
 };

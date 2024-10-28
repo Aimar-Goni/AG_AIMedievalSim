@@ -54,3 +54,17 @@ int32  AMS_ResourceSystem::GetWood()
 {
     return Inventory_.Wood_;
 }
+
+void AMS_ResourceSystem::SetWater(int32 NewWater)
+{
+    if (0 != NewWater)
+    {
+        Inventory_.Water_ += NewWater;
+        OnWaterChanged.Broadcast(Inventory_.Water_);
+    }
+}
+
+int32  AMS_ResourceSystem::GetWater()
+{
+    return Inventory_.Water_;
+}

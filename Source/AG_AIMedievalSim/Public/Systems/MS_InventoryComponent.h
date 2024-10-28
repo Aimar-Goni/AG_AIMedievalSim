@@ -11,6 +11,7 @@ enum class ResourceType : uint8 {
 
 	BERRIES UMETA(DisplayName = "Berries"),
 	WOOD UMETA(DisplayName = "Wood"),
+	WATER UMETA(DisplayName = "Water"),
 	//WHEAT UMETA(DisplayName = "Wheat"),
 
 };
@@ -28,15 +29,15 @@ struct FInventory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int Berries_;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	//int Wheat_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	int Water_;
 
 	void ResetInventory()
 	{
 
 		Wood_ = 0;
 		Berries_ = 0;
-
+		Water_ = 0;
 	}
 };
 
