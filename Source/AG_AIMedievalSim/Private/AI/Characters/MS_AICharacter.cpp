@@ -123,7 +123,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			{
 
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("Working")) {
-					for (const auto& Resource : this->Inventory_->Resources_)
+					for (const auto& Resource : Inventory_->Resources_)
 					{
 						StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
 					}
