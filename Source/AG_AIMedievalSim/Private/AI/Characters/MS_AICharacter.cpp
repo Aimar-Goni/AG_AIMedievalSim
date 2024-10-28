@@ -131,20 +131,23 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 				}
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingFood")) {
-					if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 10) < 0) {
+					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::BERRIES) < 10) {
 
 
 					}
 					else {
-					
+						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 10);
+						this->PawnStats_->ModifyHunger(100);
 					}
 				}
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingWater")) {
-					if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::WATER, 20) < 0) {
+					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::WATER) < 20) {
 
 
 					}
 					else {
+						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::WATER, 20);
+						this->PawnStats_->ModifyThirst(100);
 
 					}
 				}

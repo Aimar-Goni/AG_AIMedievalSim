@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Systems/MS_ResourceSystem.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "MS_StorageBuilding.generated.h"
 
 

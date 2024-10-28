@@ -17,8 +17,12 @@ AMS_StorageBuilding::AMS_StorageBuilding()
 // Called when the game starts or when spawned
 void AMS_StorageBuilding::BeginPlay()
 {
+	
+	for (auto& Resource : Inventory_->Resources_)
+	{
+		Inventory_->OnResourceChanged.Broadcast(Resource.Key, 50);
 
-
+	}
 }
 
 // Called every frame
