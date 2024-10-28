@@ -28,6 +28,10 @@ AMS_AICharacter::AMS_AICharacter()
 	// Stat Component
 	PawnStats_ = CreateDefaultSubobject<UMS_PawnStatComponent>(TEXT("StatsComponent"));
 
+	// Inventory Component
+	Inventory_ = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+
 	// Widget Component
 	WidgetComponent_ = CreateDefaultSubobject<UWidgetComponent>(TEXT("Stats"));
 	WidgetComponent_->SetupAttachment(RootComponent);
@@ -79,6 +83,18 @@ void AMS_AICharacter::BeginPlay()
 void AMS_AICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+	
+	if (PawnStats_->IsHungry()) {
+
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", true);
+	}
+	if (PawnStats_->IsThirsty()) {
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", true);
+	}
+	
 
 }
 
@@ -105,14 +121,34 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == StorageBuilding)
 			{
-				for (const auto& Resource : Inventory_.Resources_)
-				{
-					StorageBuilding->ResourceSystem_->SetResource(Resource.Key, Resource.Value);
 
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("Working")) {
+					for (const auto& Resource : this->Inventory_->Resources_)
+					{
+						StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
+					}
+					Inventory_->ResetInventory();
+					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 				}
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingFood")) {
+					if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 10) < 0) {
 
-				Inventory_.ResetInventory();
-				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+
+					}
+					else {
+					
+					}
+				}
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingWater")) {
+					if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::WATER, 20) < 0) {
+
+
+					}
+					else {
+
+					}
+				}
+	
 			}
 		}
 
@@ -125,7 +161,6 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
 				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 2));
 				Quest_.Amount = FMath::RandRange(1, 15);
-
 			}
 		}
 		
@@ -137,7 +172,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			{
 				FResource recieved = WorkPlace->TakeResources();
 
-				Inventory_.Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
+				Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
 
 
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));

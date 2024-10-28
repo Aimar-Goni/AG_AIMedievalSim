@@ -23,7 +23,11 @@ void AMS_AICharacterController::OnPossess(APawn* pawn) {
                 blackboard_->SetValueAsObject("SelfActor", ch);
                 blackboard_->SetValueAsObject("Target", ch->target_);
                 blackboard_->SetValueAsBool("GettingTask", true);
+                blackboard_->SetValueAsBool("Working", true);
                 blackboard_->SetValueAsBool("DoingTask", false);
+                blackboard_->SetValueAsBool("StoringItems", false);
+                blackboard_->SetValueAsBool("GettingFood", false);
+                blackboard_->SetValueAsBool("GettingWater", false);
 
             }
         }

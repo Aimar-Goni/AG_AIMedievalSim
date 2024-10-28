@@ -38,6 +38,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Happiness = 100.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float HungryThreshold = 30.0f;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float ThirstThreshold = 30.0f;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float EnergyThreshold = 30.0f;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float HappinessThreshold = 30.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool Hungry = false;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool Thirsty = false;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool Tired = false;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool Sad = false;
+
 	void DecreaseStats();
 
 public:
@@ -61,6 +82,11 @@ public:
 	void ModifyThirst(float Amount);
 	void ModifyEnergy(float Amount);
 	void ModifyHappiness(float Amount);
+
+	bool IsHungry();
+	bool IsThirsty();
+	bool IsTired();
+	bool IsSad();
 
 private:
 	void BroadcastStatChange(float& Stat, float Amount, FOnStatChanged& Delegate);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Systems/MS_ResourceSystem.h"
 #include "MS_InventoryComponent.generated.h"
 
 UENUM(BlueprintType)
@@ -22,16 +23,55 @@ struct FInventory
 {
 	GENERATED_BODY()
 
+	
+};
+
+USTRUCT(BlueprintType)
+struct FResource
+
+{
+	GENERATED_BODY()
+	ResourceType Type;
+
+	int32 Amount;
+
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnResourceChanged, ResourceType, Resource, int32, NewAmount);
+
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class AG_AIMEDIEVALSIM_API UInventoryComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+
+
+public:	
+	// Sets default values for this component's properties
+	UInventoryComponent();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	TMap<ResourceType, int32> Resources_;
 
-	FInventory()
-	{
-		Resources_.Add(ResourceType::BERRIES, 0);
-		Resources_.Add(ResourceType::WOOD, 0);
-		Resources_.Add(ResourceType::WATER, 0);
-	}
 
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnResourceChanged OnResourceChanged;
+
+	void SetResource(ResourceType Type, int32 NewAmount);
+	int32 GetResource(ResourceType Type);
+
+	void AddToResources(ResourceType Type, int32 NewAmount);
+	int32 ExtractFromResources(ResourceType Type, int32 ExtactAmount);
 
 	void ResetInventory()
 	{
@@ -49,34 +89,3 @@ struct FInventory
 	}
 };
 
-USTRUCT(BlueprintType)
-struct FResource
-
-{
-	GENERATED_BODY()
-	ResourceType Type;
-
-	int32 Amount;
-
-};
-
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class AG_AIMEDIEVALSIM_API UInventoryComponent : public UActorComponent
-{
-	GENERATED_BODY()
-
-public:	
-	// Sets default values for this component's properties
-	UInventoryComponent();
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
-};

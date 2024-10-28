@@ -51,7 +51,7 @@ public:
 	AActor* BulletingBoardPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
-	FInventory Inventory_;
+	UInventoryComponent* Inventory_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
 	FQuest Quest_;

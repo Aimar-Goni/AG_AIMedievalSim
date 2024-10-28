@@ -3,7 +3,9 @@
 #include "AI/TaskNodes/MS_ExecuteWork.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "AI/Characters/MS_AICharacter.h"
+
 
 EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -18,9 +20,9 @@ EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 			
 			ResourceType ResourceTypeNeeded = AICharacter->Quest_.Type;
 			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
+			auto a  = Cast<UInventoryComponent>(AICharacter->Inventory_);
 
-
-			if (AICharacter->Inventory_.GetResourceAmount(ResourceTypeNeeded) < ResourceAmountNeeded)
+			if (a->GetResourceAmount(ResourceTypeNeeded) < ResourceAmountNeeded)
 			{
 				return EBTNodeResult::Failed;
 			}

@@ -22,6 +22,35 @@ void UMS_PawnStatComponent::DecreaseStats()
 	ModifyThirst(-ThirstDecreaseRate);
 	ModifyEnergy(-EnergyDecreaseRate);
 	ModifyHappiness(-HappinessDecreaseRate);
+
+	if (Hunger < HungryThreshold) {
+		Hungry = true;
+	}
+	else {
+		Hungry = false;
+	}
+
+	if (Thirst < ThirstThreshold) {
+		Thirsty = true;
+	}
+	else {
+		Thirsty = false;
+	}
+
+	if (Energy < EnergyThreshold) {
+		Tired = true;
+	}
+	else {
+		Tired = false;
+	}
+
+	if (Happiness < HappinessThreshold) {
+		Sad = true;
+	}
+	else {
+		Sad = false;
+	}
+
 }
 
 // Called every frame
@@ -59,3 +88,13 @@ void UMS_PawnStatComponent::ModifyHappiness(float Amount)
 {
 	BroadcastStatChange(Happiness, Amount, OnHappinessChanged);
 }
+
+
+bool UMS_PawnStatComponent::IsHungry() { return Hungry; }
+
+bool UMS_PawnStatComponent::IsThirsty() { return Thirsty; }
+				
+bool UMS_PawnStatComponent::IsTired() { return Tired; }
+	
+bool UMS_PawnStatComponent::IsSad() { return Sad; }
+

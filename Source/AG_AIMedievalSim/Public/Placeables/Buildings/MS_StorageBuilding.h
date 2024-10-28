@@ -17,8 +17,8 @@ public:
 	// Sets default values for this actor's properties
 	AMS_StorageBuilding();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	AMS_ResourceSystem* ResourceSystem_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
+	UInventoryComponent* Inventory_;
 
 protected:
 	// Called when the game starts or when spawned
