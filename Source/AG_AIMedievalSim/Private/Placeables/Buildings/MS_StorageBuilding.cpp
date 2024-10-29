@@ -9,33 +9,19 @@ AMS_StorageBuilding::AMS_StorageBuilding()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+	// Inventory Component
+	Inventory_ = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
 }
 
 // Called when the game starts or when spawned
 void AMS_StorageBuilding::BeginPlay()
 {
-	Super::BeginPlay();
-	UWorld* world = GetWorld();
-	if (world) {
-		auto FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_ResourceSystem::StaticClass());
-		AMS_ResourceSystem* resource = Cast<AMS_ResourceSystem>(FoundActor);
-
-		if (FoundActor) {
-			ResourceSystem_ = resource;
-		}
-		else {
-			ResourceSystem_ = world->SpawnActor<AMS_ResourceSystem>(AMS_ResourceSystem::StaticClass());
-		}
-	}
-
-	if (ResourceSystem_)
+	
+	for (auto& Resource : Inventory_->Resources_)
 	{
-		// Remove any existing bindings to prevent double calls
-		ResourceSystem_->OnBerriesChanged.RemoveDynamic(this, &AMS_StorageBuilding::OnBerriesAmountChanged);
+		Inventory_->OnResourceChanged.Broadcast(Resource.Key, 50);
 
-		// Now bind the delegate to the listener function
-		ResourceSystem_->OnBerriesChanged.AddDynamic(this, &AMS_StorageBuilding::OnBerriesAmountChanged);
 	}
 }
 
@@ -56,7 +42,3 @@ void AMS_StorageBuilding::TakeResources()
 
 }
 
-void AMS_StorageBuilding::OnBerriesAmountChanged(int32 NewAmount)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Berries amount has changed to: %d"), NewAmount);
-}

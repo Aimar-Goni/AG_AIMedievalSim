@@ -24,6 +24,24 @@ AMS_AICharacter::AMS_AICharacter()
 
 	// Bind the overlap event
 	ShopCollision->OnComponentBeginOverlap.AddDynamic(this, &AMS_AICharacter::OnOverlapBegin);
+
+	// Stat Component
+	PawnStats_ = CreateDefaultSubobject<UMS_PawnStatComponent>(TEXT("StatsComponent"));
+
+	// Inventory Component
+	Inventory_ = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+
+	// Widget Component
+	WidgetComponent_ = CreateDefaultSubobject<UWidgetComponent>(TEXT("Stats"));
+	WidgetComponent_->SetupAttachment(RootComponent);
+	WidgetComponent_->SetWidgetSpace(EWidgetSpace::World);
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass{ TEXT("/Game/Dynamic/UI/UI_PawnStats") };
+	if (WidgetClass.Succeeded())
+	{
+		WidgetComponent_->SetWidgetClass((WidgetClass.Class));
+
+	}
 }
 
 // Called when the game starts or when spawned
@@ -65,6 +83,18 @@ void AMS_AICharacter::BeginPlay()
 void AMS_AICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+	
+	if (PawnStats_->IsHungry()) {
+
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", true);
+	}
+	if (PawnStats_->IsThirsty()) {
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", true);
+	}
+	
 
 }
 
@@ -91,10 +121,37 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == StorageBuilding)
 			{
-				StorageBuilding->ResourceSystem_->SetBerries(Inventory_.Berries_);
-				StorageBuilding->ResourceSystem_->SetWood(Inventory_.Wood_);
-				Inventory_.ResetInventory();
-				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("Working")) {
+					for (const auto& Resource : Inventory_->Resources_)
+					{
+						StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
+					}
+					Inventory_->ResetInventory();
+					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+				}
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingFood")) {
+					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::BERRIES) < 10) {
+
+
+					}
+					else {
+						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 10);
+						this->PawnStats_->ModifyHunger(100);
+					}
+				}
+				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingWater")) {
+					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::WATER) < 20) {
+
+
+					}
+					else {
+						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::WATER, 20);
+						this->PawnStats_->ModifyThirst(100);
+
+					}
+				}
+	
 			}
 		}
 
@@ -105,10 +162,12 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == BulletingBoard)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
-				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 1));
-				//Quest_.Type = ResourceType::BERRIES;
+
+
+
+
+				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 2));
 				Quest_.Amount = FMath::RandRange(1, 15);
-				//Quest_.Amount = 6;
 			}
 		}
 		
@@ -120,20 +179,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			{
 				FResource recieved = WorkPlace->TakeResources();
 
-				switch (recieved.Type)
-				{
-				case ResourceType::BERRIES:
-					Inventory_.Berries_ += recieved.Amount;
-					break;
-				case ResourceType::WOOD:
-					Inventory_.Wood_ += recieved.Amount;
-					break;
-					/*	case ResourceType::WHEAT:
-							Inventory_.Wheat_ += recieved.Amount;
-							break;*/
-				default:
-					break;
-				}
+				Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
+
 
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
 			

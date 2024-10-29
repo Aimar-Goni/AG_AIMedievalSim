@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Components/BoxComponent.h"
-#include "Placeables/Buildings/MS_BulletingBoard.h"
 
 // Sets default values
 AMS_BulletingBoard::AMS_BulletingBoard()

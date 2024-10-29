@@ -3,7 +3,9 @@
 #include "AI/TaskNodes/MS_ExecuteWork.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "AI/Characters/MS_AICharacter.h"
+
 
 EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -16,20 +18,13 @@ EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 			AMS_BaseWorkPlace* Workplace = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 			
-			switch (AICharacter->Quest_.Type)
+			ResourceType ResourceTypeNeeded = AICharacter->Quest_.Type;
+			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
+			auto a  = Cast<UInventoryComponent>(AICharacter->Inventory_);
+
+			if (a->GetResourceAmount(ResourceTypeNeeded) < ResourceAmountNeeded)
 			{
-			case ResourceType::BERRIES:
-				if (AICharacter->Inventory_.Berries_ < AICharacter->Quest_.Amount) {
-					return EBTNodeResult::Failed;
-				}
-				break;
-			case ResourceType::WOOD:
-				if (AICharacter->Inventory_.Wood_ < AICharacter->Quest_.Amount) {
-					return EBTNodeResult::Failed;
-				}
-				break;
-			default:
-				break;
+				return EBTNodeResult::Failed;
 			}
 	
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);

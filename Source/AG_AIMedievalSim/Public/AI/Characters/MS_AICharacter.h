@@ -7,8 +7,10 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Systems/MS_InventoryComponent.h"
 #include "Systems/MS_QuestSystem.h"
+#include "Systems/MS_PawnStatComponent.h"
 #include "MS_AICharacter.generated.h"
 
 USTRUCT(BlueprintType)
@@ -49,7 +51,7 @@ public:
 	AActor* BulletingBoardPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
-	FInventory Inventory_;
+	UInventoryComponent* Inventory_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
 	FQuest Quest_;
@@ -57,7 +59,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	UBoxComponent* ShopCollision;
 
+	UPROPERTY(EditAnywhere, Category = "Design|Stats")
+	UMS_PawnStatComponent* PawnStats_;
 
+	UPROPERTY(EditAnywhere, Category = "Internal|Stats")
+	UWidgetComponent* WidgetComponent_;
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

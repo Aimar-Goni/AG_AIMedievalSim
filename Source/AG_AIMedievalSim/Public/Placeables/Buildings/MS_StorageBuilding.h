@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Systems/MS_ResourceSystem.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "MS_StorageBuilding.generated.h"
 
 
@@ -17,8 +18,8 @@ public:
 	// Sets default values for this actor's properties
 	AMS_StorageBuilding();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	AMS_ResourceSystem* ResourceSystem_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
+	UInventoryComponent* Inventory_;
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,6 +34,5 @@ public:
 
 	void TakeResources();
 
-	UFUNCTION()
-	void OnBerriesAmountChanged(int32 NewAmount);
+
 };
