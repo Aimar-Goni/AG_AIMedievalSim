@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "MS_StorageBuildingPool.generated.h"
 
 UCLASS()
@@ -27,7 +28,7 @@ public:
 	int n_StorageBuldings_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TArray<AActor*> StorageBuldings_;
+	TArray<AMS_StorageBuilding*> StorageBuldings_;
 
 	void FindStorageBuildingsOnScene();
 };

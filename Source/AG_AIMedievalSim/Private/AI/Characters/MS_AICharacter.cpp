@@ -10,6 +10,7 @@
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Components/BoxComponent.h"
+#include "Systems/MS_PawnStatComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -42,6 +43,9 @@ AMS_AICharacter::AMS_AICharacter()
 		WidgetComponent_->SetWidgetClass((WidgetClass.Class));
 
 	}
+
+	
+	PawnStats_->OnStateChanged.AddDynamic(this, &AMS_AICharacter::CheckIfHungry);
 }
 
 // Called when the game starts or when spawned
@@ -82,18 +86,6 @@ void AMS_AICharacter::BeginPlay()
 // Called every frame
 void AMS_AICharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
-	
-	if (PawnStats_->IsHungry()) {
-
-		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
-		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", true);
-	}
-	if (PawnStats_->IsThirsty()) {
-		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
-		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", true);
-	}
 	
 
 }
@@ -105,7 +97,19 @@ void AMS_AICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 }
 
-
+void AMS_AICharacter::CheckIfHungry() {
+	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+	if (PawnStats_->IsHungry()) {
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", true);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", false);
+	}
+	if (PawnStats_->IsThirsty()) {
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", true);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", false);
+	}
+}
 
 void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -162,6 +166,10 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == BulletingBoard)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
+
+
+
+
 				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 2));
 				Quest_.Amount = FMath::RandRange(1, 15);
 			}

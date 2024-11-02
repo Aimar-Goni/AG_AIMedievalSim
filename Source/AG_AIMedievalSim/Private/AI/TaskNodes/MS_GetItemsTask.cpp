@@ -3,9 +3,9 @@
 
 
 
+#include "AI/TaskNodes/MS_GetItemsTask.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
-#include "AI/TaskNodes/MS_GetItemsTask.h"
 
 EBTNodeResult::Type UMS_GetItemsTask::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

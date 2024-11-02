@@ -7,6 +7,7 @@
 #include "MS_PawnStatComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStatChanged, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStateChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class AG_AIMEDIEVALSIM_API UMS_PawnStatComponent : public UActorComponent
@@ -76,6 +77,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStatChanged OnHappinessChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnStateChanged OnStateChanged;
 
 	// Modify stat methods
 	void ModifyHunger(float Amount);

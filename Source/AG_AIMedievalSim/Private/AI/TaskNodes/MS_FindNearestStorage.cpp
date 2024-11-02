@@ -2,44 +2,48 @@
 
 
 
+#include "AI/TaskNodes/MS_FindNearestStorage.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
-#include "AI/TaskNodes/MS_FindNearestStorage.h"
+#include "Placeables/Buildings/MS_StorageBuilding.h"
 
 EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 
-	// Get the AI controller
-	if (AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner()))
+	// Get the AI controller and pawn
+	auto* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner());
+	auto* AICharacter = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
+	if (!AICharacter) return EBTNodeResult::Failed;
+
+	// Retrieve the pool of workplaces and previous target
+	AMS_StorageBuildingPool* StoragePool = Cast<AMS_StorageBuildingPool>(AICharacter->StorageBuldingsPool_);
+	if (!StoragePool) return EBTNodeResult::Failed;
+
+	auto* PreviousTarget = Cast<AMS_StorageBuilding>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
+
+	// Find the closest matching workplace
+	AMS_StorageBuilding* Closest = nullptr;
+	float ClosestDistance = FLT_MAX;
+
+
+	for (AMS_StorageBuilding* Storage : StoragePool->StorageBuldings_)
 	{
-		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn()))
+		float CurrentDistance = AICharacter->GetDistanceTo(Storage);
+		if (CurrentDistance < ClosestDistance)
 		{
-			TArray<AActor*> Pool = Cast<AMS_StorageBuildingPool>(AICharacter->StorageBuldingsPool_)->StorageBuldings_;
-
-			if (Pool.Num() == 0)
-			{
-				return EBTNodeResult::Failed;
-			}
-
-			AActor* Closest = Pool[0];
-			float ClosestDistance = AICharacter->GetDistanceTo(Closest);
-
-			for (AActor* Workplace : Pool)
-			{
-				float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
-				if (CurrentDistance < ClosestDistance)
-				{
-					ClosestDistance = CurrentDistance;
-					Closest = Workplace;
-				}
-			}
-
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
-			return EBTNodeResult::Succeeded;
-
+			ClosestDistance = CurrentDistance;
+			Closest = Storage;
 		}
 	}
 
+	if (Closest)
+	{
+		OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+		return EBTNodeResult::Succeeded;
+	}
+
 	return EBTNodeResult::Failed;
+
+
 }

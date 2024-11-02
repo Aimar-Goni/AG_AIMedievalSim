@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "AI/TaskNodes/MS_GetTask.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
-#include "AI/TaskNodes/MS_GetTask.h"
 
 EBTNodeResult::Type UMS_GetTask::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

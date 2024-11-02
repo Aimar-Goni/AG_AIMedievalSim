@@ -3,9 +3,9 @@
 
 
 
+#include "AI/TaskNodes/MS_StoreItems.h"
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
-#include "AI/TaskNodes/MS_StoreItems.h"
 
 EBTNodeResult::Type UMS_StoreItems::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {

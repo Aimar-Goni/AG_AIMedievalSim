@@ -31,14 +31,16 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 	UWorld* world = GetWorld();
 	if (world) {
 
-		TSubclassOf<AMS_StorageBuilding> WorkPlaceClass = AMS_StorageBuilding::StaticClass();
-		TArray<AActor*> Workplaces;
-		UGameplayStatics::GetAllActorsOfClass(world, WorkPlaceClass, Workplaces);
-		for (AActor* actor : Workplaces)
+		TSubclassOf<AMS_StorageBuilding> StorageClass = AMS_StorageBuilding::StaticClass();
+		TArray<AActor*> Storages;
+		UGameplayStatics::GetAllActorsOfClass(world, StorageClass, Storages);
+		for (AActor* actor : Storages)
 		{
 			if (actor)
 			{
-				StorageBuldings_.Add(actor);
+				AMS_StorageBuilding* storage = Cast<AMS_StorageBuilding>(actor);
+
+				StorageBuldings_.Add(storage);
 				n_StorageBuldings_++;
 			}
 		}
