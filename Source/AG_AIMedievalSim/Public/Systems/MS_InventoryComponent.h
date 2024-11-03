@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Systems/MS_ResourceSystem.h"
 #include "MS_InventoryComponent.generated.h"
 
 UENUM(BlueprintType)

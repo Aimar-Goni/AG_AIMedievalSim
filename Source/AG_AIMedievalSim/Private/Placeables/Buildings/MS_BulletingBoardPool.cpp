@@ -38,7 +38,9 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 		{
 			if (actor)
 			{
-				BulletingBoards_.Add(actor);
+				AMS_BulletingBoard* workPlace = Cast<AMS_BulletingBoard>(actor);
+
+				BulletingBoards_.Add(workPlace);
 				n_BulletingBoards_++;
 			}
 		}

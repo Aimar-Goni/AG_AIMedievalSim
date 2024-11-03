@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "Systems/MS_ResourceSystem.h"
 #include "MS_BulletingBoard.generated.h"
+
+
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_BulletingBoard : public AActor
@@ -16,6 +19,8 @@ public:
 	// Sets default values for this actor's properties
 	AMS_BulletingBoard();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	TArray<FQuest> Quests_;
 
 protected:
 	// Called when the game starts or when spawned

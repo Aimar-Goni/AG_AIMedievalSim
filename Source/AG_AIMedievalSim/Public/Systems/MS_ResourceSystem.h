@@ -6,6 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "MS_ResourceSystem.generated.h"
 
+USTRUCT(BlueprintType)
+struct FQuest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	ResourceType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	int32 Amount;
+
+
+};
 
 
 UCLASS()

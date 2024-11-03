@@ -3,11 +3,11 @@
 
 #include "AI/Characters/MS_AICharacter.h"
 #include "AI/Characters/MS_AICharacterController.h"
-#include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
-#include "Placeables/Buildings/MS_BulletingBoardPool.h"
-#include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Placeables/Buildings/MS_StorageBuildingPool.h"
+#include "Placeables/Buildings/MS_StorageBuilding.h"
+#include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Components/BoxComponent.h"
 #include "Systems/MS_PawnStatComponent.h"
@@ -44,7 +44,7 @@ AMS_AICharacter::AMS_AICharacter()
 
 	}
 
-	
+	// Add State Change Delegate
 	PawnStats_->OnStateChanged.AddDynamic(this, &AMS_AICharacter::CheckIfHungry);
 }
 
@@ -80,6 +80,7 @@ void AMS_AICharacter::BeginPlay()
 			BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 		}
 	}
+
 
 }
 
