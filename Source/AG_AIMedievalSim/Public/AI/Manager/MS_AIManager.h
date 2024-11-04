@@ -44,4 +44,7 @@ public:
 	UFUNCTION()
 	void UpdateResources(ResourceType type, int32 amount);
 
+	UFUNCTION()
+	void RemoveQuest(FQuest Quest);
+
 };

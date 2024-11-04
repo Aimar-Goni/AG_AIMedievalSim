@@ -168,11 +168,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
 
+				Quest_ = BulletingBoard->GetQuest();
 
-
-
-				Quest_.Type = static_cast<ResourceType>(FMath::RandRange(0, 2));
-				Quest_.Amount = FMath::RandRange(1, 15);
 			}
 		}
 		

@@ -8,6 +8,7 @@
 #include "Systems/MS_ResourceSystem.h"
 #include "MS_BulletingBoard.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestObtained, FQuest, Quest);
 
 
 UCLASS()
@@ -22,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
 	TArray<FQuest> Quests_;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestObtained OnQuestObtained;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -30,4 +34,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	FQuest GetQuest();
 };

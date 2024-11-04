@@ -44,7 +44,10 @@ void AMS_AIManager::BeginPlay()
 	else {
 		BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 	}
-
+    for (AMS_BulletingBoard* BulletinBoard : BulletingBoardPool_->BulletingBoards_)
+    {
+        BulletinBoard->OnQuestObtained.AddDynamic(this, &AMS_AIManager::RemoveQuest);
+    }
 
 
 }
@@ -54,64 +57,41 @@ void AMS_AIManager::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     const int32 LowResourceThreshold = 50;
     int32 MaxResourcePerQuest = 15;
-    // Iterate over the resource types and their amounts in the inventory
+
+
     for (const auto& ResourcePair : Inventory_->Resources_)
     {
         ResourceType Type = ResourcePair.Key;
         int32 Amount = ResourcePair.Value;
 
-        // If the resource is below the threshold, create quests to gather more
         if (Amount < LowResourceThreshold)
         {
-            // Calculate how many resources are needed to reach the threshold
             int32 NeededResources = LowResourceThreshold - Amount;
 
-            // Generate multiple quests if needed
             while (NeededResources > 0)
             {
-                // Determine the amount for the current quest
                 int32 QuestAmount = FMath::Min(NeededResources, MaxResourcePerQuest);
 
-                // Check if a quest with this type and amount already exists
                 bool QuestExists = false;
                 for (const FQuest& ActiveQuest : ActiveQuests_)
                 {
                     if (ActiveQuest.Type == Type && ActiveQuest.Amount == QuestAmount)
                     {
                         QuestExists = true;
-                        break; // Break if a duplicate quest is found
+                        break; 
                     }
                 }
 
-                // If the quest doesn't already exist, create and assign it
                 if (!QuestExists)
                 {
-                    FQuest NewQuest; // Create a new quest directly
+                    FQuest NewQuest;
                     NewQuest.Type = Type;
                     NewQuest.Amount = QuestAmount;
 
-                    // Assign the quest to a bulletin board
-                    bool QuestAssigned = false;
-                    for (AMS_BulletingBoard* BulletinBoard : BulletingBoardPool_->BulletingBoards_)
-                    {
-                        if (BulletinBoard->Quests_.Num() < 5) // Example: limit of 5 quests per board
-                        {
-                            BulletinBoard->Quests_.Add(NewQuest); // Add directly
-                            ActiveQuests_.Add(NewQuest); // Track the new active quest
-                            UE_LOG(LogTemp, Log, TEXT("Assigned quest to gather %d of %s to bulletin board"),
-                                NewQuest.Amount, *UEnum::GetValueAsString(Type));
-                            QuestAssigned = true;
-                            break; // Stop after assigning the quest to the first available board
-                        }
-                    }
-
-                    if (!QuestAssigned)
-                    {
-                        // You don't need to clean up memory for NewQuest since it is not a pointer
-                    }
+                    BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->Quests_.Add(NewQuest);
+                    ActiveQuests_.Add(NewQuest);            
+                    
                 }
-
-                // Decrease the amount of needed resources
                 NeededResources -= QuestAmount;
             }
         }
@@ -123,3 +103,14 @@ void AMS_AIManager::UpdateResources(ResourceType type, int32 amount) {
 	Inventory_->SetResource(type, amount);
 }
 
+void AMS_AIManager::RemoveQuest(FQuest Quest) {
+    int i = 0;
+    for (FQuest ActiveQuest : ActiveQuests_)
+    {
+        if (ActiveQuest.Type == Quest.Type && ActiveQuest.Amount == Quest.Amount) {
+            ActiveQuests_.RemoveAt(i);
+            break;
+        }
+        i++;
+    }
+}

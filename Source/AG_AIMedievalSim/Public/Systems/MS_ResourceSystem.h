@@ -17,7 +17,10 @@ struct FQuest
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int32 Amount;
 
-
+	bool operator<(const FQuest& Other) const
+	{
+		return Amount > Other.Amount;
+	}
 };
 
 
