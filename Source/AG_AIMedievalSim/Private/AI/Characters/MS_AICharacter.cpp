@@ -79,6 +79,12 @@ void AMS_AICharacter::BeginPlay()
 		else {
 			BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 		}
+		AMS_BulletingBoardPool* Pool = Cast<AMS_BulletingBoardPool>(BulletingBoardPool_);
+
+		for (AMS_BulletingBoard* BulletinBoard : Pool->BulletingBoards_)
+		{
+			BulletinBoard->OnQuestAvaliable.AddDynamic(this, &AMS_AICharacter::NewQuestAdded);
+		}
 	}
 
 
@@ -167,9 +173,12 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == BulletingBoard)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the billboard!"));
-
-				Quest_ = BulletingBoard->GetQuest();
-
+				FQuest newQuest = BulletingBoard->GetQuest();
+				if (newQuest.Type == ResourceType::ERROR)
+				{
+					AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+				}
+				else Quest_ = newQuest;
 			}
 		}
 		
@@ -189,4 +198,9 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			}
 		}
 	}
+}
+
+void AMS_AICharacter:: NewQuestAdded() {
+	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+	AIController->GetBlackboardComponent()->SetValueAsBool("Working", true);
 }

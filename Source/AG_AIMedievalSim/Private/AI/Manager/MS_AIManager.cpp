@@ -57,42 +57,43 @@ void AMS_AIManager::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     const int32 LowResourceThreshold = 50;
     int32 MaxResourcePerQuest = 15;
-
-
-    for (const auto& ResourcePair : Inventory_->Resources_)
+    if (SendingQuests)
     {
-        ResourceType Type = ResourcePair.Key;
-        int32 Amount = ResourcePair.Value;
-
-        if (Amount < LowResourceThreshold)
+        for (const auto& ResourcePair : Inventory_->Resources_)
         {
-            int32 NeededResources = LowResourceThreshold - Amount;
+            ResourceType Type = ResourcePair.Key;
+            int32 Amount = ResourcePair.Value;
 
-            while (NeededResources > 0)
+            if (Amount < LowResourceThreshold)
             {
-                int32 QuestAmount = FMath::Min(NeededResources, MaxResourcePerQuest);
+                int32 NeededResources = LowResourceThreshold - Amount;
 
-                bool QuestExists = false;
-                for (const FQuest& ActiveQuest : ActiveQuests_)
+                while (NeededResources > 0)
                 {
-                    if (ActiveQuest.Type == Type && ActiveQuest.Amount == QuestAmount)
+                    int32 QuestAmount = FMath::Min(NeededResources, MaxResourcePerQuest);
+
+                    bool QuestExists = false;
+                    for (const FQuest& ActiveQuest : ActiveQuests_)
                     {
-                        QuestExists = true;
-                        break; 
+                        if (ActiveQuest.Type == Type && ActiveQuest.Amount == QuestAmount)
+                        {
+                            QuestExists = true;
+                            break; 
+                        }
                     }
-                }
 
-                if (!QuestExists)
-                {
-                    FQuest NewQuest;
-                    NewQuest.Type = Type;
-                    NewQuest.Amount = QuestAmount;
+                    if (!QuestExists)
+                    {
+                        FQuest NewQuest;
+                        NewQuest.Type = Type;
+                        NewQuest.Amount = QuestAmount;
 
-                    BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->Quests_.Add(NewQuest);
-                    ActiveQuests_.Add(NewQuest);            
+                        BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->AddQuest(NewQuest);
+                        ActiveQuests_.Add(NewQuest);            
                     
+                    }
+                    NeededResources -= QuestAmount;
                 }
-                NeededResources -= QuestAmount;
             }
         }
     }

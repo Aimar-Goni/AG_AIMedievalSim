@@ -30,9 +30,18 @@ void AMS_BulletingBoard::Tick(float DeltaTime)
 
 FQuest AMS_BulletingBoard::GetQuest()
 {
+	FQuest NewQuest;
 	Quests_.Sort();
-	FQuest NewQuest = Quests_[0];
+
+	if (Quests_.Num() == 0) return NewQuest;
+	NewQuest = Quests_[0];
 	Quests_.RemoveAt(0);
 	OnQuestObtained.Broadcast(NewQuest);
 	return NewQuest;
+}
+
+void AMS_BulletingBoard::AddQuest(FQuest NewQuest)
+{	
+	Quests_.Add(NewQuest);
+	OnQuestAvaliable.Broadcast();
 }

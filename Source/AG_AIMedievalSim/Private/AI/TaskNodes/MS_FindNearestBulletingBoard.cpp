@@ -21,9 +21,10 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 				return EBTNodeResult::Failed;
 			}
 
-			AActor* Closest = Pool[0];
-			float ClosestDistance = AICharacter->GetDistanceTo(Closest);
+			AActor* Closest = nullptr;
+			float ClosestDistance = FLT_MAX;
 
+			bool found = false;
 			for (AMS_BulletingBoard* Workplace : Pool)
 			{
 				if (Workplace->Quests_.Num()>0) {
@@ -33,11 +34,16 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 					{
 						ClosestDistance = CurrentDistance;
 						Closest = Workplace;
+						found = true;
 					}
 				}
 			}
 
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+			if (Closest) {
+				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+			}
+			else AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+
 			return EBTNodeResult::Succeeded;
 		}
 	}

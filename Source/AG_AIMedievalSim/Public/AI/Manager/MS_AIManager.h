@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
 	TArray<FQuest> ActiveQuests_;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	bool SendingQuests = false;
+
 	UFUNCTION()
 	void UpdateResources(ResourceType type, int32 amount);
 

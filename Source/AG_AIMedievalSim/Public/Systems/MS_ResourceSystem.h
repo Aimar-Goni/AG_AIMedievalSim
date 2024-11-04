@@ -21,6 +21,11 @@ struct FQuest
 	{
 		return Amount > Other.Amount;
 	}
+
+	FQuest(){
+		Type = ResourceType::ERROR;
+		Amount = 0;
+	}
 };
 
 

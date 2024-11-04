@@ -9,6 +9,7 @@
 #include "MS_BulletingBoard.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestObtained, FQuest, Quest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnQuestAvaliable);
 
 
 UCLASS()
@@ -26,6 +27,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnQuestObtained OnQuestObtained;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestAvaliable OnQuestAvaliable;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,4 +40,5 @@ public:
 
 
 	FQuest GetQuest();
+	void AddQuest(FQuest NewQuest);
 };

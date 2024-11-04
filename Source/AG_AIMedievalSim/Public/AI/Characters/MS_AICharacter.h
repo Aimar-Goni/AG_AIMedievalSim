@@ -81,4 +81,8 @@ public:
 	UFUNCTION()
 	void CheckIfHungry();
 
+	UFUNCTION()
+	void NewQuestAdded();
+
+
 };
