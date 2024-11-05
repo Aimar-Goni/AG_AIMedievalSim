@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Systems/MS_ResourceSystem.h"
 #include "MS_InventoryComponent.generated.h"
 
 UENUM(BlueprintType)
 enum class ResourceType : uint8 {
 
+	ERROR UMETA(DisplayName = "Error"),
 	BERRIES UMETA(DisplayName = "Berries"),
 	WOOD UMETA(DisplayName = "Wood"),
 	WATER UMETA(DisplayName = "Water"),

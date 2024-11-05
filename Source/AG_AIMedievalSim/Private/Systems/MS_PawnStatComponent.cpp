@@ -23,34 +23,13 @@ void UMS_PawnStatComponent::DecreaseStats()
 	ModifyEnergy(-EnergyDecreaseRate);
 	ModifyHappiness(-HappinessDecreaseRate);
 
-	if (Hunger < HungryThreshold) {
-		Hungry = true;
-	}
-	else {
-		Hungry = false;
-	}
 
-	if (Thirst < ThirstThreshold) {
-		Thirsty = true;
-	}
-	else {
-		Thirsty = false;
-	}
+	Hungry = Hunger < HungryThreshold;
+	Thirsty = Thirst < ThirstThreshold;
+	Tired = Energy < EnergyThreshold;
+	Sad = Happiness < HappinessThreshold;
 
-	if (Energy < EnergyThreshold) {
-		Tired = true;
-	}
-	else {
-		Tired = false;
-	}
-
-	if (Happiness < HappinessThreshold) {
-		Sad = true;
-	}
-	else {
-		Sad = false;
-	}
-
+	OnStateChanged.Broadcast();
 }
 
 // Called every frame

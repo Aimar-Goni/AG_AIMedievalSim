@@ -9,23 +9,13 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Systems/MS_InventoryComponent.h"
-#include "Systems/MS_QuestSystem.h"
 #include "Systems/MS_PawnStatComponent.h"
+#include "Systems/MS_ResourceSystem.h"
 #include "MS_AICharacter.generated.h"
 
-USTRUCT(BlueprintType)
-struct FQuest
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	ResourceType Type;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Amount;
 
 
-};
+
 
 
 UCLASS()
@@ -87,6 +77,12 @@ public:
 
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void CheckIfHungry();
+
+	UFUNCTION()
+	void NewQuestAdded();
 
 
 };

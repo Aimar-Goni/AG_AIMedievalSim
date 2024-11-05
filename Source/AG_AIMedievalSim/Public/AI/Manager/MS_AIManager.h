@@ -5,6 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Systems/MS_ResourceSystem.h"
+#include "Placeables/Buildings/MS_StorageBuildingPool.h"
+#include "Placeables/Buildings/MS_StorageBuilding.h"
+#include "Placeables/Buildings/MS_BulletingBoardPool.h"
+#include "Placeables/Buildings/MS_BulletingBoard.h"
+#include "Systems/MS_InventoryComponent.h"
 #include "MS_AIManager.generated.h"
 
 UCLASS()
@@ -24,6 +29,25 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	AActor* ResourceSystem_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	AMS_StorageBuildingPool* StorageBuldingsPool_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	AMS_BulletingBoardPool* BulletingBoardPool_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
+	UInventoryComponent* Inventory_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	TArray<FQuest> ActiveQuests_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	bool SendingQuests = false;
+
+	UFUNCTION()
+	void UpdateResources(ResourceType type, int32 amount);
+
+	UFUNCTION()
+	void RemoveQuest(FQuest Quest);
+
 };

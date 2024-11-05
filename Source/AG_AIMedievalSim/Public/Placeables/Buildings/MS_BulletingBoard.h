@@ -5,7 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "Systems/MS_ResourceSystem.h"
 #include "MS_BulletingBoard.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestObtained, FQuest, Quest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnQuestAvaliable);
+
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_BulletingBoard : public AActor
@@ -16,6 +21,14 @@ public:
 	// Sets default values for this actor's properties
 	AMS_BulletingBoard();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
+	TArray<FQuest> Quests_;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestObtained OnQuestObtained;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuestAvaliable OnQuestAvaliable;
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,4 +38,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	FQuest GetQuest();
+	void AddQuest(FQuest NewQuest);
 };

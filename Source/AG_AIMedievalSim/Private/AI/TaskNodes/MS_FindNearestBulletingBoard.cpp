@@ -14,27 +14,36 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 	{
 		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn())) 
 		{
-			TArray<AActor*> Pool = Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_;
+			TArray<AMS_BulletingBoard*> Pool = Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_;
 
 			if (Pool.Num() == 0)
 			{
 				return EBTNodeResult::Failed;
 			}
 
-			AActor* Closest = Pool[0];
-			float ClosestDistance = AICharacter->GetDistanceTo(Closest);
+			AActor* Closest = nullptr;
+			float ClosestDistance = FLT_MAX;
 
-			for (AActor* Workplace : Pool)
+			bool found = false;
+			for (AMS_BulletingBoard* Workplace : Pool)
 			{
-				float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
-				if (CurrentDistance < ClosestDistance)
-				{
-					ClosestDistance = CurrentDistance;
-					Closest = Workplace;
+				if (Workplace->Quests_.Num()>0) {
+
+					float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
+					if (CurrentDistance < ClosestDistance)
+					{
+						ClosestDistance = CurrentDistance;
+						Closest = Workplace;
+						found = true;
+					}
 				}
 			}
 
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+			if (Closest) {
+				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
+			}
+			else AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
+
 			return EBTNodeResult::Succeeded;
 		}
 	}

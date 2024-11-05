@@ -18,11 +18,7 @@ AMS_StorageBuilding::AMS_StorageBuilding()
 void AMS_StorageBuilding::BeginPlay()
 {
 	
-	for (auto& Resource : Inventory_->Resources_)
-	{
-		Inventory_->OnResourceChanged.Broadcast(Resource.Key, 50);
 
-	}
 }
 
 // Called every frame

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "MS_BulletingBoardPool.generated.h"
 
 UCLASS()
@@ -27,7 +28,7 @@ public:
 	int n_BulletingBoards_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TArray<AActor*> BulletingBoards_;
+	TArray<AMS_BulletingBoard*> BulletingBoards_;
 
 	void FindBulletingBoardsOnScene();
 };
