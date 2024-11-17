@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,6 +10,10 @@ struct FNode
 	FVector Position;
 	FIntPoint GridPosition;
 	TArray<FNode*> Neighbors;
+	float GCost;
+	float HCost; 
+	float FCost() const { return GCost + HCost; }
+	FNode* Parent;
 };
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_MovementNode : public AActor

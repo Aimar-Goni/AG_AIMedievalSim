@@ -40,6 +40,7 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 			}
 
 			if (Closest) {
+				AICharacter->CreateMovementPath(Closest);
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
 			}
 			else AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);

@@ -6,7 +6,8 @@
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
-#include "Placeables/Buildings/MS_StorageBuilding.h"
+#include "Movement/MS_PathfindingSubsyste.h"
+
 
 EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
@@ -39,6 +40,7 @@ EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& 
 
 	if (Closest)
 	{
+		AICharacter->CreateMovementPath(Closest);
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
 		return EBTNodeResult::Succeeded;
 	}

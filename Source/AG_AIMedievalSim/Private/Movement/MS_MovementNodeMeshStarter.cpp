@@ -2,6 +2,7 @@
 
 #include "DrawDebugHelpers.h" 
 #include "Kismet/KismetSystemLibrary.h" 
+#include "Movement/MS_PathfindingSubsyste.h"
 #include "Movement/MS_MovementNodeMeshStarter.h"
 
 // Sets default values
@@ -72,6 +73,16 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("No hit detected."));
     }
 
+    UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+    if (PathfindingSubsystem)
+    {
+        PathfindingSubsystem->SetNodeMap(NodeMap);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
+    }
+
 }
 
 // Called every frame
@@ -80,6 +91,8 @@ void AMS_MovementNodeMeshStarter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+
 
 bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Position)
 {
@@ -128,6 +141,8 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
     return false; 
 }
 
+
+//TODO, change the colision channels so it collides with the correct enviroment.
 bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start, const FVector& End)
 {
     UWorld* World = GetWorld();
