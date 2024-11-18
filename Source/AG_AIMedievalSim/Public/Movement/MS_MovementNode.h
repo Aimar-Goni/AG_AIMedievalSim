@@ -10,10 +10,10 @@ struct FNode
 	FVector Position;
 	FIntPoint GridPosition;
 	TArray<FNode*> Neighbors;
-	float GCost;
-	float HCost; 
+	float GCost = FLT_MAX;
+	float HCost = 0.0f;  
 	float FCost() const { return GCost + HCost; }
-	FNode* Parent;
+	FNode* Parent = nullptr;
 };
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_MovementNode : public AActor

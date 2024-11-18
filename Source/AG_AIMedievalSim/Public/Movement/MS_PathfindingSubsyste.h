@@ -19,8 +19,6 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    TArray<FNode*> ReconstructPath(FNode* StartNode, FNode* EndNode);
-
     TArray<FNode*> FindPath(FNode* StartNode, FNode* GoalNode);
 
     FNode* FindClosestNodeToActor(AActor* TargetActor);
