@@ -204,3 +204,35 @@ void AMS_AICharacter:: NewQuestAdded() {
 	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
 	AIController->GetBlackboardComponent()->SetValueAsBool("Working", true);
 }
+
+void AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
+	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+	if (PathfindingSubsystem)
+	{
+		FNode* Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
+		FNode* End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
+		DrawDebugSphere(GetWorld(), Begin->Position, 100.0f, 16, FColor::Red, false, 5.0f);
+		//if(End)
+		DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
+
+
+		TArray<FNode*> Path = PathfindingSubsystem->FindPath(Begin, End);
+		for (int32 i = 0; i < Path.Num() - 1; ++i)
+		{
+			DrawDebugLine(
+				GetWorld(),
+				Path[i]->Position,
+				Path[i + 1]->Position,
+				FColor::Blue,
+				false,
+				10.0f,
+				0,
+				5.0f
+			);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
+	}
+}

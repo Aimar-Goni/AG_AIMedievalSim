@@ -6,6 +6,8 @@
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
 
+
+
 EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// Get the AI controller and pawn
@@ -36,11 +38,16 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 		}
 	}
 
+
+
+
+
 	UE_LOG(LogTemp, Warning, TEXT("Closest: %f"), ClosestDistance);
 
 	// Update the Blackboard if a workplace was found
 	if (ClosestWorkplace)
 	{
+		AICharacter->CreateMovementPath(ClosestWorkplace);
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", ClosestWorkplace);
 		return EBTNodeResult::Succeeded;
 	}
