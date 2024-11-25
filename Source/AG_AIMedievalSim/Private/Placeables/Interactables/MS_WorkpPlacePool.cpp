@@ -3,6 +3,7 @@
 
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Movement/MS_PathfindingSubsyste.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -29,6 +30,7 @@ void AMS_WorkpPlacePool::Tick(float DeltaTime)
 }
 
 void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
+	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
 	UWorld* world = GetWorld();
 	if (world) {
 
@@ -42,6 +44,7 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
 
 				Workplaces_.Add(workPlace);
+				PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_workplaces_++;
 			}
 		}

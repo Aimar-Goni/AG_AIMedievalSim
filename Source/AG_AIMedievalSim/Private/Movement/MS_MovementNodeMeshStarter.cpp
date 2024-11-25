@@ -77,11 +77,14 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     if (PathfindingSubsystem)
     {
         PathfindingSubsystem->SetNodeMap(NodeMap);
+        PathfindingSubsystem->SetNodeSeparation(NodeSeparationX_);
     }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
     }
+
+
 
 }
 
@@ -102,7 +105,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
         return false;
     }
 
-    FVector Start = Position + FVector(0, 0, 500.0f);
+    FVector Start = Position + FVector(0, 0, NodeSeparationX_);
     FVector End = Position - FVector(0, 0, 30.0f);
 
     TArray<FHitResult> HitResults;
@@ -241,7 +244,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
             FIntPoint NeighborGridPos = CurrentNode->GridPosition + Dir;
 
             // Calculate the neighbor's world position
-            FVector NeighborPosition = CurrentNode->Position + FVector(Dir.X * 500.0f, Dir.Y * 500.0f, 0.0f);
+            FVector NeighborPosition = CurrentNode->Position + FVector(Dir.X * NodeSeparationX_, Dir.Y * NodeSeparationY_, 0.0f);
 
             // Perform the raycast to check if the node is available
             bool bIsAvailable = PerformRaycastAtPosition(NeighborPosition);
@@ -304,3 +307,4 @@ void AMS_MovementNodeMeshStarter::AddNeighbors(FNode* CurrentNode)
         }
     }
 }
+

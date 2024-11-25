@@ -211,9 +211,9 @@ void AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 	{
 		FNode* Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
 		FNode* End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
-		DrawDebugSphere(GetWorld(), Begin->Position, 100.0f, 16, FColor::Red, false, 5.0f);
+		//DrawDebugSphere(GetWorld(), Begin->Position, 100.0f, 16, FColor::Red, false, 5.0f);
 		//if(End)
-		DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
+		//DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
 
 
 		TArray<FNode*> Path = PathfindingSubsystem->FindPath(Begin, End);

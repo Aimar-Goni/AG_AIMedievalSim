@@ -24,8 +24,13 @@ public:
     FNode* FindClosestNodeToActor(AActor* TargetActor);
 
     void SetNodeMap(TMap<FIntPoint, FNode*> newNodeMap);
+
+    void AddNodeAtPosition(const FVector& Position);
+
+    void SetNodeSeparation(int32 newSeparation);
 private:
     TMap<FIntPoint, FNode*> NodeMap;
 
+    int32 NodeSeparation_;
 
 };
