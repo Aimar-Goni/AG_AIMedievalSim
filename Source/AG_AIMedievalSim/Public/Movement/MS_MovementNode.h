@@ -11,6 +11,7 @@ struct FNode
 	FIntPoint GridPosition;
 	TArray<FNode*> Neighbors;
 };
+
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_MovementNode : public AActor
 {

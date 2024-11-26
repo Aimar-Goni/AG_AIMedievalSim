@@ -12,6 +12,8 @@ FORCEINLINE uint32 GetTypeHash(const FIntPoint& Point)
 	return HashCombine(GetTypeHash(Point.X), GetTypeHash(Point.Y));
 }
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNodeMapReady);
+
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_MovementNodeMeshStarter : public AActor
 {
@@ -21,6 +23,10 @@ class AG_AIMEDIEVALSIM_API AMS_MovementNodeMeshStarter : public AActor
 	TMap<FIntPoint, FNode*> NodeMap;
 
 	int32 NodeSeparationX_ = 250, NodeSeparationY_ = 250;
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnNodeMapReady OnNodeMapReady;
 
 public:	
 	// Sets default values for this actor's properties

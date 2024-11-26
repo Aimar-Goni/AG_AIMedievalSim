@@ -18,7 +18,21 @@ AMS_StorageBuildingPool::AMS_StorageBuildingPool()
 void AMS_StorageBuildingPool::BeginPlay()
 {
 	Super::BeginPlay();
-	FindStorageBuildingsOnScene();
+
+
+	for (TActorIterator<AMS_MovementNodeMeshStarter> It(GetWorld()); It; ++It)
+	{
+		AMS_MovementNodeMeshStarter* NodeMeshStarter = *It;
+		if (NodeMeshStarter)
+		{
+			// Bind to the OnNodeMapReady delegate
+			NodeMeshStarter->OnNodeMapReady.AddDynamic(this, &AMS_StorageBuildingPool::OnNodeMapInitialized);
+			break;
+		}
+	}
+
+
+
 }
 
 // Called every frame
@@ -48,4 +62,10 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 			}
 		}
 	}
+}
+
+void AMS_StorageBuildingPool::OnNodeMapInitialized()
+{
+	UE_LOG(LogTemp, Log, TEXT("Node Map is ready. Initializing Storage Buildings."));
+	FindStorageBuildingsOnScene();
 }
