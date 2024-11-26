@@ -3,6 +3,7 @@
 
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Placeables/Buildings/MS_BulletingBoard.h"
+#include "Movement/MS_PathfindingSubsyste.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -28,6 +29,7 @@ void AMS_BulletingBoardPool::Tick(float DeltaTime)
 }
 
 void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
+	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
 	UWorld* world = GetWorld();
 	if (world) {
 
@@ -41,6 +43,7 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 				AMS_BulletingBoard* workPlace = Cast<AMS_BulletingBoard>(actor);
 
 				BulletingBoards_.Add(workPlace);
+				PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_BulletingBoards_++;
 			}
 		}

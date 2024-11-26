@@ -26,13 +26,17 @@ AMS_MovementNode::AMS_MovementNode()
 
     // Optionally, adjust the scale of the cube
     MeshComponent->SetWorldScale3D(FVector(0.5f)); // Adjust size as needed
-}
 
+    MeshComponent->ComponentTags.Add(FName("Floor"));
+
+    // Set the collision preset to OverlapAllDynamic
+    MeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+}
 // Called when the game starts or when spawned
 void AMS_MovementNode::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame

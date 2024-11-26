@@ -20,6 +20,8 @@ class AG_AIMEDIEVALSIM_API AMS_MovementNodeMeshStarter : public AActor
 
 	TMap<FIntPoint, FNode*> NodeMap;
 
+	int32 NodeSeparationX_ = 250, NodeSeparationY_ = 250;
+
 public:	
 	// Sets default values for this actor's properties
 	AMS_MovementNodeMeshStarter();
@@ -33,7 +35,6 @@ public:
 	bool PerformRaycastToPosition(const FVector& Start, const FVector& End);
 
 	void SpawnAgentAtPosition(const FVector& Position);
-
 
 
 protected:
