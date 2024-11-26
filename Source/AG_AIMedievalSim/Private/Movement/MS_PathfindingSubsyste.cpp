@@ -121,7 +121,7 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
             {
                 CameFrom.Add(Neighbor, CurrentNode);
                 GScore.Add(Neighbor, TentativeGScore);
-                FScore.Add(Neighbor, TentativeGScore + Heuristic(Neighbor, GoalNode));
+                FScore.Add(Neighbor, TentativeGScore + FVector::Dist(CurrentNode->Position, GoalNode->Position));
 
                 if (!PriorityQueue.Contains(Neighbor))
                 {

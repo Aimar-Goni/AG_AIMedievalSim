@@ -84,6 +84,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
     }
 
+    OnNodeMapReady.Broadcast();
 
 
 }
@@ -140,6 +141,8 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
             
         }
     }
+
+
 
     return false; 
 }

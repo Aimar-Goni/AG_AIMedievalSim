@@ -56,6 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Internal|Stats")
 	UWidgetComponent* WidgetComponent_;
 
+	TArray<FNode*> Path_;
+
+
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -86,6 +89,6 @@ public:
 	void NewQuestAdded();
 
 
-	void CreateMovementPath(AActor* ClosestWorkplace);
+	TArray<FNode*> CreateMovementPath(AActor* ClosestWorkplace);
 
 };

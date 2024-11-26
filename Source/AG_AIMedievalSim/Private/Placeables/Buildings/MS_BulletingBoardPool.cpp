@@ -18,7 +18,16 @@ AMS_BulletingBoardPool::AMS_BulletingBoardPool()
 void AMS_BulletingBoardPool::BeginPlay()
 {
 	Super::BeginPlay();
-	FindBulletingBoardsOnScene();
+	for (TActorIterator<AMS_MovementNodeMeshStarter> It(GetWorld()); It; ++It)
+	{
+		AMS_MovementNodeMeshStarter* NodeMeshStarter = *It;
+		if (NodeMeshStarter)
+		{
+			// Bind to the OnNodeMapReady delegate
+			NodeMeshStarter->OnNodeMapReady.AddDynamic(this, &AMS_BulletingBoardPool::OnNodeMapInitialized);
+			break;
+		}
+	}
 }
 
 // Called every frame
@@ -48,4 +57,10 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 			}
 		}
 	}
+}
+
+void AMS_BulletingBoardPool::OnNodeMapInitialized()
+{
+	UE_LOG(LogTemp, Log, TEXT("Node Map is ready. Initializing Storage Buildings."));
+	FindBulletingBoardsOnScene();
 }

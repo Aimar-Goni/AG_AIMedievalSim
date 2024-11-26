@@ -16,6 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	AMS_StorageBuildingPool();
 
+	UFUNCTION()
+	void OnNodeMapInitialized();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
