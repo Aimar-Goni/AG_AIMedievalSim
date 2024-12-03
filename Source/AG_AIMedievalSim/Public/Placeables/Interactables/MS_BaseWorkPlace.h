@@ -39,6 +39,10 @@ public:
 	bool ResourceAvaliable_;
 
 	FTimerHandle TH_ResourceReset_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Movement")
+	FIntPoint GridPosition_;
+
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

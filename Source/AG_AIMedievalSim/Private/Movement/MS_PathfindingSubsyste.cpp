@@ -189,7 +189,7 @@ void UMS_PathfindingSubsyste::SetNodeSeparation(int32 newSeparation) {
     NodeSeparation_ = newSeparation;
 }
 
-void UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
+FIntPoint UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
 {
 
     FIntPoint GridPosition = FIntPoint(FMath::RoundToInt(Position.X / NodeSeparation_), FMath::RoundToInt(Position.Y / NodeSeparation_));
@@ -225,4 +225,6 @@ void UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
             DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);
         }
     }
+
+    return GridPosition;
 }

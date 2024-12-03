@@ -57,7 +57,7 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 				AMS_StorageBuilding* storage = Cast<AMS_StorageBuilding>(actor);
 
 				StorageBuldings_.Add(storage);
-				PathfindingSubsystem->AddNodeAtPosition(storage->GetActorLocation());
+				storage->GridPosition_ =  PathfindingSubsystem->AddNodeAtPosition(storage->GetActorLocation());
 				n_StorageBuldings_++;
 			}
 		}

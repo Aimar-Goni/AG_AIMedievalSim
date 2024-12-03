@@ -87,6 +87,10 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     OnNodeMapReady.Broadcast();
 
 
+
+
+
+
 }
 
 // Called every frame

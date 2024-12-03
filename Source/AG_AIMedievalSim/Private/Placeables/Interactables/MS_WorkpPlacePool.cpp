@@ -44,7 +44,7 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
 
 				Workplaces_.Add(workPlace);
-				PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
+				workPlace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_workplaces_++;
 			}
 		}

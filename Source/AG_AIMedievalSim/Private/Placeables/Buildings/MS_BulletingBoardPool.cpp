@@ -49,10 +49,11 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 		{
 			if (actor)
 			{
-				AMS_BulletingBoard* workPlace = Cast<AMS_BulletingBoard>(actor);
+				AMS_BulletingBoard* bulletingBoard = Cast<AMS_BulletingBoard>(actor);
 
-				BulletingBoards_.Add(workPlace);
-				PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
+				BulletingBoards_.Add(bulletingBoard);
+				bulletingBoard->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(bulletingBoard->GetActorLocation());
+
 				n_BulletingBoards_++;
 			}
 		}

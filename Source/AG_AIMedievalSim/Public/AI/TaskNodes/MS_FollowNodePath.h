@@ -19,10 +19,11 @@ public:
     virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
     virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-protected:
-    UPROPERTY(EditAnywhere, Category = "Pathfinding")
-    FBlackboardKeySelector PathKey;
+private:
 
-    UPROPERTY(EditAnywhere, Category = "Pathfinding")
-    FBlackboardKeySelector CurrentNodeIndexKey; 
+
+    int32 CurrentNodeIndex;
+    FVector CurrentTargetLocation;
+
+    void MoveToNextNode(UBehaviorTreeComponent& OwnerComp, class AAIController* AIController, class AMS_AICharacter* AICharacter);
 };

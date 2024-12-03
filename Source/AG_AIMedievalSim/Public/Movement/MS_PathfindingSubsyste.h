@@ -25,7 +25,7 @@ public:
 
     void SetNodeMap(TMap<FIntPoint, FNode*> newNodeMap);
 
-    void AddNodeAtPosition(const FVector& Position);
+    FIntPoint AddNodeAtPosition(const FVector& Position);
 
     void SetNodeSeparation(int32 newSeparation);
 private:

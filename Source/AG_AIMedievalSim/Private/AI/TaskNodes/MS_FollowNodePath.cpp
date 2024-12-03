@@ -10,81 +10,65 @@
 UMS_FollowNodePath::UMS_FollowNodePath()
 {
     NodeName = "Follow Path";
+    bNotifyTick = true; // Allows TickTask to be called
+    CurrentNodeIndex = 0;
 }
 
 EBTNodeResult::Type UMS_FollowNodePath::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-    UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-    if (!BlackboardComp)
+    AAIController* AIController = OwnerComp.GetAIOwner();
+    if (!AIController)
     {
         return EBTNodeResult::Failed;
     }
 
-
-    auto* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner());
-    auto* AICharacter = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
-    if (!AICharacter) return EBTNodeResult::Failed;
-
-
-    AICharacter->Path_;
-
-    if (0 == AICharacter->Path_.Num())
+    AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn());
+    if (!AICharacter || AICharacter->Path_.Num() == 0)
     {
-        return EBTNodeResult::Succeeded;
+        UE_LOG(LogTemp, Warning, TEXT("No path found on AICharacter."));
+        return EBTNodeResult::Failed;
     }
-    auto* a = AICharacter->Path_[AICharacter->Path_.Num()-1];
 
+    CurrentNodeIndex = 0;
+    MoveToNextNode(OwnerComp, AIController, AICharacter);
 
-    FVector TargetLocation = a->Position;
-    AIController->MoveToLocation(TargetLocation);
-    AICharacter->Path_.RemoveAt(AICharacter->Path_.Num() - 1);
-
-    return EBTNodeResult::InProgress; 
+    return EBTNodeResult::InProgress; // Task is ongoing
 }
 
 void UMS_FollowNodePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-    UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-    if (!BlackboardComp)
-    {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
-
     AAIController* AIController = OwnerComp.GetAIOwner();
-    auto* AICharacter = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
-    if (!AIController || !AIController->GetPawn())
+    AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn());
+    if (!AIController || !AICharacter)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
         return;
     }
 
+    // Check if the AI has reached the current target location
+    if (FVector::Dist(AICharacter->GetActorLocation(), CurrentTargetLocation) < 100.0f) // Adjust threshold as needed
+    {
+        MoveToNextNode(OwnerComp, AIController, AICharacter);
+    }
+}
 
-    if (AICharacter->Path_.Num() == 0)
+void UMS_FollowNodePath::MoveToNextNode(UBehaviorTreeComponent& OwnerComp, AAIController* AIController, AMS_AICharacter* AICharacter)
+{
+    if (CurrentNodeIndex >= AICharacter->Path_.Num())
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // Task is complete
+        return;
+    }
+
+    FNode* CurrentNode = AICharacter->Path_[CurrentNodeIndex];
+    if (!CurrentNode)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
         return;
     }
 
-    // Get the current node index
-    int32 CurrentNodeIndex = BlackboardComp->GetValueAsInt(CurrentNodeIndexKey.SelectedKeyName);
+    CurrentTargetLocation = CurrentNode->Position;
+    AIController->MoveToLocation(CurrentTargetLocation);
 
-   
-        // Increment the node index
-        CurrentNodeIndex++;
-
-        // Check if we've reached the end of the path
-        if (CurrentNodeIndex >= AICharacter->Path_.Num())
-        {
-            FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-            return;
-        }
-
-        auto* a = AICharacter->Path_[AICharacter->Path_.Num() - 1];
-
-
-        FVector TargetLocation = a->Position;
-        AIController->MoveToLocation(TargetLocation);
-        AICharacter->Path_.RemoveAt(AICharacter->Path_.Num() - 1);
-    
+    CurrentNodeIndex++;
 }

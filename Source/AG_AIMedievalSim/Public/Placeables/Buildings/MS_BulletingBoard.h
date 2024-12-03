@@ -30,6 +30,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnQuestAvaliable OnQuestAvaliable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Movement")
+	FIntPoint GridPosition_;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
