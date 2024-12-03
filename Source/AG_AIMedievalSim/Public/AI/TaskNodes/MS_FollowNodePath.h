@@ -22,8 +22,7 @@ public:
 private:
 
 
-    int32 CurrentNodeIndex;
-    FVector CurrentTargetLocation;
+
 
     void MoveToNextNode(UBehaviorTreeComponent& OwnerComp, class AAIController* AIController, class AMS_AICharacter* AICharacter);
 };

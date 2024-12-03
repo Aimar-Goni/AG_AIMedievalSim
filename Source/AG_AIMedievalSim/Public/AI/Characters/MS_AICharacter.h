@@ -56,6 +56,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Internal|Stats")
 	UWidgetComponent* WidgetComponent_;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
+	int32 CurrentNodeIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
+	FVector CurrentTargetLocation;
+
+
 	TArray<FNode*> Path_;
 
 
@@ -88,6 +96,7 @@ public:
 	UFUNCTION()
 	void NewQuestAdded();
 
+	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
 	TArray<FNode*> CreateMovementPath(AActor* ClosestWorkplace);
 

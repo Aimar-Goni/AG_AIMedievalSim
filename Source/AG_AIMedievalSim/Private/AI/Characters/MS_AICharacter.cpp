@@ -109,11 +109,21 @@ void AMS_AICharacter::CheckIfHungry() {
 	if (PawnStats_->IsHungry()) {
 		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
 		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", true);
-		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", false);
+	
 	}
 	if (PawnStats_->IsThirsty()) {
 		AIController->GetBlackboardComponent()->SetValueAsBool("Working", false);
 		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", true);
+
+	}
+	if (!PawnStats_->IsThirsty())
+	{
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", true);
+		AIController->GetBlackboardComponent()->SetValueAsBool("GettingWater", false);
+	}
+	if (!PawnStats_->IsHungry())
+	{
+		AIController->GetBlackboardComponent()->SetValueAsBool("Working", true);
 		AIController->GetBlackboardComponent()->SetValueAsBool("GettingFood", false);
 	}
 }
@@ -142,18 +152,32 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 				}
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingFood")) {
-					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::BERRIES) < 10) {
+					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::BERRIES) < 20) {
+						for (const auto& Resource : Inventory_->Resources_)
+						{
+							StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
+						}
+						Inventory_->ResetInventory();
 
-
+						AIController->GetBlackboardComponent()->SetValueAsBool("Ignoring", true);
+	
+						Quest_ = FQuest(ResourceType::BERRIES, 10);
 					}
 					else {
-						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 10);
+						StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 20);
 						this->PawnStats_->ModifyHunger(100);
 					}
 				}
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingWater")) {
 					if (StorageBuilding->Inventory_->GetResourceAmount(ResourceType::WATER) < 20) {
+						for (const auto& Resource : Inventory_->Resources_)
+						{
+							StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
+						}
+						Inventory_->ResetInventory();
+						AIController->GetBlackboardComponent()->SetValueAsBool("Ignoring", true);
 
+						Quest_ = FQuest(ResourceType::WATER, 10);
 
 					}
 					else {
@@ -188,16 +212,44 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == WorkPlace && WorkPlace->ResourceAvaliable_)
 			{
-				FResource recieved = WorkPlace->TakeResources();
 
-				Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
+				if (!AIController->GetBlackboardComponent()->GetValueAsBool("Ignoring"))
+				{
+
+					FResource recieved = WorkPlace->TakeResources();
+
+					Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
 
 
+				}
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
 			
 			}
 		}
 	}
+}
+
+
+void AMS_AICharacter::ConsumeResourceDirectly(ResourceType type, int32 ammount) {
+	switch (type)
+	{
+	case ResourceType::ERROR:
+		break;
+	case ResourceType::BERRIES:
+		this->PawnStats_->ModifyHunger(100);
+
+		break;
+	case ResourceType::WOOD:
+
+		break;
+	case ResourceType::WATER:
+		this->PawnStats_->ModifyThirst(100);
+
+		break;
+	default:
+		break;
+	}
+
 }
 
 void AMS_AICharacter:: NewQuestAdded() {

@@ -11,7 +11,6 @@ UMS_FollowNodePath::UMS_FollowNodePath()
 {
     NodeName = "Follow Path";
     bNotifyTick = true; // Allows TickTask to be called
-    CurrentNodeIndex = 0;
 }
 
 EBTNodeResult::Type UMS_FollowNodePath::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -29,7 +28,7 @@ EBTNodeResult::Type UMS_FollowNodePath::ExecuteTask(UBehaviorTreeComponent& Owne
         return EBTNodeResult::Failed;
     }
 
-    CurrentNodeIndex = 0;
+    AICharacter->CurrentNodeIndex = 0;
     MoveToNextNode(OwnerComp, AIController, AICharacter);
 
     return EBTNodeResult::InProgress; // Task is ongoing
@@ -46,7 +45,7 @@ void UMS_FollowNodePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
     }
 
     // Check if the AI has reached the current target location
-    if (FVector::Dist(AICharacter->GetActorLocation(), CurrentTargetLocation) < 100.0f) // Adjust threshold as needed
+    if (FVector::Dist(AICharacter->GetActorLocation(), AICharacter->CurrentTargetLocation) < 100.0f) // Adjust threshold as needed
     {
         MoveToNextNode(OwnerComp, AIController, AICharacter);
     }
@@ -54,21 +53,21 @@ void UMS_FollowNodePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 
 void UMS_FollowNodePath::MoveToNextNode(UBehaviorTreeComponent& OwnerComp, AAIController* AIController, AMS_AICharacter* AICharacter)
 {
-    if (CurrentNodeIndex >= AICharacter->Path_.Num())
+    if (AICharacter->CurrentNodeIndex >= AICharacter->Path_.Num())
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // Task is complete
         return;
     }
 
-    FNode* CurrentNode = AICharacter->Path_[CurrentNodeIndex];
+    FNode* CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
     if (!CurrentNode)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
         return;
     }
 
-    CurrentTargetLocation = CurrentNode->Position;
-    AIController->MoveToLocation(CurrentTargetLocation);
+    AICharacter->CurrentTargetLocation = CurrentNode->Position;
+    AIController->MoveToLocation(AICharacter->CurrentTargetLocation);
 
-    CurrentNodeIndex++;
+    AICharacter->CurrentNodeIndex++;
 }

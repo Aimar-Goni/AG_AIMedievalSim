@@ -22,8 +22,8 @@ EBTNodeResult::Type UMS_GetItemsTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingWater", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingFood", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Working", true);
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", true);
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", false);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
 			return EBTNodeResult::Succeeded;
 		}

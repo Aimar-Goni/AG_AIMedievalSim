@@ -19,6 +19,7 @@ EBTNodeResult::Type UMS_StoreItems::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", true);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Working", true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
 			return EBTNodeResult::Succeeded;
 		}

@@ -26,6 +26,11 @@ struct FQuest
 		Type = ResourceType::ERROR;
 		Amount = 0;
 	}
+
+	FQuest(ResourceType type, int32 amount) {
+		Type = type;
+		Amount = amount;
+	}
 };
 
 
