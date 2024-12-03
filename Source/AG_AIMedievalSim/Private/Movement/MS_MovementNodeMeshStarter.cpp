@@ -39,7 +39,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     );
 
     // Debug draw
-    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+   // DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
 
 
     if (bHit)
@@ -125,7 +125,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
         ECC_GameTraceChannel3, 
         Params
     );
-    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+    //DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
 
     if (bHit && HitResults.Num() > 0)
     {
@@ -180,12 +180,12 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     if (bHit)
     {
         UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
-        DrawDebugLine(World, StartPos, EndPos,  FColor::Red , false, 2.0f);
+       // DrawDebugLine(World, StartPos, EndPos,  FColor::Red , false, 2.0f);
         return false; 
     }
     else
     {
-        DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
+      //  DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
         return true;
     }
 

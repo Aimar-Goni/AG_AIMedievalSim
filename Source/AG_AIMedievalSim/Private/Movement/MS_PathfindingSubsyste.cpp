@@ -47,8 +47,8 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
     }
 
 
-    DrawDebugSphere(World, StartNode->Position, 50.0f, 12, FColor::Green, false, 10.0f);
-    DrawDebugSphere(World, GoalNode->Position, 50.0f, 12, FColor::Red, false, 10.0f);
+  //  DrawDebugSphere(World, StartNode->Position, 50.0f, 12, FColor::Green, false, 10.0f);
+   // DrawDebugSphere(World, GoalNode->Position, 50.0f, 12, FColor::Red, false, 10.0f);
 
 
     TSet<FNode*> OpenSet;
@@ -75,7 +75,7 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
         PriorityQueue.RemoveAt(0);
 
        
-        DrawDebugSphere(World, CurrentNode->Position, 30.0f, 12, FColor::Yellow, false, 2.0f);
+       // DrawDebugSphere(World, CurrentNode->Position, 30.0f, 12, FColor::Yellow, false, 2.0f);
 
         if (CurrentNode == GoalNode)
         {
@@ -86,7 +86,7 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
                 Path.Add(CurrentNode);
 
             
-                if (CameFrom[CurrentNode])
+               /* if (CameFrom[CurrentNode])
                 {
                     DrawDebugLine(
                         World,
@@ -98,7 +98,7 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
                         0,
                         5.0f
                     );
-                }
+                }*/
 
                 CurrentNode = CameFrom[CurrentNode];
             }
@@ -127,7 +127,7 @@ TArray<FNode*> UMS_PathfindingSubsyste::FindPath(FNode* StartNode, FNode* GoalNo
                 {
                     PriorityQueue.Add(Neighbor);
 
-                    DrawDebugSphere(World, Neighbor->Position, 30.0f, 12, FColor::Cyan, false, 2.0f);
+                    //DrawDebugSphere(World, Neighbor->Position, 30.0f, 12, FColor::Cyan, false, 2.0f);
                 }
             }
         }
@@ -192,7 +192,7 @@ void UMS_PathfindingSubsyste::SetNodeSeparation(int32 newSeparation) {
 FIntPoint UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
 {
 
-    FIntPoint GridPosition = FIntPoint(FMath::RoundToInt(Position.X / NodeSeparation_), FMath::RoundToInt(Position.Y / NodeSeparation_));
+    FIntPoint GridPosition = FIntPoint(FMath::RoundToInt(Position.X ), FMath::RoundToInt(Position.Y ));
 
     FNode* NewNode = new FNode();
     NewNode->Position = Position;
@@ -204,7 +204,7 @@ FIntPoint UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
         NodeMap.Add(GridPosition, NewNode);
 
 
-        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Purple, false, 10.0f);
+       // DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Purple, false, 10.0f);
     }
     else
     {
@@ -222,7 +222,7 @@ FIntPoint UMS_PathfindingSubsyste::AddNodeAtPosition(const FVector& Position)
             NewNode->Neighbors.Add(ExistingNode);
             ExistingNode->Neighbors.Add(NewNode);
 
-            DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);
+            //DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);
         }
     }
 
