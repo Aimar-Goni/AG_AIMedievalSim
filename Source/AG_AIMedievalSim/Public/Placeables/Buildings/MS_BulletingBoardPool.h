@@ -7,6 +7,8 @@
 #include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "MS_BulletingBoardPool.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBulletingBoardPoolInitialized);
+
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_BulletingBoardPool : public AActor
 {
@@ -33,4 +35,7 @@ public:
 	TArray<AMS_BulletingBoard*> BulletingBoards_;
 
 	void FindBulletingBoardsOnScene();
+
+	FOnBulletingBoardPoolInitialized OnBulletingBoardPoolInitialized;
+
 };

@@ -50,4 +50,7 @@ public:
 	UFUNCTION()
 	void RemoveQuest(FQuest Quest);
 
+	UFUNCTION()
+	void OnBulletingBoardPoolReady();
+
 };

@@ -28,6 +28,7 @@ void AMS_BulletingBoardPool::BeginPlay()
 			break;
 		}
 	}
+
 }
 
 // Called every frame
@@ -64,4 +65,6 @@ void AMS_BulletingBoardPool::OnNodeMapInitialized()
 {
 	UE_LOG(LogTemp, Log, TEXT("Node Map is ready. Initializing Storage Buildings."));
 	FindBulletingBoardsOnScene();
+	OnBulletingBoardPoolInitialized.Broadcast();
+
 }

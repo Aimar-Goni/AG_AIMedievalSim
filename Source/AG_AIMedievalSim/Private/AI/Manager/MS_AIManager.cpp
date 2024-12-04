@@ -44,13 +44,22 @@ void AMS_AIManager::BeginPlay()
 	else {
 		BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 	}
+
+
+    BulletingBoardPool_->OnBulletingBoardPoolInitialized.AddDynamic(this, &AMS_AIManager::OnBulletingBoardPoolReady);
+    
+
+
+}
+
+void AMS_AIManager::OnBulletingBoardPoolReady()
+{
     for (AMS_BulletingBoard* BulletinBoard : BulletingBoardPool_->BulletingBoards_)
     {
         BulletinBoard->OnQuestObtained.AddDynamic(this, &AMS_AIManager::RemoveQuest);
     }
-
-
 }
+
 // Called every frame
 void AMS_AIManager::Tick(float DeltaTime)
 {
