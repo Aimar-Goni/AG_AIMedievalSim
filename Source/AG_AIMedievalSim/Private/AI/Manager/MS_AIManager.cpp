@@ -21,20 +21,24 @@ void AMS_AIManager::BeginPlay()
 {
 
 	UWorld* world = GetWorld();
+
+    //Check if storage building pool is been spawned
 	AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_StorageBuildingPool::StaticClass());
 	if (FoundActor) {
 		AMS_StorageBuildingPool* Pool = Cast<AMS_StorageBuildingPool>(FoundActor);
-
-		StorageBuldingsPool_ = Pool;
-		
+		StorageBuldingsPool_ = Pool;	
 	}
 	else {
 		StorageBuldingsPool_ = world->SpawnActor<AMS_StorageBuildingPool>(AMS_StorageBuildingPool::StaticClass());
 	}
+
+    // Add delegate that calls when the resources on the storages updates
 	for (AMS_StorageBuilding* Storage : StorageBuldingsPool_->StorageBuldings_)
 	{
 		Storage->Inventory_->OnResourceChanged.AddDynamic(this, &AMS_AIManager::UpdateResources);
 	}
+
+    //Check if bulleting board pool is been spawned
 	FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_BulletingBoardPool::StaticClass());
 	if (FoundActor) {
 		AMS_BulletingBoardPool* Pool = Cast<AMS_BulletingBoardPool>(FoundActor);
@@ -45,24 +49,27 @@ void AMS_AIManager::BeginPlay()
 		BulletingBoardPool_ = world->SpawnActor<AMS_BulletingBoardPool>(AMS_BulletingBoardPool::StaticClass());
 	}
 
-
+    // Add delegate that calls when the bulleting boards have been initialized, so it doesnt use an empty pool
     BulletingBoardPool_->OnBulletingBoardPoolInitialized.AddDynamic(this, &AMS_AIManager::OnBulletingBoardPoolReady);
     
 
 
 }
 
+//When the pool is ready
 void AMS_AIManager::OnBulletingBoardPoolReady()
 {
+    // Add a delegate that calls when a AI takes a quest from the bulleting board
     for (AMS_BulletingBoard* BulletinBoard : BulletingBoardPool_->BulletingBoards_)
     {
         BulletinBoard->OnQuestObtained.AddDynamic(this, &AMS_AIManager::RemoveQuest);
     }
 }
 
-// Called every frame
+// Checks the avaliable resources and sends quest to the billboard
 void AMS_AIManager::Tick(float DeltaTime)
 {
+    // the reason this is on a tick is because as it need to make decisions at real time, I cant have it waiting for delegates
     Super::Tick(DeltaTime);
     const int32 LowResourceThreshold = 50;
     int32 MaxResourcePerQuest = 15;
@@ -77,10 +84,12 @@ void AMS_AIManager::Tick(float DeltaTime)
             {
                 int32 NeededResources = LowResourceThreshold - Amount;
 
+                //This is to manage small quests instead of big ones that fullfill the need alone
                 while (NeededResources > 0)
                 {
                     int32 QuestAmount = FMath::Min(NeededResources, MaxResourcePerQuest);
 
+                    //Check if quests already exists
                     bool QuestExists = false;
                     for (const FQuest& ActiveQuest : ActiveQuests_)
                     {
@@ -91,6 +100,7 @@ void AMS_AIManager::Tick(float DeltaTime)
                         }
                     }
 
+                    //Send quest to billboard
                     if (!QuestExists)
                     {
                         FQuest NewQuest;
@@ -113,6 +123,7 @@ void AMS_AIManager::UpdateResources(ResourceType type, int32 amount) {
 	Inventory_->SetResource(type, amount);
 }
 
+// Once the quest is accepted by the AI, it gets removed from active quests so it can be send again
 void AMS_AIManager::RemoveQuest(FQuest Quest) {
     int i = 0;
     for (FQuest ActiveQuest : ActiveQuests_)

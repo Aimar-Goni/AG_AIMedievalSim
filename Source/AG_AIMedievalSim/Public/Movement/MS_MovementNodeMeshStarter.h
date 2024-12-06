@@ -34,8 +34,6 @@ public:
 
 	void GenerateNodes(FVector FirstPos);
 
-	void AddNeighbors(FNode* CurrentNode);
-
 	bool PerformRaycastAtPosition(const FVector& Position);
 
 	bool PerformRaycastToPosition(const FVector& Start, const FVector& End);

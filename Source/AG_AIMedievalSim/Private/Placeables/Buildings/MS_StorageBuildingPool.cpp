@@ -10,7 +10,7 @@
 AMS_StorageBuildingPool::AMS_StorageBuildingPool()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -42,6 +42,7 @@ void AMS_StorageBuildingPool::Tick(float DeltaTime)
 
 }
 
+// Checks the scene for already existing storages to add to the pool
 void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
 	UWorld* world = GetWorld();
@@ -57,6 +58,7 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 				AMS_StorageBuilding* storage = Cast<AMS_StorageBuilding>(actor);
 
 				StorageBuldings_.Add(storage);
+				// Adds the billboard to the navigation mesh
 				storage->GridPosition_ =  PathfindingSubsystem->AddNodeAtPosition(storage->GetActorLocation());
 				n_StorageBuldings_++;
 			}

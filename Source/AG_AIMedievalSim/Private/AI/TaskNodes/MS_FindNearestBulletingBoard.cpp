@@ -25,6 +25,7 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 			float ClosestDistance = FLT_MAX;
 
 			bool found = false;
+			// Check the pool and compare workplaces until find the closest one
 			for (AMS_BulletingBoard* Workplace : Pool)
 			{
 				if (Workplace->Quests_.Num()>0) {
@@ -39,6 +40,7 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 				}
 			}
 
+			//Modify BB variables
 			if (Closest) {
 				AICharacter->CreateMovementPath(Closest);
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);

@@ -17,6 +17,7 @@ EBTNodeResult::Type UMS_StoreItems::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 		{
 
 
+			// Update BB states
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Working", true);

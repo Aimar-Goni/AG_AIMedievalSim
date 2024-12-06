@@ -16,6 +16,7 @@ void AMS_AICharacterController::OnPossess(APawn* pawn) {
 
     AMS_AICharacter* ch = Cast<AMS_AICharacter>(pawn);
 
+    // Initialize BB values
     if (ch) {
         if (ch->behaviorTree_) {
             if (ch->behaviorTree_->BlackboardAsset) {
@@ -28,6 +29,7 @@ void AMS_AICharacterController::OnPossess(APawn* pawn) {
                 blackboard_->SetValueAsBool("StoringItems", false);
                 blackboard_->SetValueAsBool("GettingFood", false);
                 blackboard_->SetValueAsBool("GettingWater", false);
+                blackboard_->SetValueAsBool("Ignoring", false);
 
             }
         }

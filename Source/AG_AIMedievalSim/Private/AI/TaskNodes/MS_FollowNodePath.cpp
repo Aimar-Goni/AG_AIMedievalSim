@@ -21,6 +21,7 @@ EBTNodeResult::Type UMS_FollowNodePath::ExecuteTask(UBehaviorTreeComponent& Owne
         return EBTNodeResult::Failed;
     }
 
+    // Check if a path is avaliable
     AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn());
     if (!AICharacter || AICharacter->Path_.Num() == 0)
     {
@@ -29,6 +30,8 @@ EBTNodeResult::Type UMS_FollowNodePath::ExecuteTask(UBehaviorTreeComponent& Owne
     }
 
     AICharacter->CurrentNodeIndex = 0;
+
+    // Begin movement
     MoveToNextNode(OwnerComp, AIController, AICharacter);
 
     return EBTNodeResult::InProgress; // Task is ongoing
@@ -45,7 +48,7 @@ void UMS_FollowNodePath::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
     }
 
     // Check if the AI has reached the current target location
-    if (FVector::Dist(AICharacter->GetActorLocation(), AICharacter->CurrentTargetLocation) < 100.0f) // Adjust threshold as needed
+    if (FVector::Dist(AICharacter->GetActorLocation(), AICharacter->CurrentTargetLocation) < 100.0f) 
     {
         MoveToNextNode(OwnerComp, AIController, AICharacter);
     }

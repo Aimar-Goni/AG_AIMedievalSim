@@ -73,6 +73,8 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("No hit detected."));
     }
 
+
+    // Send the data to the pathfinding subsystem
     UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
     if (PathfindingSubsystem)
     {
@@ -84,6 +86,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
     }
 
+    // Send the delegate indicating its ready
     OnNodeMapReady.Broadcast();
 
 
@@ -101,7 +104,7 @@ void AMS_MovementNodeMeshStarter::Tick(float DeltaTime)
 }
 
 
-
+// Does a vertical raycast to check if the position is avaliable
 bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Position)
 {
     UWorld* World = GetWorld();
@@ -153,6 +156,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
 
 
 //TODO, change the colision channels so it collides with the correct enviroment.
+// Does a horizontal raycas to check if two nodes can be connected
 bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start, const FVector& End)
 {
     UWorld* World = GetWorld();
@@ -193,7 +197,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     return false;
 }
 
-
+// Spawns a debug actor where a node is created
 void AMS_MovementNodeMeshStarter::SpawnAgentAtPosition(const FVector& Position)
 {
     UWorld* World = GetWorld();
@@ -277,7 +281,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
                     NodeMap.Add(NeighborGridPos, NeighborNode);
 
                     // Spawn an empty agent at the available node
-                    SpawnAgentAtPosition(NeighborPosition);
+                    //SpawnAgentAtPosition(NeighborPosition);
                 }
 
                 // Check if the neighbor node is traversable from the current node
@@ -299,19 +303,4 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
     }
 }
 
-void AMS_MovementNodeMeshStarter::AddNeighbors(FNode* CurrentNode)
-{
-    static const TArray<FIntPoint> Directions = {
-        FIntPoint(1, 0), FIntPoint(-1, 0), FIntPoint(0, 1), FIntPoint(0, -1)
-    };
-
-    for (const FIntPoint& Dir : Directions)
-    {
-        FIntPoint NeighborPos = CurrentNode->GridPosition + Dir;
-        if (FNode** NeighborNodePtr = NodeMap.Find(NeighborPos))
-        {
-            CurrentNode->Neighbors.Add(*NeighborNodePtr);
-        }
-    }
-}
 

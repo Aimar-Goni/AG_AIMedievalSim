@@ -25,6 +25,7 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 	AMS_BaseWorkPlace* ClosestWorkplace = nullptr;
 	float ClosestDistance = FLT_MAX;
 
+	// Check the pool and compare workplaces until find the closest one
 	for (auto* Workplace : WorkplacePool->Workplaces_)
 	{
 		if (Workplace->ResourceType_ == AICharacter->Quest_.Type && Workplace->ResourceAvaliable_ && Workplace != PreviousTarget)

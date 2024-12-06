@@ -10,7 +10,7 @@
 AMS_BulletingBoardPool::AMS_BulletingBoardPool()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -38,6 +38,7 @@ void AMS_BulletingBoardPool::Tick(float DeltaTime)
 
 }
 
+// Checks the scene for already existing billboards to add to the pool
 void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
 	UWorld* world = GetWorld();
@@ -53,6 +54,8 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 				AMS_BulletingBoard* bulletingBoard = Cast<AMS_BulletingBoard>(actor);
 
 				BulletingBoards_.Add(bulletingBoard);
+
+				// Adds the billboard to the navigation mesh
 				bulletingBoard->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(bulletingBoard->GetActorLocation());
 
 				n_BulletingBoards_++;

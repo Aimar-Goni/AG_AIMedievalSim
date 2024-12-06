@@ -28,6 +28,7 @@ EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& 
 	float ClosestDistance = FLT_MAX;
 
 
+	// Check the pool and compare storages until find the closest one
 	for (AMS_StorageBuilding* Storage : StoragePool->StorageBuldings_)
 	{
 		float CurrentDistance = AICharacter->GetDistanceTo(Storage);
@@ -38,6 +39,7 @@ EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& 
 		}
 	}
 
+	//Modify BB states
 	if (Closest)
 	{
 		AICharacter->CreateMovementPath(Closest);

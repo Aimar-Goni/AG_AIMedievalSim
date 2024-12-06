@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Systems/MS_InventoryComponent.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
     Resources_.Add(ResourceType::BERRIES, 0);
     Resources_.Add(ResourceType::WOOD, 0);
     Resources_.Add(ResourceType::WATER, 0);
@@ -20,8 +15,6 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
 }
 
 
@@ -32,6 +25,7 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
+//Adds resources to storage and updates UI
 void UInventoryComponent::AddToResources(ResourceType Type, int32 NewAmount)
 {
     if (0 != NewAmount)
@@ -44,6 +38,7 @@ void UInventoryComponent::AddToResources(ResourceType Type, int32 NewAmount)
     }
 }
 
+// Takes resources out of storage
 int32 UInventoryComponent::ExtractFromResources(ResourceType Type, int32 ExtactAmount)
 {
     if (ExtactAmount < GetResourceAmount(Type))
@@ -57,7 +52,7 @@ int32 UInventoryComponent::ExtractFromResources(ResourceType Type, int32 ExtactA
     return -1;
 }
 
-
+// Modifies the resource ammount
 void UInventoryComponent::SetResource(ResourceType Type, int32 NewAmount)
 {
 

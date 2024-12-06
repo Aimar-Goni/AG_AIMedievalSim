@@ -11,7 +11,7 @@
 AMS_WorkpPlacePool::AMS_WorkpPlacePool()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -29,6 +29,7 @@ void AMS_WorkpPlacePool::Tick(float DeltaTime)
 
 }
 
+// Checks the scene for already existing workplaces to add to the pool
 void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
 	UWorld* world = GetWorld();
@@ -44,6 +45,7 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
 
 				Workplaces_.Add(workPlace);
+				// Adds the billboard to the navigation mesh
 				workPlace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_workplaces_++;
 			}

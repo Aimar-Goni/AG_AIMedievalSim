@@ -28,6 +28,8 @@ void AMS_BulletingBoard::Tick(float DeltaTime)
 
 }
 
+
+// Sends a quest from the array
 FQuest AMS_BulletingBoard::GetQuest()
 {
 	FQuest NewQuest;
@@ -40,6 +42,7 @@ FQuest AMS_BulletingBoard::GetQuest()
 	return NewQuest;
 }
 
+// Sends a quest to the array
 void AMS_BulletingBoard::AddQuest(FQuest NewQuest)
 {	
 	Quests_.Add(NewQuest);

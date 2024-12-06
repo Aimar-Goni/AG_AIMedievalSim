@@ -23,15 +23,21 @@ EBTNodeResult::Type UMS_ConsumeDirectlyTask::ExecuteTask(UBehaviorTreeComponent&
 			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
 			auto a = Cast<UInventoryComponent>(AICharacter->Inventory_);
 
+			// Consume resources
 			AICharacter->ConsumeResourceDirectly(Workplace->ResourceType_, Workplace->ResourceAmount_);
+
+			// Update hunger and thirst
 			AICharacter->CheckIfHungry();
 			
+
+			//Modify BB states
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Ignoring", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Working", true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
 			
+			// Reset Quest
 			AICharacter->Quest_ = FQuest(ResourceType::ERROR,0);
 			return EBTNodeResult::Succeeded;
 		}

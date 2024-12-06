@@ -22,11 +22,13 @@ EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
 			auto a  = Cast<UInventoryComponent>(AICharacter->Inventory_);
 
+			// Get resources
 			if (a->GetResourceAmount(ResourceTypeNeeded) < ResourceAmountNeeded)
 			{
 				return EBTNodeResult::Failed;
 			}
 	
+			//Modify BB states
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("DoingTask", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingTask", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", true);

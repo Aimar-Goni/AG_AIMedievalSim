@@ -18,7 +18,7 @@ EBTNodeResult::Type UMS_GetItemsTask::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 
 
-
+			// Update BB states
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingWater", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("GettingFood", false);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("Working", true);

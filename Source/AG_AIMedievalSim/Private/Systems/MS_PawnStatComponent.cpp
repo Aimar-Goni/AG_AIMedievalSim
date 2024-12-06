@@ -16,6 +16,7 @@ void UMS_PawnStatComponent::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(StatTimerHandle, this, &UMS_PawnStatComponent::DecreaseStats, 1.0f, true);
 }
 
+// Decreases all the stats by the decrease rate each second 
 void UMS_PawnStatComponent::DecreaseStats()
 {
 	ModifyHunger(-HungerDecreaseRate);
@@ -38,6 +39,7 @@ void UMS_PawnStatComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+//General broadcast to notify stat chnages
 void UMS_PawnStatComponent::BroadcastStatChange(float& Stat, float Amount, FOnStatChanged& Delegate)
 {
 	float OldValue = Stat;
