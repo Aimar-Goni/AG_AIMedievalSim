@@ -3,7 +3,7 @@
 #include "Movement/MS_MovementNodeMeshStarter.h"
 #include "DrawDebugHelpers.h" 
 #include "Kismet/KismetSystemLibrary.h" 
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 
 // Sets default values
 AMS_MovementNodeMeshStarter::AMS_MovementNodeMeshStarter()
@@ -39,7 +39,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     );
 
     // Debug draw
-   // DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
 
 
     if (bHit)
@@ -75,7 +75,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
 
 
     // Send the data to the pathfinding subsystem
-    UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+    UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
     if (PathfindingSubsystem)
     {
         PathfindingSubsystem->SetNodeMap(NodeMap);
@@ -128,7 +128,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
         ECC_GameTraceChannel3, 
         Params
     );
-    //DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
 
     if (bHit && HitResults.Num() > 0)
     {
@@ -184,7 +184,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     if (bHit)
     {
         UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
-       // DrawDebugLine(World, StartPos, EndPos,  FColor::Red , false, 2.0f);
+        DrawDebugLine(World, StartPos, EndPos,  FColor::Red , false, 2.0f);
         return false; 
     }
     else
@@ -281,7 +281,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
                     NodeMap.Add(NeighborGridPos, NeighborNode);
 
                     // Spawn an empty agent at the available node
-                    //SpawnAgentAtPosition(NeighborPosition);
+                    SpawnAgentAtPosition(NeighborPosition);
                 }
 
                 // Check if the neighbor node is traversable from the current node

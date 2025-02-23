@@ -4,7 +4,7 @@
 #include "Systems/MS_PoolManager.h"
 
 //#include "TaskManager.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 void AMS_GameManager::BeginPlay()

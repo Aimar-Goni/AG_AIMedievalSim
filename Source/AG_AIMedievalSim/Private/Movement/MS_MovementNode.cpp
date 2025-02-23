@@ -25,7 +25,7 @@ AMS_MovementNode::AMS_MovementNode()
     }
 
     // Optionally, adjust the scale of the cube
-    MeshComponent->SetWorldScale3D(FVector(0.5f)); // Adjust size as needed
+    MeshComponent->SetWorldScale3D(FVector(0.5f)); 
 
     MeshComponent->ComponentTags.Add(FName("Floor"));
 

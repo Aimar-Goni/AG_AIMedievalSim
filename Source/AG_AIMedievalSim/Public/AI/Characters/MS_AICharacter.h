@@ -11,7 +11,7 @@
 #include "Systems/MS_InventoryComponent.h"
 #include "Systems/MS_PawnStatComponent.h"
 #include "Systems/MS_ResourceSystem.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 #include "MS_AICharacter.generated.h"
 
 

@@ -6,7 +6,7 @@
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 
 
 EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

@@ -5,7 +5,7 @@
 #include "AI/Characters/MS_AICharacterController.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 
 UMS_FollowNodePath::UMS_FollowNodePath()
 {

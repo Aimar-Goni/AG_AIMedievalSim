@@ -3,7 +3,7 @@
 
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Buildings/MS_StorageBuilding.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -44,7 +44,7 @@ void AMS_StorageBuildingPool::Tick(float DeltaTime)
 
 // Checks the scene for already existing storages to add to the pool
 void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
-	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	UWorld* world = GetWorld();
 	if (world) {
 

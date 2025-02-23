@@ -3,7 +3,7 @@
 
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -31,7 +31,7 @@ void AMS_WorkpPlacePool::Tick(float DeltaTime)
 
 // Checks the scene for already existing workplaces to add to the pool
 void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
-	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	UWorld* world = GetWorld();
 	if (world) {
 

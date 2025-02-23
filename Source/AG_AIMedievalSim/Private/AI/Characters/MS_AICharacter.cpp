@@ -284,7 +284,7 @@ void AMS_AICharacter:: NewQuestAdded() {
 
 // Use the pathfinding subsistem to get a path to the objective
 TArray<FNode*> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
-	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	if (PathfindingSubsystem)
 	{
 		FNode* Begin = PathfindingSubsystem->FindClosestNodeToActor(this);

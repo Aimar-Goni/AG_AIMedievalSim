@@ -3,7 +3,7 @@
 
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Placeables/Buildings/MS_BulletingBoard.h"
-#include "Movement/MS_PathfindingSubsyste.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -40,7 +40,7 @@ void AMS_BulletingBoardPool::Tick(float DeltaTime)
 
 // Checks the scene for already existing billboards to add to the pool
 void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
-	UMS_PathfindingSubsyste* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsyste>();
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	UWorld* world = GetWorld();
 	if (world) {
 
