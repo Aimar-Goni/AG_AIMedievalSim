@@ -5,6 +5,7 @@
 #include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 
 // Sets default values
 AMS_StorageBuildingPool::AMS_StorageBuildingPool()

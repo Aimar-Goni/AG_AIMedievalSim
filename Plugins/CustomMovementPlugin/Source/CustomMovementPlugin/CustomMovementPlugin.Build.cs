@@ -25,7 +25,7 @@ public class CustomMovementPlugin : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core","CoreUObject", "Engine", "InputCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

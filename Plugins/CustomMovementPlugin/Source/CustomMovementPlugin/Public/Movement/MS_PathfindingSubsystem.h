@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class AG_AIMEDIEVALSIM_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem
+class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

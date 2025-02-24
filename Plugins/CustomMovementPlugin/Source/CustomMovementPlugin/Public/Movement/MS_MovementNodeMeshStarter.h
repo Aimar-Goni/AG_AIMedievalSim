@@ -15,7 +15,7 @@ FORCEINLINE uint32 GetTypeHash(const FIntPoint& Point)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNodeMapReady);
 
 UCLASS()
-class AG_AIMEDIEVALSIM_API AMS_MovementNodeMeshStarter : public AActor
+class CUSTOMMOVEMENTPLUGIN_API AMS_MovementNodeMeshStarter : public AActor
 {
 	GENERATED_BODY()
 

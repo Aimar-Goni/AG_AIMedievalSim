@@ -13,7 +13,7 @@ struct FNode
 };
 
 UCLASS()
-class AG_AIMEDIEVALSIM_API AMS_MovementNode : public AActor
+class  AMS_MovementNode : public AActor
 {
 	GENERATED_BODY()
 	
