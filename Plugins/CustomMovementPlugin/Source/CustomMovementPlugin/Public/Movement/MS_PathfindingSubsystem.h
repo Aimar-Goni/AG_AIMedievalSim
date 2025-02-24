@@ -15,21 +15,26 @@ class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSu
 {
 	GENERATED_BODY()
 
-public:
+protected: 
+
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
+public:
 
-    TArray<FNode*> FindPath(FNode* StartNode, FNode* GoalNode);
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding")
+    TArray<TSharedPtr<FNode>> FindPath(TSharedPtr<FNode> StartNode, TSharedPtr<FNode> GoalNode);
 
-    FNode* FindClosestNodeToActor(AActor* TargetActor);
+    TSharedPtr<FNode> FindClosestNodeToActor(AActor* TargetActor);
 
-    void SetNodeMap(TMap<FIntPoint, FNode*> newNodeMap);
+    TSharedPtr<FNode> FindClosestNodeToPositon(FVector position);
+
+    void SetNodeMap(TMap<FIntPoint, TSharedPtr<FNode>> newNodeMap);
 
     FIntPoint AddNodeAtPosition(const FVector& Position);
 
     void SetNodeSeparation(int32 newSeparation);
 private:
-    TMap<FIntPoint, FNode*> NodeMap;
+    TMap<FIntPoint, TSharedPtr<FNode>> NodeMap;
 
     int32 NodeSeparation_;
 

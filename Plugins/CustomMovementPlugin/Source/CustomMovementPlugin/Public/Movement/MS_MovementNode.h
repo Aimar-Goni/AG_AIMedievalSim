@@ -9,7 +9,7 @@ struct FNode
 {
 	FVector Position;
 	FIntPoint GridPosition;
-	TArray<FNode*> Neighbors;
+	TArray<TSharedPtr<FNode>> Neighbors;
 };
 
 UCLASS()

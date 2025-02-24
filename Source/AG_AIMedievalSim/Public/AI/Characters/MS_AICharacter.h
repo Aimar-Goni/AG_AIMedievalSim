@@ -64,7 +64,7 @@ public:
 	FVector CurrentTargetLocation;
 
 
-	TArray<FNode*> Path_;
+	TArray<TSharedPtr<FNode>> Path_;
 
 
 	UFUNCTION()
@@ -98,6 +98,6 @@ public:
 
 	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
-	TArray<FNode*> CreateMovementPath(AActor* ClosestWorkplace);
+	TArray<TSharedPtr<FNode>> CreateMovementPath(AActor* ClosestWorkplace);
 
 };
