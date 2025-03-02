@@ -3,7 +3,7 @@
 
 #include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
-#include "EngineUtils.h" 
+#include "EngineUtils.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 
@@ -17,6 +17,28 @@ void UMS_PathfindingSubsystem::Deinitialize()
 {
 
     Super::Deinitialize();
+}
+
+TArray<FVector> UMS_PathfindingSubsystem::FindPath_Implementation(FVector StartPosition, FVector GoalPosition)
+{
+
+    FNode* StartNode = FindClosestNodeToPosition(StartPosition);
+    FNode* GoalNode = FindClosestNodeToPosition(GoalPosition);
+
+    TArray<FNode*> PathNodes = FindPath(StartNode, GoalNode);
+
+    TArray<FVector> PathPositions;
+    for (const FNode* Node : PathNodes)
+    {
+        PathPositions.Add(Node->Position);
+    }
+
+    return PathPositions;
+}
+
+void UMS_PathfindingSubsystem::AddNode_Implementation(FVector Position)
+{
+    AddNodeAtPosition(Position);
 }
 
 void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, FNode*> newNodeMap) {
@@ -187,6 +209,46 @@ FNode* UMS_PathfindingSubsystem::FindClosestNodeToActor(AActor* TargetActor)
 
 
 }
+
+FNode* UMS_PathfindingSubsystem::FindClosestNodeToPosition(FVector position)
+{
+
+    FVector ActorLocation = position;
+
+    float MinDistanceSquared = FLT_MAX;
+    FNode* ClosestNode = nullptr;
+
+    // Iterates all the nodes until it finds the closest one
+    for (const TPair<FIntPoint, FNode*>& NodePair : NodeMap)
+    {
+        FNode* Node = NodePair.Value;
+        float DistanceSquared = FVector::DistSquared(Node->Position, ActorLocation);
+
+        if (DistanceSquared < MinDistanceSquared)
+        {
+
+            MinDistanceSquared = DistanceSquared;
+            ClosestNode = Node;
+        }
+
+    }
+
+    if (ClosestNode)
+    {
+        return ClosestNode;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No nodes found in NodeMap."));
+
+        return nullptr;
+
+    }
+
+
+}
+
+
 
 // Setter for the node separation
 void UMS_PathfindingSubsystem::SetNodeSeparation(int32 newSeparation) {
