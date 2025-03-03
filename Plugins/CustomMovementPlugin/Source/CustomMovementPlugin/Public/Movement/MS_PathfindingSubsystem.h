@@ -5,14 +5,13 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MS_MovementNodeMeshStarter.h"
-#include "MS_PathfindingInterface.h"
 #include "MS_PathfindingSubsystem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem, public IMS_PathfindingInterface
+class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -31,8 +30,6 @@ public:
 
     void SetNodeSeparation(int32 newSeparation);
 
-    virtual TArray<FVector> FindPath_Implementation(FVector StartPosition, FVector GoalPosition) override;
-    virtual void AddNode_Implementation(FVector Position) override;
 
 private:
     TMap<FIntPoint, FNode*> NodeMap;

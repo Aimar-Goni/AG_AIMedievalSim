@@ -19,27 +19,7 @@ void UMS_PathfindingSubsystem::Deinitialize()
     Super::Deinitialize();
 }
 
-TArray<FVector> UMS_PathfindingSubsystem::FindPath_Implementation(FVector StartPosition, FVector GoalPosition)
-{
 
-    FNode* StartNode = FindClosestNodeToPosition(StartPosition);
-    FNode* GoalNode = FindClosestNodeToPosition(GoalPosition);
-
-    TArray<FNode*> PathNodes = FindPath(StartNode, GoalNode);
-
-    TArray<FVector> PathPositions;
-    for (const FNode* Node : PathNodes)
-    {
-        PathPositions.Add(Node->Position);
-    }
-
-    return PathPositions;
-}
-
-void UMS_PathfindingSubsystem::AddNode_Implementation(FVector Position)
-{
-    AddNodeAtPosition(Position);
-}
 
 void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, FNode*> newNodeMap) {
     NodeMap = newNodeMap;
