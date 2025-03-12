@@ -2,6 +2,7 @@
 
 
 #include "Movement/MS_MovementNode.h"
+#include "Movement/MS_PathfindingSubsystem.h"
 
 // Sets default values
 AMS_MovementNode::AMS_MovementNode()
@@ -31,6 +32,17 @@ AMS_MovementNode::AMS_MovementNode()
 
     // Set the collision preset to OverlapAllDynamic
     MeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+
+
+
+    //CollisionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionTrigger"));
+    //CollisionTrigger->SetupAttachment(RootComponent);
+    //CollisionTrigger->SetBoxExtent(FVector(50.0f)); // Adjust size based on node spacing
+    //CollisionTrigger->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+
+    //// Bind event functions
+    //CollisionTrigger->OnComponentBeginOverlap.AddDynamic(this, &AMS_MovementNode::OnObstacleEnter);
+    //CollisionTrigger->OnComponentEndOverlap.AddDynamic(this, &AMS_MovementNode::OnObstacleExit);
 }
 // Called when the game starts or when spawned
 void AMS_MovementNode::BeginPlay()
@@ -46,3 +58,38 @@ void AMS_MovementNode::Tick(float DeltaTime)
 
 }
 
+void AMS_MovementNode::OnObstacleEnter(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+    bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && OtherActor->ActorHasTag(TEXT("Obstacle")))  // Ensure only obstacles trigger
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Obstacle detected at node %s"), *GetName());
+        DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Red, false, 10.0f);
+
+        // Notify pathfinding system to remove this node
+        UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+        if (PathfindingSubsystem)
+        {
+            PathfindingSubsystem->BlockNode(GetActorLocation());
+        }
+    }
+}
+
+// Called when an obstacle exits
+void AMS_MovementNode::OnObstacleExit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    if (OtherActor && OtherActor->ActorHasTag(TEXT("Obstacle")))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Obstacle removed at node %s"), *GetName());
+        DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Green, false, 10.0f);
+
+        // Notify pathfinding system to restore this node
+        UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+        if (PathfindingSubsystem)
+        {
+            PathfindingSubsystem->UnblockNode(GetActorLocation());
+        }
+    }
+}

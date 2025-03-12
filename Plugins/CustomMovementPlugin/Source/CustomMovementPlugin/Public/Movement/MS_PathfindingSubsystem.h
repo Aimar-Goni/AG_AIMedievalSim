@@ -29,8 +29,14 @@ public:
     FIntPoint AddNodeAtPosition(const FVector& Position);
 
     void SetNodeSeparation(int32 newSeparation);
+    UFUNCTION()
+    bool PerformRaycastToPosition(const FVector& Start, const FVector& End);
 
+    UFUNCTION()
+    void BlockNode(FVector Position);
 
+    UFUNCTION()
+    void UnblockNode(FVector Position);
 private:
     TMap<FIntPoint, FNode*> NodeMap;
 

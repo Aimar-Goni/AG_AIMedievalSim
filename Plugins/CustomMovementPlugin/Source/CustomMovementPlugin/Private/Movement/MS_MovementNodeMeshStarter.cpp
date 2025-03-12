@@ -89,7 +89,9 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     // Send the delegate indicating its ready
     OnNodeMapReady.Broadcast();
 
-
+    //GetWorld()->GetTimerManager().SetTimer(
+    //    PathCheckTimer, this, &AMS_MovementNodeMeshStarter::UpdateBlockedPaths, 2.0f, true
+    //);
 
 
 
@@ -298,6 +300,31 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
                     NodeQueue.Enqueue(NeighborNode);
                     Visited.Add(NeighborGridPos);
                 }
+            }
+        }
+    }
+}
+
+
+void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
+{
+    for (auto& Pair : NodeMap)
+    {
+        FNode* Node = Pair.Value;
+        for (FNode* Neighbor : Node->Neighbors)
+        {
+            if (!PerformRaycastToPosition(Node->Position, Neighbor->Position))
+            {
+                Node->Neighbors.Remove(Neighbor);
+                Neighbor->Neighbors.Remove(Node);
+
+                // Remove debug line
+                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+            }
+            else
+            {
+                // Draw valid paths in BLUE
+                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
             }
         }
     }

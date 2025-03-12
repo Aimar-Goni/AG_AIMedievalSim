@@ -272,3 +272,94 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
 
     return GridPosition;
 }
+
+
+void UMS_PathfindingSubsystem::BlockNode(FVector Position)
+{
+    FNode* Node = FindClosestNodeToPosition(Position);
+    if (Node)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Blocking node at %s"), *Position.ToString());
+
+        // Remove all connections to this node
+        for (FNode* Neighbor : Node->Neighbors)
+        {
+            Neighbor->Neighbors.Remove(Node);
+
+            // Remove debug line
+            DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+        }
+        Node->Neighbors.Empty();
+
+        // Change debug color to RED for blocked node
+        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
+    }
+}
+
+void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
+{
+    FNode* Node = FindClosestNodeToPosition(Position);
+    if (Node)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Unblocking node at %s"), *Position.ToString());
+
+        // Reconnect to available neighbors
+        for (auto& Pair : NodeMap)
+        {
+            FNode* PotentialNeighbor = Pair.Value;
+            if (FVector::Dist(Node->Position, PotentialNeighbor->Position) <= NodeSeparation_ * 1.5f)
+            {
+                if (PerformRaycastToPosition(Node->Position, PotentialNeighbor->Position)) // Check if path is clear
+                {
+                    Node->Neighbors.Add(PotentialNeighbor);
+                    PotentialNeighbor->Neighbors.Add(Node);
+
+                    // Draw new connection in BLUE
+                    DrawDebugLine(GetWorld(), Node->Position, PotentialNeighbor->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                }
+            }
+        }
+
+        // Change debug color to GREEN for unblocked node
+        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
+    }
+}
+
+bool UMS_PathfindingSubsystem::PerformRaycastToPosition(const FVector& Start, const FVector& End)
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return false;
+    }
+
+    FVector StartPos = Start + FVector(0, 0, 100.0f);
+    FVector EndPos = End + FVector(0, 0, 100.0f);
+
+    FHitResult HitResult;
+    FCollisionQueryParams Params;
+
+
+    bool bHit = World->LineTraceSingleByChannel(
+        HitResult,
+        StartPos,
+        EndPos,
+        ECC_EngineTraceChannel3,
+        Params
+    );
+
+    if (bHit)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
+        DrawDebugLine(World, StartPos, EndPos, FColor::Red, false, 2.0f);
+        return false;
+    }
+    else
+    {
+        //  DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
+        return true;
+    }
+
+
+    return false;
+}

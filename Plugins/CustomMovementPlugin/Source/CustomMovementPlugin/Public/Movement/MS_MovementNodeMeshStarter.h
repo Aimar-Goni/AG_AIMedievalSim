@@ -40,6 +40,7 @@ public:
 
 	void SpawnAgentAtPosition(const FVector& Position);
 
+	void UpdateBlockedPaths();
 
 protected:
 	// Called when the game starts or when spawned
