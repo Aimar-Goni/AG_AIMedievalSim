@@ -23,7 +23,7 @@ class CUSTOMMOVEMENTPLUGIN_API AMS_MovementNodeMeshStarter : public AActor
 	TMap<FIntPoint, FNode*> NodeMap;
 
 	int32 NodeSeparationX_ = 250, NodeSeparationY_ = 250;
-
+	FTimerHandle PathCheckTimer;
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnNodeMapReady OnNodeMapReady;

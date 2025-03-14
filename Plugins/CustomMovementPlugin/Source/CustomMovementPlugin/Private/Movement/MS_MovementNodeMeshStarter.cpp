@@ -89,9 +89,9 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     // Send the delegate indicating its ready
     OnNodeMapReady.Broadcast();
 
-    //GetWorld()->GetTimerManager().SetTimer(
-    //    PathCheckTimer, this, &AMS_MovementNodeMeshStarter::UpdateBlockedPaths, 2.0f, true
-    //);
+    GetWorld()->GetTimerManager().SetTimer(
+        PathCheckTimer, this, &AMS_MovementNodeMeshStarter::UpdateBlockedPaths, 2.0f, true
+    );
 
 
 
@@ -127,7 +127,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
         HitResults,
         Start,
         End,
-        ECC_GameTraceChannel3, 
+        ECC_EngineTraceChannel3,
         Params
     );
     DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
@@ -315,16 +315,16 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
         {
             if (!PerformRaycastToPosition(Node->Position, Neighbor->Position))
             {
-                Node->Neighbors.Remove(Neighbor);
-                Neighbor->Neighbors.Remove(Node);
+               // Node->Neighbors.Remove(Neighbor);
+               // Neighbor->Neighbors.Remove(Node);
 
                 // Remove debug line
-                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 1.9f, 0, 3.0f);
             }
             else
             {
                 // Draw valid paths in BLUE
-                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Blue, false, 1.9f, 0, 3.0f);
             }
         }
     }
