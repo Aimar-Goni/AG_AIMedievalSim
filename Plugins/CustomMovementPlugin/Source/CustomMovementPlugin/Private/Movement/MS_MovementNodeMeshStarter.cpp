@@ -30,11 +30,11 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(this); 
 
-    bool bHit = World->LineTraceSingleByChannel(
+    bool bHit = World->LineTraceSingleByProfile(
         HitResult,        
         Start,           
         End,              
-        ECC_GameTraceChannel3,    
+        TEXT("TestFloor"),
         Params            
     );
 
@@ -117,41 +117,33 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
 
     FVector Start = Position + FVector(0, 0, NodeSeparationX_);
     FVector End = Position - FVector(0, 0, 30.0f);
-
-    TArray<FHitResult> HitResults;
+    FHitResult HitResult;
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(this); 
 
 
-    bool bHit = World->LineTraceMultiByChannel(
-        HitResults,
+    bool bHit = World->LineTraceSingleByProfile(
+        HitResult,
         Start,
         End,
-        ECC_EngineTraceChannel3,
+        TEXT("TestFloor"),
         Params
     );
-    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
 
-    if (bHit && HitResults.Num() > 0)
+    if (bHit)
     {
-        // Iterate through the hits to find the first valid blocking hit
-        for (const FHitResult& Hit : HitResults)
-        {
-
-                // Check if the hit component has the "Floor" tag
-                if (Hit.Component.IsValid() && Hit.Component->ComponentHasTag(FName("Floor")))
-                {
-                    return true; // First collision is the floor
-                }
-                else
-                {
-                    return false;
-                }
-            
-        }
+        UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
+        DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+        return true;
+    }
+    else
+    {
+        DrawDebugLine(World, Start, End, FColor::Green, false, 2.0f);
+        return false;
     }
 
 
+    return false;
 
     return false; 
 }
@@ -175,11 +167,11 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     Params.AddIgnoredActor(this);
 
 
-    bool bHit = World->LineTraceSingleByChannel(
+    bool bHit = World->LineTraceSingleByProfile(
         HitResult,
         StartPos,
         EndPos,
-        ECC_EngineTraceChannel3,
+        TEXT("TestFloor"),
         Params
     );
 
@@ -191,7 +183,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     }
     else
     {
-      //  DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
+        DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
         return true;
     }
 

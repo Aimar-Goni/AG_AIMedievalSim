@@ -7,6 +7,9 @@
 #include "Movement/MS_MovementNode.h"
 #include "MS_MovementNodeMeshStarter.generated.h"
 
+
+
+
 FORCEINLINE uint32 GetTypeHash(const FIntPoint& Point)
 {
 	return HashCombine(GetTypeHash(Point.X), GetTypeHash(Point.Y));
