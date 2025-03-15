@@ -113,10 +113,14 @@ TArray<FNode*> UMS_PathfindingSubsystem::FindPath(FNode* StartNode, FNode* GoalN
         ClosedSet.Add(CurrentNode);
 
         // Explore neighbors
-        for (FNode* Neighbor : CurrentNode->Neighbors)
+        for (const TPair<FNode*, bool>& NeighborPair : CurrentNode->Neighbors)
         {
-            if (ClosedSet.Contains(Neighbor))
+            FNode* Neighbor = NeighborPair.Key; // Get the actual node pointer
+            bool bIsAccessible = NeighborPair.Value; // Check if path is open
+
+            if (!bIsAccessible || ClosedSet.Contains(Neighbor))
                 continue;
+
 
             float TentativeGScore = GScore[CurrentNode] + FVector::Dist(CurrentNode->Position, Neighbor->Position);
 
@@ -279,44 +283,50 @@ void UMS_PathfindingSubsystem::BlockNode(FVector Position)
     FNode* Node = FindClosestNodeToPosition(Position);
     if (Node)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Blocking node at %s"), *Position.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("Blocking paths for node at %s"), *Position.ToString());
 
-        // Remove all connections to this node
-        for (FNode* Neighbor : Node->Neighbors)
+        // Mark paths to neighbors as blocked
+        for (auto& NeighborPair : Node->Neighbors)
         {
-            Neighbor->Neighbors.Remove(Node);
+            NeighborPair.Value = false; // Set path to blocked
 
-            // Remove debug line
-            DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+            // Also mark the reverse connection as blocked
+            if (NeighborPair.Key->Neighbors.Contains(Node))
+            {
+                NeighborPair.Key->Neighbors[Node] = false;
+            }
+
+            // Draw debug line in red to indicate blocked path
+            DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
         }
-        Node->Neighbors.Empty();
 
         // Change debug color to RED for blocked node
         DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
     }
 }
 
+
 void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
 {
     FNode* Node = FindClosestNodeToPosition(Position);
     if (Node)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Unblocking node at %s"), *Position.ToString());
+        UE_LOG(LogTemp, Warning, TEXT("Unblocking paths for node at %s"), *Position.ToString());
 
-        // Reconnect to available neighbors
-        for (auto& Pair : NodeMap)
+        for (auto& NeighborPair : Node->Neighbors)
         {
-            FNode* PotentialNeighbor = Pair.Value;
-            if (FVector::Dist(Node->Position, PotentialNeighbor->Position) <= NodeSeparation_ * 1.5f)
+            if (PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position)) // Check if path is clear
             {
-                if (PerformRaycastToPosition(Node->Position, PotentialNeighbor->Position)) // Check if path is clear
-                {
-                    Node->Neighbors.Add(PotentialNeighbor);
-                    PotentialNeighbor->Neighbors.Add(Node);
+                NeighborPair.Value = true; // Mark path as accessible
 
-                    // Draw new connection in BLUE
-                    DrawDebugLine(GetWorld(), Node->Position, PotentialNeighbor->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                // Also update the reverse connection
+                if (NeighborPair.Key->Neighbors.Contains(Node))
+                {
+                    NeighborPair.Key->Neighbors[Node] = true;
                 }
+
+                // Draw debug line in blue for open path
+                DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
             }
         }
 
@@ -324,6 +334,7 @@ void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
         DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
     }
 }
+
 
 bool UMS_PathfindingSubsystem::PerformRaycastToPosition(const FVector& Start, const FVector& End)
 {

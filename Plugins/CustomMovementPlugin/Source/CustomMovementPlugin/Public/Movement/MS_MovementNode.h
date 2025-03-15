@@ -10,7 +10,7 @@ struct FNode
 {
 	FVector Position;
 	FIntPoint GridPosition;
-	TArray<FNode*> Neighbors;
+	TMap<FNode*, bool> Neighbors;
 };
 
 UCLASS()

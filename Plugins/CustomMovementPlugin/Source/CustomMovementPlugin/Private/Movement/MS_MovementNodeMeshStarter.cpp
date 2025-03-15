@@ -144,8 +144,6 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
 
 
     return false;
-
-    return false; 
 }
 
 
@@ -171,7 +169,7 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
         HitResult,
         StartPos,
         EndPos,
-        TEXT("TestFloor"),
+        TEXT("CheckFreeWay"),
         Params
     );
 
@@ -303,23 +301,21 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
     for (auto& Pair : NodeMap)
     {
         FNode* Node = Pair.Value;
-        for (FNode* Neighbor : Node->Neighbors)
-        {
-            if (!PerformRaycastToPosition(Node->Position, Neighbor->Position))
-            {
-               // Node->Neighbors.Remove(Neighbor);
-               // Neighbor->Neighbors.Remove(Node);
 
-                // Remove debug line
-                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Red, false, 1.9f, 0, 3.0f);
-            }
-            else
+        for (auto& NeighborPair : Node->Neighbors)
+        {
+            bool bIsPathClear = PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position);
+            NeighborPair.Value = bIsPathClear; // Update path status
+
+            // Update the reverse connection as well
+            if (NeighborPair.Key->Neighbors.Contains(Node))
             {
-                // Draw valid paths in BLUE
-                DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Blue, false, 1.9f, 0, 3.0f);
+                NeighborPair.Key->Neighbors[Node] = bIsPathClear;
             }
+
+            // Debug visualization
+            DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position,
+                bIsPathClear ? FColor::Blue : FColor::Red, false, 10.0f, 0, 3.0f);
         }
     }
 }
-
-
