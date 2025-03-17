@@ -100,4 +100,5 @@ public:
 
 	TArray<FNode*> CreateMovementPath(AActor* ClosestWorkplace);
 
+	void OnPathUpdated(FIntPoint ChangedNodePos);
 };

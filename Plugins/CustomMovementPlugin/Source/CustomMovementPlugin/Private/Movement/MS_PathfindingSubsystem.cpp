@@ -295,13 +295,15 @@ void UMS_PathfindingSubsystem::BlockNode(FVector Position)
             {
                 NeighborPair.Key->Neighbors[Node] = false;
             }
-
+            
             // Draw debug line in red to indicate blocked path
             DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
         }
 
         // Change debug color to RED for blocked node
         DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
+
+        OnPathUpdated.Broadcast(Node->GridPosition);
     }
 }
 
@@ -332,6 +334,8 @@ void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
 
         // Change debug color to GREEN for unblocked node
         DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
+
+        OnPathUpdated.Broadcast(Node->GridPosition);
     }
 }
 

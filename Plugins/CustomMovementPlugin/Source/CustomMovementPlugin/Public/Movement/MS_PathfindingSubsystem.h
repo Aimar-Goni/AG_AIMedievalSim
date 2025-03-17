@@ -7,9 +7,9 @@
 #include "MS_MovementNodeMeshStarter.h"
 #include "MS_PathfindingSubsystem.generated.h"
 
-/**
- * 
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPathUpdated, FIntPoint, ChangedNodePos);
+
 UCLASS()
 class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem
 {
@@ -37,6 +37,9 @@ public:
 
     UFUNCTION()
     void UnblockNode(FVector Position);
+
+    FOnPathUpdated OnPathUpdated; 
+
 private:
     TMap<FIntPoint, FNode*> NodeMap;
 

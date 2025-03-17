@@ -46,6 +46,9 @@ AMS_AICharacter::AMS_AICharacter()
 
 	// Add State Change Delegate
 	PawnStats_->OnStateChanged.AddDynamic(this, &AMS_AICharacter::CheckIfHungry);
+
+
+
 }
 
 // Called when the game starts or when spawned
@@ -91,7 +94,11 @@ void AMS_AICharacter::BeginPlay()
 		}
 	}
 
-
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+	if (PathfindingSubsystem)
+	{
+		PathfindingSubsystem->OnPathUpdated.AddDynamic(this, &AMS_AICharacter::OnPathUpdated);
+	}
 }
 
 // Called every frame
@@ -314,4 +321,34 @@ TArray<FNode*> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 		UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
 	}
 	return TArray<FNode*>();
+}
+
+
+void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
+{
+	if (Path_.Num() == 0) return;
+
+	for (FNode* Node : Path_)
+	{
+		if (ChangedNodePos == Node->GridPosition) // If the changed node is on the path
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AI Path affected! Recalculating..."));
+
+			FVector AIPosition = this->GetActorLocation();
+			FVector TargetPosition = Path_.Top()->Position;
+
+			UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+			if (PathfindingSubsystem)
+			{
+				TArray<FNode*> NewPath = PathfindingSubsystem->FindPath(
+					PathfindingSubsystem->FindClosestNodeToPosition(AIPosition),
+					PathfindingSubsystem->FindClosestNodeToPosition(TargetPosition)
+				);
+
+				Path_ = NewPath; 
+			}
+
+			return; // Stop checking after first match
+		}
+	}
 }
