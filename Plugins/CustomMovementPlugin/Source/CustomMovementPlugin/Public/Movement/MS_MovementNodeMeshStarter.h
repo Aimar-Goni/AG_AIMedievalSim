@@ -8,6 +8,7 @@
 #include "MS_MovementNodeMeshStarter.generated.h"
 
 
+static bool bShowDebugLinesStarter = false;  // Set to false to disable debug lines
 
 
 FORCEINLINE uint32 GetTypeHash(const FIntPoint& Point)

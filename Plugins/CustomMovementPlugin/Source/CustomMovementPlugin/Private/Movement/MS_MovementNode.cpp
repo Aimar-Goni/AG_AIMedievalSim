@@ -65,8 +65,10 @@ void AMS_MovementNode::OnObstacleEnter(UPrimitiveComponent* OverlappedComp, AAct
     if (OtherActor && OtherActor->ActorHasTag(TEXT("Obstacle")))  // Ensure only obstacles trigger
     {
         UE_LOG(LogTemp, Warning, TEXT("Obstacle detected at node %s"), *GetName());
-        DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Red, false, 10.0f);
+        if (bShowDebugLines) {
 
+            DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Red, false, 10.0f);
+        }
         // Notify pathfinding system to remove this node
         UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
         if (PathfindingSubsystem)
@@ -83,7 +85,9 @@ void AMS_MovementNode::OnObstacleExit(UPrimitiveComponent* OverlappedComp, AActo
     if (OtherActor && OtherActor->ActorHasTag(TEXT("Obstacle")))
     {
         UE_LOG(LogTemp, Warning, TEXT("Obstacle removed at node %s"), *GetName());
-        DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Green, false, 10.0f);
+        if (bShowDebugLines) {
+            DrawDebugSphere(GetWorld(), GetActorLocation(), 30.0f, 12, FColor::Green, false, 10.0f);
+        }
 
         // Notify pathfinding system to restore this node
         UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();

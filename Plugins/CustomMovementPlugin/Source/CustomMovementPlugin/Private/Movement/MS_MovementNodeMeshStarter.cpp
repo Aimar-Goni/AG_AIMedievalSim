@@ -38,8 +38,10 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
         Params            
     );
 
-    // Debug draw
-    DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+    if (bShowDebugLinesStarter) {
+        // Debug draw
+        DrawDebugLine(World, Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f);
+    }
 
 
     if (bHit)
@@ -133,12 +135,16 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastAtPosition(const FVector& Positi
     if (bHit)
     {
         UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
-        DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+        if (bShowDebugLinesStarter) {
+            DrawDebugLine(World, Start, End, FColor::Red, false, 2.0f);
+        }
         return true;
     }
     else
     {
-        DrawDebugLine(World, Start, End, FColor::Green, false, 2.0f);
+        if (bShowDebugLinesStarter) {
+            DrawDebugLine(World, Start, End, FColor::Green, false, 2.0f);
+        }
         return false;
     }
 
@@ -176,12 +182,16 @@ bool AMS_MovementNodeMeshStarter::PerformRaycastToPosition(const FVector& Start,
     if (bHit)
     {
         UE_LOG(LogTemp, Log, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
-        DrawDebugLine(World, StartPos, EndPos,  FColor::Red , false, 2.0f);
+        if (bShowDebugLinesStarter) {
+            DrawDebugLine(World, StartPos, EndPos, FColor::Red, false, 2.0f);
+        }
         return false; 
     }
     else
     {
-        DrawDebugLine(World, StartPos, EndPos,  FColor::Green, false, 2.0f);
+        if (bShowDebugLinesStarter) {
+            DrawDebugLine(World, StartPos, EndPos, FColor::Green, false, 2.0f);
+        }
         return true;
     }
 
@@ -203,8 +213,35 @@ void AMS_MovementNodeMeshStarter::SpawnAgentAtPosition(const FVector& Position)
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     AMS_MovementNode* NewAgent = World->SpawnActor<AMS_MovementNode>(AMS_MovementNode::StaticClass(), Position, FRotator::ZeroRotator, SpawnParams);
+    if (NewAgent)
+    {
+        // Disable tick
+        NewAgent->SetActorTickEnabled(false);
 
-    
+        // Disable collision
+        NewAgent->SetActorEnableCollision(false);
+
+        // Hide from rendering (optional)
+       // NewAgent->SetActorHiddenInGame(true);
+
+        // Disable movement (if using movement components)
+        if (UActorComponent* MovementComp = NewAgent->FindComponentByClass<UActorComponent>())
+        {
+            MovementComp->Deactivate();
+        }
+
+        // Disable all components
+        TArray<UActorComponent*> Components;
+        NewAgent->GetComponents(Components);
+        for (UActorComponent* Comp : Components)
+        {
+            if (Comp)
+            {
+                Comp->Deactivate(); // Disables logic updates
+                Comp->SetComponentTickEnabled(false); // Stops ticking
+            }
+        }
+    }
 }
 
 
@@ -273,7 +310,9 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
                     NodeMap.Add(NeighborGridPos, NeighborNode);
 
                     // Spawn an empty agent at the available node
-                    SpawnAgentAtPosition(NeighborPosition);
+                    //if (bShowDebugLinesStarter) {
+                        //SpawnAgentAtPosition(NeighborPosition);
+                    //}
                 }
 
                 // Check if the neighbor node is traversable from the current node
@@ -313,9 +352,11 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
                 NeighborPair.Key->Neighbors[Node] = bIsPathClear;
             }
 
-            // Debug visualization
-            DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position,
-                bIsPathClear ? FColor::Blue : FColor::Red, false, 10.0f, 0, 3.0f);
+            if (bShowDebugLinesStarter) {
+                // Debug visualization
+                DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position,
+                    bIsPathClear ? FColor::Blue : FColor::Red, false, 10.0f, 0, 3.0f);
+            }
         }
     }
 }

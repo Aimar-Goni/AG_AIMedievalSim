@@ -48,11 +48,10 @@ TArray<FNode*> UMS_PathfindingSubsystem::FindPath(FNode* StartNode, FNode* GoalN
         return TArray<FNode*>();
     }
 
-
-  //  DrawDebugSphere(World, StartNode->Position, 50.0f, 12, FColor::Green, false, 10.0f);
-   // DrawDebugSphere(World, GoalNode->Position, 50.0f, 12, FColor::Red, false, 10.0f);
-
-
+    if (bShowDebugLinesPathfinding) {
+        DrawDebugSphere(World, StartNode->Position, 50.0f, 12, FColor::Green, false, 10.0f);
+        DrawDebugSphere(World, GoalNode->Position, 50.0f, 12, FColor::Red, false, 10.0f);
+    }
     TSet<FNode*> OpenSet;       // Nodes to be evaluated
     TSet<FNode*> ClosedSet;     // Nodes already evaluated
 
@@ -88,19 +87,6 @@ TArray<FNode*> UMS_PathfindingSubsystem::FindPath(FNode* StartNode, FNode* GoalN
             while (CameFrom.Contains(CurrentNode))
             {
                 Path.Add(CurrentNode);            
-               /* if (CameFrom[CurrentNode])
-                {
-                    DrawDebugLine(
-                        World,
-                        CurrentNode->Position,
-                        CameFrom[CurrentNode]->Position,
-                        FColor::Blue,
-                        false,
-                        10.0f,
-                        0,
-                        5.0f
-                    );
-                }*/
                 CurrentNode = CameFrom[CurrentNode];
             }
             Path.Add(StartNode);
@@ -135,7 +121,6 @@ TArray<FNode*> UMS_PathfindingSubsystem::FindPath(FNode* StartNode, FNode* GoalN
                 if (!PriorityQueue.Contains(Neighbor))
                 {
                     PriorityQueue.Add(Neighbor);
-
                     //DrawDebugSphere(World, Neighbor->Position, 30.0f, 12, FColor::Cyan, false, 2.0f);
                 }
             }
@@ -253,7 +238,10 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
     if (!NodeMap.Contains(GridPosition))
     {
         NodeMap.Add(GridPosition, NewNode);
-        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Purple, false, 10.0f);
+        if (bShowDebugLinesPathfinding) {
+
+            DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Purple, false, 10.0f);
+        }
     }
     else
     {
@@ -269,8 +257,10 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
 
             NewNode->Neighbors.Add(ExistingNode);
             ExistingNode->Neighbors.Add(NewNode);
+            if (bShowDebugLinesPathfinding) {
 
-            DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);
+                DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);
+            }
         }
     }
 
@@ -296,12 +286,16 @@ void UMS_PathfindingSubsystem::BlockNode(FVector Position)
                 NeighborPair.Key->Neighbors[Node] = false;
             }
             
-            // Draw debug line in red to indicate blocked path
-            DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+            if (bShowDebugLinesPathfinding) {
+                // Draw debug line in red to indicate blocked path
+                DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+            }
         }
 
-        // Change debug color to RED for blocked node
-        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
+        if (bShowDebugLinesPathfinding) {
+            // Change debug color to RED for blocked node
+            DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
+        }
 
         OnPathUpdated.Broadcast(Node->GridPosition);
     }
@@ -327,13 +321,17 @@ void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
                     NeighborPair.Key->Neighbors[Node] = true;
                 }
 
-                // Draw debug line in blue for open path
-                DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                if (bShowDebugLinesPathfinding) {
+                    // Draw debug line in blue for open path
+                    DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                }
             }
         }
 
-        // Change debug color to GREEN for unblocked node
-        DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
+        if (bShowDebugLinesPathfinding) {
+            // Change debug color to GREEN for unblocked node
+            DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
+        }
 
         OnPathUpdated.Broadcast(Node->GridPosition);
     }

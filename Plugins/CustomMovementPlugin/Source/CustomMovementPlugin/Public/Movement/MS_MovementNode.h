@@ -12,6 +12,7 @@ struct FNode
 	FIntPoint GridPosition;
 	TMap<FNode*, bool> Neighbors;
 };
+static bool bShowDebugLines = false;  // Set to false to disable debug lines
 
 UCLASS()
 class  AMS_MovementNode : public AActor
