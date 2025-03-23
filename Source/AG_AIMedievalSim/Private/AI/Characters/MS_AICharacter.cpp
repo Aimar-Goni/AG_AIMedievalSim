@@ -290,12 +290,12 @@ void AMS_AICharacter:: NewQuestAdded() {
 }
 
 // Use the pathfinding subsistem to get a path to the objective
-TArray<FNode*> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
+TArray<TSharedPtr<FNode>> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	if (PathfindingSubsystem)
 	{
-		FNode* Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
-		FNode* End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
+		TSharedPtr<FNode> Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
+		TSharedPtr<FNode> End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
 		//DrawDebugSphere(GetWorld(), Begin->Position, 100.0f, 16, FColor::Red, false, 5.0f);
 		//if(End)
 		//DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
@@ -320,7 +320,7 @@ TArray<FNode*> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
 	}
-	return TArray<FNode*>();
+	return TArray<TSharedPtr<FNode>>();
 }
 
 
@@ -328,7 +328,7 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
 {
 	if (Path_.Num() == 0) return;
 
-	for (FNode* Node : Path_)
+	for (TSharedPtr<FNode> Node : Path_)
 	{
 		if (ChangedNodePos == Node->GridPosition) // If the changed node is on the path
 		{
@@ -340,7 +340,7 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
 			UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 			if (PathfindingSubsystem)
 			{
-				TArray<FNode*> NewPath = PathfindingSubsystem->FindPath(
+				TArray<TSharedPtr<FNode>> NewPath = PathfindingSubsystem->FindPath(
 					PathfindingSubsystem->FindClosestNodeToPosition(AIPosition),
 					PathfindingSubsystem->FindClosestNodeToPosition(TargetPosition)
 				);

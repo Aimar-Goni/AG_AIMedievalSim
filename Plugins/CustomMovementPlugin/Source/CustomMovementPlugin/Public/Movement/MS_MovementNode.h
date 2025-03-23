@@ -6,11 +6,11 @@
 #include "Components/BoxComponent.h"
 #include "MS_MovementNode.generated.h"
 
-struct FNode
+struct FNode : public TSharedFromThis<FNode>
 {
 	FVector Position;
 	FIntPoint GridPosition;
-	TMap<FNode*, bool> Neighbors;
+	TMap<TSharedPtr<FNode>, bool> Neighbors;
 };
 static bool bShowDebugLines = false;  // Set to false to disable debug lines
 

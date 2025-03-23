@@ -251,7 +251,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
     FIntPoint StartGridPos = FIntPoint(0, 0); 
 
     // Create the starting node
-    FNode* StartNode = new FNode();
+    TSharedPtr<FNode> StartNode = MakeShared<FNode>();
     StartNode->Position = FirstPos;
     StartNode->GridPosition = StartGridPos;
 
@@ -259,7 +259,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
     NodeMap.Add(StartGridPos, StartNode);
 
     // Keep track of nodes to process
-    TQueue<FNode*> NodeQueue;
+    TQueue<TSharedPtr<FNode>> NodeQueue;
     NodeQueue.Enqueue(StartNode);
 
     // Set to keep track of visited grid positions
@@ -275,7 +275,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
 
     while (!NodeQueue.IsEmpty())
     {
-        FNode* CurrentNode;
+        TSharedPtr<FNode> CurrentNode;
         NodeQueue.Dequeue(CurrentNode);
 
         // For each direction
@@ -292,17 +292,17 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
 
             if (bIsAvailable)
             {
-                FNode* NeighborNode = nullptr;
+                TSharedPtr<FNode> NeighborNode = nullptr;
 
                 // Check if the neighbor node already exists
-                if (FNode** ExistingNode = NodeMap.Find(NeighborGridPos))
+                if (TSharedPtr<FNode>* ExistingNode = NodeMap.Find(NeighborGridPos))
                 {
                     NeighborNode = *ExistingNode;
                 }
                 else
                 {
                     // Create a new node
-                    NeighborNode = new FNode();
+                    NeighborNode = MakeShared<FNode>();
                     NeighborNode->Position = NeighborPosition;
                     NeighborNode->GridPosition = NeighborGridPos;
 
@@ -339,7 +339,7 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
 {
     for (auto& Pair : NodeMap)
     {
-        FNode* Node = Pair.Value;
+        TSharedPtr<FNode> Node = Pair.Value;
 
         for (auto& NeighborPair : Node->Neighbors)
         {
