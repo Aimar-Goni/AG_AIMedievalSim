@@ -43,9 +43,9 @@ TArray<FVector> UMS_PathfindingSubsystemLib::FindPathVector(const UObject* World
     UMS_PathfindingSubsystem* PathfindingSubsystem = GameInstance->GetSubsystem<UMS_PathfindingSubsystem>();
     if (IsValid(PathfindingSubsystem))
     {
-        TArray<TSharedPtr<FNode>> NodePath = PathfindingSubsystem->FindPath(PathfindingSubsystem->FindClosestNodeToPosition(Start),
+        TArray<TSharedPtr<FMoveNode>> NodePath = PathfindingSubsystem->FindPath(PathfindingSubsystem->FindClosestNodeToPosition(Start),
             PathfindingSubsystem->FindClosestNodeToPosition(Goal));
-        for (TSharedPtr<FNode> Node : NodePath)
+        for (TSharedPtr<FMoveNode> Node : NodePath)
         {
             Path.Add(Node->Position); 
         }

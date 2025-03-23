@@ -21,58 +21,58 @@ void UMS_PathfindingSubsystem::Deinitialize()
 
 
 
-void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, TSharedPtr<FNode>> newNodeMap) {
+void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, TSharedPtr<FMoveNode>> newNodeMap) {
     NodeMap = newNodeMap;
 }
 
 // Calculate the heuristic value between the nodes
-float Heuristic(TSharedPtr<FNode> NodeA, TSharedPtr<FNode> NodeB)
+float Heuristic(TSharedPtr<FMoveNode> NodeA, TSharedPtr<FMoveNode> NodeB)
 {
     return FMath::Abs(NodeA->GridPosition.X - NodeB->GridPosition.X) +
         FMath::Abs(NodeA->GridPosition.Y - NodeB->GridPosition.Y);
 }
 
 
-TArray<TSharedPtr<FNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FNode> StartNode, TSharedPtr<FNode> GoalNode)
+TArray<TSharedPtr<FMoveNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode)
 {
     if (!StartNode || !GoalNode)
     {
         UE_LOG(LogTemp, Warning, TEXT("FindPath: StartNode or GoalNode is null."));
-        return TArray<TSharedPtr<FNode>>();
+        return TArray<TSharedPtr<FMoveNode>>();
     }
 
     UWorld* World = GetWorld();
     if (!World)
     {
         UE_LOG(LogTemp, Warning, TEXT("FindPath: No valid world context."));
-        return TArray<TSharedPtr<FNode>>();
+        return TArray<TSharedPtr<FMoveNode>>();
     }
 
     if (bShowDebugLinesPathfinding) {
         DrawDebugSphere(World, StartNode->Position, 50.0f, 12, FColor::Green, false, 10.0f);
         DrawDebugSphere(World, GoalNode->Position, 50.0f, 12, FColor::Red, false, 10.0f);
     }
-    TSet<TSharedPtr<FNode>> OpenSet;       // Nodes to be evaluated
-    TSet<TSharedPtr<FNode>> ClosedSet;     // Nodes already evaluated
+    TSet<TSharedPtr<FMoveNode>> OpenSet;       // Nodes to be evaluated
+    TSet<TSharedPtr<FMoveNode>> ClosedSet;     // Nodes already evaluated
 
 
-    TMap<TSharedPtr<FNode>, float> GScore; // Cost from start to node
+    TMap<TSharedPtr<FMoveNode>, float> GScore; // Cost from start to node
     GScore.Add(StartNode, 0.0f);
 
 
-    TMap<TSharedPtr<FNode>, float> FScore; // Estimated cost from start to goal via node
+    TMap<TSharedPtr<FMoveNode>, float> FScore; // Estimated cost from start to goal via node
     FScore.Add(StartNode, Heuristic(StartNode, GoalNode));
 
 
-    TMap<TSharedPtr<FNode>, TSharedPtr<FNode>> CameFrom;  // Path reconstruction
+    TMap<TSharedPtr<FMoveNode>, TSharedPtr<FMoveNode>> CameFrom;  // Path reconstruction
 
-    TArray<TSharedPtr<FNode>> PriorityQueue;   // Priority queue to process nodes in order of FScore
+    TArray<TSharedPtr<FMoveNode>> PriorityQueue;   // Priority queue to process nodes in order of FScore
     PriorityQueue.Add(StartNode);
 
     while (PriorityQueue.Num() > 0)
     {
         // Get the node with the lowest FScore
-        TSharedPtr<FNode> CurrentNode = PriorityQueue[0];
+        TSharedPtr<FMoveNode> CurrentNode = PriorityQueue[0];
         PriorityQueue.RemoveAt(0);
    
        // DrawDebugSphere(World, CurrentNode->Position, 30.0f, 12, FColor::Yellow, false, 2.0f);
@@ -81,7 +81,7 @@ TArray<TSharedPtr<FNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FNode> S
         if (CurrentNode == GoalNode)
         {
            
-            TArray<TSharedPtr<FNode>> Path;
+            TArray<TSharedPtr<FMoveNode>> Path;
 
             // Reconstruct the path by backtracking using CameFrom
             while (CameFrom.Contains(CurrentNode))
@@ -99,9 +99,9 @@ TArray<TSharedPtr<FNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FNode> S
         ClosedSet.Add(CurrentNode);
 
         // Explore neighbors
-        for (const TPair<TSharedPtr<FNode>, bool>& NeighborPair : CurrentNode->Neighbors)
+        for (const TPair<TSharedPtr<FMoveNode>, bool>& NeighborPair : CurrentNode->Neighbors)
         {
-            TSharedPtr<FNode> Neighbor = NeighborPair.Key; // Get the actual node pointer
+            TSharedPtr<FMoveNode> Neighbor = NeighborPair.Key; // Get the actual node pointer
             bool bIsAccessible = NeighborPair.Value; // Check if path is open
 
             if (!bIsAccessible || ClosedSet.Contains(Neighbor))
@@ -127,19 +127,19 @@ TArray<TSharedPtr<FNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FNode> S
         }
 
         // Sort the priority queue by FScore
-        PriorityQueue.Sort([&](const TSharedPtr<FNode>& A, const TSharedPtr<FNode>& B)
+        PriorityQueue.Sort([&](const TSharedPtr<FMoveNode>& A, const TSharedPtr<FMoveNode>& B)
             {
                 return FScore[A] < FScore[B];
             });
     }
 
     // Return an empty path if no path was found
-    return TArray<TSharedPtr<FNode>>();
+    return TArray<TSharedPtr<FMoveNode>>();
 }
 
 
 // Finds the closest node from a actor
-TSharedPtr<FNode> UMS_PathfindingSubsystem::FindClosestNodeToActor(AActor* TargetActor)
+TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindClosestNodeToActor(AActor* TargetActor)
 {
     if (!TargetActor)
     {
@@ -150,12 +150,12 @@ TSharedPtr<FNode> UMS_PathfindingSubsystem::FindClosestNodeToActor(AActor* Targe
     FVector ActorLocation = TargetActor->GetActorLocation();
 
     float MinDistanceSquared = FLT_MAX;
-    TSharedPtr<FNode> ClosestNode = nullptr;
+    TSharedPtr<FMoveNode> ClosestNode = nullptr;
 
     // Iterates all the nodes until it finds the closest one
-    for (const TPair<FIntPoint, TSharedPtr<FNode>>& NodePair : NodeMap)
+    for (const TPair<FIntPoint, TSharedPtr<FMoveNode>>& NodePair : NodeMap)
     {
-        TSharedPtr<FNode> Node = NodePair.Value;
+        TSharedPtr<FMoveNode> Node = NodePair.Value;
         float DistanceSquared = FVector::DistSquared(Node->Position, ActorLocation);
 
         if (DistanceSquared < MinDistanceSquared)
@@ -179,18 +179,18 @@ TSharedPtr<FNode> UMS_PathfindingSubsystem::FindClosestNodeToActor(AActor* Targe
 
 }
 
-TSharedPtr<FNode> UMS_PathfindingSubsystem::FindClosestNodeToPosition(FVector position)
+TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindClosestNodeToPosition(FVector position)
 {
 
     FVector ActorLocation = position;
 
     float MinDistanceSquared = FLT_MAX;
-    TSharedPtr<FNode> ClosestNode = nullptr;
+    TSharedPtr<FMoveNode> ClosestNode = nullptr;
 
     // Iterates all the nodes until it finds the closest one
-    for (const TPair<FIntPoint, TSharedPtr<FNode>>& NodePair : NodeMap)
+    for (const TPair<FIntPoint, TSharedPtr<FMoveNode>>& NodePair : NodeMap)
     {
-        TSharedPtr<FNode> Node = NodePair.Value;
+        TSharedPtr<FMoveNode> Node = NodePair.Value;
         float DistanceSquared = FVector::DistSquared(Node->Position, ActorLocation);
 
         if (DistanceSquared < MinDistanceSquared)
@@ -230,7 +230,7 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
     // CAlculate the grid posinton for the map
     FIntPoint GridPosition = FIntPoint(FMath::RoundToInt(Position.X ), FMath::RoundToInt(Position.Y ));
 
-    TSharedPtr<FNode> NewNode = MakeShared<FNode>();
+    TSharedPtr<FMoveNode> NewNode = MakeShared<FMoveNode>();
     NewNode->Position = Position;
     NewNode->GridPosition = GridPosition;
 
@@ -251,7 +251,7 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
     // connect the node to neighbours
     for (auto& Pair : NodeMap)
     {
-        TSharedPtr<FNode> ExistingNode = Pair.Value;
+        TSharedPtr<FMoveNode> ExistingNode = Pair.Value;
         if (FVector::Dist(NewNode->Position, ExistingNode->Position) <= NodeSeparation_ * 2)
         {
 
@@ -270,7 +270,7 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
 
 void UMS_PathfindingSubsystem::BlockNode(FVector Position)
 {
-    TSharedPtr<FNode> Node = FindClosestNodeToPosition(Position);
+    TSharedPtr<FMoveNode> Node = FindClosestNodeToPosition(Position);
     if (Node)
     {
         UE_LOG(LogTemp, Warning, TEXT("Blocking paths for node at %s"), *Position.ToString());
@@ -304,7 +304,7 @@ void UMS_PathfindingSubsystem::BlockNode(FVector Position)
 
 void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
 {
-    TSharedPtr<FNode> Node = FindClosestNodeToPosition(Position);
+    TSharedPtr<FMoveNode> Node = FindClosestNodeToPosition(Position);
     if (Node)
     {
         UE_LOG(LogTemp, Warning, TEXT("Unblocking paths for node at %s"), *Position.ToString());

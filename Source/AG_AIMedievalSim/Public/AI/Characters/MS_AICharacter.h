@@ -64,7 +64,7 @@ public:
 	FVector CurrentTargetLocation;
 
 
-	TArray<TSharedPtr<FNode>> Path_;
+	TArray<TSharedPtr<FMoveNode>> Path_;
 
 
 	UFUNCTION()
@@ -96,9 +96,10 @@ public:
 	UFUNCTION()
 	void NewQuestAdded();
 
+	UFUNCTION()
 	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
-	TArray<TSharedPtr<FNode>> CreateMovementPath(AActor* ClosestWorkplace);
+	TArray<TSharedPtr<FMoveNode>> CreateMovementPath(AActor* ClosestWorkplace);
 
 	void OnPathUpdated(FIntPoint ChangedNodePos);
 };

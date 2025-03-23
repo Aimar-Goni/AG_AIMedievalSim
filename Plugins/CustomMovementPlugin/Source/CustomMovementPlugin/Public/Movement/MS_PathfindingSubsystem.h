@@ -20,12 +20,12 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    TArray<TSharedPtr<FNode>> FindPath(TSharedPtr<FNode> StartNode, TSharedPtr<FNode> GoalNode);
+    TArray<TSharedPtr<FMoveNode>> FindPath(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode);
 
-    TSharedPtr<FNode> FindClosestNodeToActor(AActor* TargetActor);
-    TSharedPtr<FNode> FindClosestNodeToPosition(FVector position);
+    TSharedPtr<FMoveNode> FindClosestNodeToActor(AActor* TargetActor);
+    TSharedPtr<FMoveNode> FindClosestNodeToPosition(FVector position);
 
-    void SetNodeMap(TMap<FIntPoint, TSharedPtr<FNode>> newNodeMap);
+    void SetNodeMap(TMap<FIntPoint, TSharedPtr<FMoveNode>> newNodeMap);
 
     FIntPoint AddNodeAtPosition(const FVector& Position);
 
@@ -42,7 +42,7 @@ public:
     FOnPathUpdated OnPathUpdated; 
 
 private:
-    TMap<FIntPoint, TSharedPtr<FNode>> NodeMap;
+    TMap<FIntPoint, TSharedPtr<FMoveNode>> NodeMap;
 
     int32 NodeSeparation_;
 
