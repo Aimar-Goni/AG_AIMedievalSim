@@ -44,7 +44,7 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 			{
 				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
 
-				Workplaces_.Add(workPlace);
+				Workplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(workPlace));
 				// Adds the billboard to the navigation mesh
 				workPlace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_workplaces_++;

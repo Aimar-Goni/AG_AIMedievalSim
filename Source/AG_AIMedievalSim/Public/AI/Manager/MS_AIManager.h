@@ -30,10 +30,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	AMS_StorageBuildingPool* StorageBuldingsPool_;
+	TWeakObjectPtr<AMS_StorageBuildingPool> StorageBuldingsPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	AMS_BulletingBoardPool* BulletingBoardPool_;
+	TWeakObjectPtr<AMS_BulletingBoardPool> BulletingBoardPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
 	UInventoryComponent* Inventory_;

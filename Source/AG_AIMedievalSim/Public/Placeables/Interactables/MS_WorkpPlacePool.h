@@ -31,8 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	TSubclassOf<AActor> BushWorkPlace_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	TArray<AMS_BaseWorkPlace*> Workplaces_;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
+	TArray< TWeakObjectPtr<AMS_BaseWorkPlace>> Workplaces_;
 
 
 	void FindWorkplacesOnScene();

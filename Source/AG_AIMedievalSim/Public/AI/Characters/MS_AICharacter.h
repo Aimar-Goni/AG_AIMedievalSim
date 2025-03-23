@@ -30,16 +30,16 @@ public:
 	class UBehaviorTree* behaviorTree_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Behavior")
-	AActor* target_;
+	TWeakObjectPtr<AActor> target_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	AActor* WorkPlacesPool_;
+	TWeakObjectPtr<AActor> WorkPlacesPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	AActor* StorageBuldingsPool_;
+	TWeakObjectPtr<AActor> StorageBuldingsPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	AActor* BulletingBoardPool_;
+	TWeakObjectPtr<AActor> BulletingBoardPool_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
 	UInventoryComponent* Inventory_;

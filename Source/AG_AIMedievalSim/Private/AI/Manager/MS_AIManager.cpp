@@ -33,7 +33,7 @@ void AMS_AIManager::BeginPlay()
 	}
 
     // Add delegate that calls when the resources on the storages updates
-	for (AMS_StorageBuilding* Storage : StorageBuldingsPool_->StorageBuldings_)
+    for (TWeakObjectPtr<AMS_StorageBuilding> Storage : StorageBuldingsPool_->StorageBuldings_)
 	{
 		Storage->Inventory_->OnResourceChanged.AddDynamic(this, &AMS_AIManager::UpdateResources);
 	}
@@ -60,7 +60,7 @@ void AMS_AIManager::BeginPlay()
 void AMS_AIManager::OnBulletingBoardPoolReady()
 {
     // Add a delegate that calls when a AI takes a quest from the bulleting board
-    for (AMS_BulletingBoard* BulletinBoard : BulletingBoardPool_->BulletingBoards_)
+    for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : BulletingBoardPool_->BulletingBoards_)
     {
         BulletinBoard->OnQuestObtained.AddDynamic(this, &AMS_AIManager::RemoveQuest);
     }

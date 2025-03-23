@@ -88,7 +88,7 @@ void AMS_AICharacter::BeginPlay()
 		AMS_BulletingBoardPool* Pool = Cast<AMS_BulletingBoardPool>(BulletingBoardPool_);
 
 		// Link delegate to call when a new quest is added
-		for (AMS_BulletingBoard* BulletinBoard : Pool->BulletingBoards_)
+		for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : Pool->BulletingBoards_)
 		{
 			BulletinBoard->OnQuestAvaliable.AddDynamic(this, &AMS_AICharacter::NewQuestAdded);
 		}

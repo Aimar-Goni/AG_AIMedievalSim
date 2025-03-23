@@ -22,7 +22,7 @@ void AMS_AICharacterController::OnPossess(APawn* pawn) {
             if (ch->behaviorTree_->BlackboardAsset) {
                 blackboard_->InitializeBlackboard(*ch->behaviorTree_->BlackboardAsset);
                 blackboard_->SetValueAsObject("SelfActor", ch);
-                blackboard_->SetValueAsObject("Target", ch->target_);
+                blackboard_->SetValueAsObject("Target", ch->target_.Get());
                 blackboard_->SetValueAsBool("GettingTask", true);
                 blackboard_->SetValueAsBool("Working", true);
                 blackboard_->SetValueAsBool("DoingTask", false);

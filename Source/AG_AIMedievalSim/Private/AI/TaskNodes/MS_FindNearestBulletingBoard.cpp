@@ -14,7 +14,7 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 	{
 		if (AMS_AICharacter* AICharacter = Cast<AMS_AICharacter>(AIController->GetPawn())) 
 		{
-			TArray<AMS_BulletingBoard*> Pool = Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_;
+			TArray< TWeakObjectPtr<AMS_BulletingBoard>> Pool = Cast<AMS_BulletingBoardPool>(AICharacter->BulletingBoardPool_)->BulletingBoards_;
 
 			if (Pool.Num() == 0)
 			{
@@ -26,15 +26,15 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 
 			bool found = false;
 			// Check the pool and compare workplaces until find the closest one
-			for (AMS_BulletingBoard* Workplace : Pool)
+			for (TWeakObjectPtr<AMS_BulletingBoard> Workplace : Pool)
 			{
 				if (Workplace->Quests_.Num()>0) {
 
-					float CurrentDistance = AICharacter->GetDistanceTo(Workplace);
+					float CurrentDistance = AICharacter->GetDistanceTo(Workplace.Get());
 					if (CurrentDistance < ClosestDistance)
 					{
 						ClosestDistance = CurrentDistance;
-						Closest = Workplace;
+						Closest = Workplace.Get();
 						found = true;
 					}
 				}
