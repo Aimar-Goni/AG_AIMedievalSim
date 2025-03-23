@@ -32,8 +32,10 @@ public:
 	TSubclassOf<AActor> BushWorkPlace_;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
+	UPROPERTY()
 	TArray< TWeakObjectPtr<AMS_BaseWorkPlace>> Workplaces_;
 
 
+	UFUNCTION()
 	void FindWorkplacesOnScene();
 };

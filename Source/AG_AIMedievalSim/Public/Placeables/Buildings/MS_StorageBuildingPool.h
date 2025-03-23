@@ -31,7 +31,9 @@ public:
 	int n_StorageBuldings_;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	UPROPERTY()
 	TArray< TWeakObjectPtr<AMS_StorageBuilding>> StorageBuldings_;
 
+	UFUNCTION()
 	void FindStorageBuildingsOnScene();
 };

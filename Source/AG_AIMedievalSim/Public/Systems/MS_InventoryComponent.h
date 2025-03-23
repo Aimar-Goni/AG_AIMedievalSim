@@ -67,12 +67,17 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnResourceChanged OnResourceChanged;
 
+	UFUNCTION()
 	void SetResource(ResourceType Type, int32 NewAmount);
+	UFUNCTION()
 	int32 GetResource(ResourceType Type);
 
+	UFUNCTION()
 	void AddToResources(ResourceType Type, int32 NewAmount);
+	UFUNCTION()
 	int32 ExtractFromResources(ResourceType Type, int32 ExtactAmount);
 
+	UFUNCTION()
 	void ResetInventory()
 	{
 
@@ -82,6 +87,7 @@ public:
 		}
 	}
 
+	UFUNCTION()
 	int32 GetResourceAmount(ResourceType Type) const
 	{
 		const int32* Amount = Resources_.Find(Type);

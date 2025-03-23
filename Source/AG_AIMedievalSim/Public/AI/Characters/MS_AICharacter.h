@@ -85,10 +85,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
+	UFUNCTION()
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
 	void CheckIfHungry();
@@ -101,5 +100,6 @@ public:
 
 	TArray<TSharedPtr<FMoveNode>> CreateMovementPath(AActor* ClosestWorkplace);
 
+	UFUNCTION()
 	void OnPathUpdated(FIntPoint ChangedNodePos);
 };
