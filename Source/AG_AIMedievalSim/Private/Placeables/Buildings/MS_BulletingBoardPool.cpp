@@ -70,5 +70,14 @@ void AMS_BulletingBoardPool::OnNodeMapInitialized()
 	UE_LOG(LogTemp, Log, TEXT("Node Map is ready. Initializing Storage Buildings."));
 	FindBulletingBoardsOnScene();
 	OnBulletingBoardPoolInitialized.Broadcast();
-
+	for (int32 i = 0; i < 100; i++)
+	{
+		AMS_BulletingBoard* NewObject = GetWorld()->SpawnActor<AMS_BulletingBoard>(AMS_BulletingBoard::StaticClass());
+		if (NewObject)
+		{
+			NewObject->SetActorHiddenInGame(true);
+			BulletingBoards_.Add(NewObject);
+		}
+	}
+	
 }
