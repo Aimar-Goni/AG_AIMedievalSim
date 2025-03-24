@@ -24,8 +24,7 @@ public:
 	class UBlackboardComponent* blackboard_;
 private:
     virtual void OnPossess(APawn* pawn) override;
-	UFUNCTION()
-	virtual void OnUnPossess() override;
+    virtual void OnUnPossess() override;
 	AMS_AICharacterController();
 };
 

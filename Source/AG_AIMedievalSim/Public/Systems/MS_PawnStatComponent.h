@@ -60,7 +60,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	bool Sad = false;
 
-	UFUNCTION()
 	void DecreaseStats();
 
 public:
@@ -83,25 +82,16 @@ public:
 	FOnStateChanged OnStateChanged;
 
 	// Modify stat methods
-	UFUNCTION()
 	void ModifyHunger(float Amount);
-	UFUNCTION()
 	void ModifyThirst(float Amount);
-	UFUNCTION()
 	void ModifyEnergy(float Amount);
-	UFUNCTION()
 	void ModifyHappiness(float Amount);
 
-	UFUNCTION()
 	bool IsHungry();
-	UFUNCTION()
 	bool IsThirsty();
-	UFUNCTION()
 	bool IsTired();
-	UFUNCTION()
 	bool IsSad();
 
 private:
-	UFUNCTION()
 	void BroadcastStatChange(float& Stat, float Amount, FOnStatChanged& Delegate);
 };

@@ -18,13 +18,9 @@ public:
 	// Sets default values for this actor's properties
 	AMS_BaseWorkPlace();
 
-	UFUNCTION()
 	virtual bool IsPlaceOccupied();
-	UFUNCTION()
 	virtual void ReservePlace();
-	UFUNCTION()
 	virtual FResource TakeResources();
-	UFUNCTION()
 	virtual void ResetWorkPlace();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design | Resources")
@@ -42,7 +38,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal | Resources")
 	bool ResourceAvaliable_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal | Resources")
 	FTimerHandle TH_ResourceReset_;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Movement")
 	FIntPoint GridPosition_;

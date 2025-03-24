@@ -32,13 +32,10 @@ public:
 	int n_BulletingBoards_;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	UPROPERTY()
 	TArray< TWeakObjectPtr<AMS_BulletingBoard>> BulletingBoards_;
 
-	UFUNCTION()
 	void FindBulletingBoardsOnScene();
 
-	UPROPERTY()
 	FOnBulletingBoardPoolInitialized OnBulletingBoardPoolInitialized;
 
 };

@@ -42,8 +42,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	UFUNCTION()
 	FQuest GetQuest();
-	UFUNCTION()
 	void AddQuest(FQuest NewQuest);
 };

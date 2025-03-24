@@ -17,7 +17,7 @@ struct FMoveNode
 	UPROPERTY()
 	FIntPoint GridPosition;
 
-
+	
 	TMap<TSharedPtr<FMoveNode>, bool> Neighbors;
 };
 static bool bShowDebugLines = false;  // Set to false to disable debug lines
