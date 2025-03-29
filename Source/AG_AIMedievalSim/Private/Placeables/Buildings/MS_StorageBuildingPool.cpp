@@ -28,6 +28,10 @@ void AMS_StorageBuildingPool::BeginPlay()
 		{
 			// Bind to the OnNodeMapReady delegate
 			NodeMeshStarter->OnNodeMapReady.AddDynamic(this, &AMS_StorageBuildingPool::OnNodeMapInitialized);
+			if (NodeMeshStarter->bNodeMapReady)
+			{
+				OnNodeMapInitialized();
+			}
 			break;
 		}
 	}

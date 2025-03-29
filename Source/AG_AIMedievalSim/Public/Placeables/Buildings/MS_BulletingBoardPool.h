@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBulletingBoardPoolInitialized);
 
+
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_BulletingBoardPool : public AActor
 {
@@ -23,6 +24,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 
 public:	
 	// Called every frame

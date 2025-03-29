@@ -90,6 +90,7 @@ void AMS_MovementNodeMeshStarter::BeginPlay()
 
     // Send the delegate indicating its ready
     OnNodeMapReady.Broadcast();
+    bNodeMapReady = true;
 
     GetWorld()->GetTimerManager().SetTimer(
         PathCheckTimer, this, &AMS_MovementNodeMeshStarter::UpdateBlockedPaths, 2.0f, true

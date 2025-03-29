@@ -13,6 +13,7 @@ AMS_BulletingBoardPool::AMS_BulletingBoardPool()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+
 }
 
 // Called when the game starts or when spawned
@@ -24,12 +25,17 @@ void AMS_BulletingBoardPool::BeginPlay()
 		AMS_MovementNodeMeshStarter* NodeMeshStarter = *It;
 		if (NodeMeshStarter)
 		{
-			// Bind to the OnNodeMapReady delegate
+			// Bind to delegate
 			NodeMeshStarter->OnNodeMapReady.AddDynamic(this, &AMS_BulletingBoardPool::OnNodeMapInitialized);
+
+			// If the event has already been triggered, call the function manually
+			if (NodeMeshStarter->bNodeMapReady)
+			{
+				OnNodeMapInitialized();
+			}
 			break;
 		}
 	}
-
 }
 
 // Called every frame

@@ -31,7 +31,10 @@ class CUSTOMMOVEMENTPLUGIN_API AMS_MovementNodeMeshStarter : public AActor
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnNodeMapReady OnNodeMapReady;
-
+	
+	UPROPERTY(BlueprintReadOnly)
+	bool bNodeMapReady = false;
+	
 public:	
 	// Sets default values for this actor's properties
 	AMS_MovementNodeMeshStarter();
