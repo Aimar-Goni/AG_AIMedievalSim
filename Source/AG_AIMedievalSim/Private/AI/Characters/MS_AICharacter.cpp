@@ -51,6 +51,8 @@ AMS_AICharacter::AMS_AICharacter()
 
 }
 
+
+
 // Called when the game starts or when spawned
 void AMS_AICharacter::BeginPlay()
 {
@@ -290,7 +292,7 @@ void AMS_AICharacter:: NewQuestAdded() {
 }
 
 // Use the pathfinding subsistem to get a path to the objective
-TArray<TSharedPtr<FMoveNode>> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
+TArray<FIntPoint> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	if (PathfindingSubsystem)
 	{
@@ -301,7 +303,7 @@ TArray<TSharedPtr<FMoveNode>> AMS_AICharacter::CreateMovementPath(AActor* Closes
 		//DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
 
 
-		Path_ = PathfindingSubsystem->FindPath(Begin, End);
+		Path_ = PathfindingSubsystem->FindPathPoints(Begin, End);
 	/*	for (int32 i = 0; i < Path_.Num() - 1; ++i)
 		{
 			DrawDebugLine(
@@ -320,7 +322,7 @@ TArray<TSharedPtr<FMoveNode>> AMS_AICharacter::CreateMovementPath(AActor* Closes
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
 	}
-	return TArray<TSharedPtr<FMoveNode>>();
+	return TArray<FIntPoint>();
 }
 
 
@@ -328,21 +330,22 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
 {
 	if (Path_.Num() == 0) return;
 
-	for (TSharedPtr<FMoveNode> Node : Path_)
+	for (FIntPoint GridPosition : Path_)
 	{
-		if (ChangedNodePos == Node->GridPosition) // If the changed node is on the path
+		if (ChangedNodePos == GridPosition) // If the changed node is on the path
 		{
 			UE_LOG(LogTemp, Warning, TEXT("AI Path affected! Recalculating..."));
 
 			FVector AIPosition = this->GetActorLocation();
-			FVector TargetPosition = Path_.Top()->Position;
-
+			FIntPoint TargetPosition = Path_.Top();
+			
 			UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 			if (PathfindingSubsystem)
 			{
-				TArray<TSharedPtr<FMoveNode>> NewPath = PathfindingSubsystem->FindPath(
+				TSharedPtr<FMoveNode> TargetNode = PathfindingSubsystem->FindNodeByGridPosition(TargetPosition);
+				TArray<FIntPoint> NewPath = PathfindingSubsystem->FindPathPoints(
 					PathfindingSubsystem->FindClosestNodeToPosition(AIPosition),
-					PathfindingSubsystem->FindClosestNodeToPosition(TargetPosition)
+					PathfindingSubsystem->FindClosestNodeToPosition(TargetNode->Position)
 				);
 
 				Path_ = NewPath; 

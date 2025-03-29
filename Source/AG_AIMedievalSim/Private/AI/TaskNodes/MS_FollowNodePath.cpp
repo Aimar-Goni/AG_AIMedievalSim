@@ -62,15 +62,19 @@ void UMS_FollowNodePath::MoveToNextNode(UBehaviorTreeComponent& OwnerComp, AAICo
         return;
     }
 
-    TSharedPtr<FMoveNode> CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
-    if (!CurrentNode)
+    FIntPoint CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
+    
+    UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+    if (PathfindingSubsystem)
     {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return;
-    }
 
-    AICharacter->CurrentTargetLocation = CurrentNode->Position;
-    AIController->MoveToLocation(AICharacter->CurrentTargetLocation);
+        AICharacter->CurrentTargetLocation = PathfindingSubsystem->FindNodeByGridPosition(CurrentNode)->Position;
+        AIController->MoveToLocation(AICharacter->CurrentTargetLocation);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Folow Node: No valid PathfindingSubsystem found!"));
+    }
 
     AICharacter->CurrentNodeIndex++;
 }

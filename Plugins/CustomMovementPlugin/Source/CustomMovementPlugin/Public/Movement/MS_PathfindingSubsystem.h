@@ -20,8 +20,11 @@ public:
     virtual void Initialize(FSubsystemCollectionBase& Collection) override;
     virtual void Deinitialize() override;
 
-    TArray<TSharedPtr<FMoveNode>> FindPath(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode);
+    TArray<FIntPoint> FindPathPoints(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode);
+    TArray<TSharedPtr<FMoveNode>> FindPathNodes(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode);
 
+    TSharedPtr<FMoveNode> FindNodeByGridPosition(const FIntPoint& GridPosition);
+    
     TSharedPtr<FMoveNode> FindClosestNodeToActor(AActor* TargetActor);
     TSharedPtr<FMoveNode> FindClosestNodeToPosition(FVector position);
 

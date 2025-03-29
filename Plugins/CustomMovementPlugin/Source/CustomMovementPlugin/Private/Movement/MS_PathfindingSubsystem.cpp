@@ -33,7 +33,7 @@ float Heuristic(TSharedPtr<FMoveNode> NodeA, TSharedPtr<FMoveNode> NodeB)
 }
 
 
-TArray<TSharedPtr<FMoveNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode)
+TArray<TSharedPtr<FMoveNode>> UMS_PathfindingSubsystem::FindPathNodes(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode)
 {
     if (!StartNode || !GoalNode)
     {
@@ -135,6 +135,33 @@ TArray<TSharedPtr<FMoveNode>> UMS_PathfindingSubsystem::FindPath(TSharedPtr<FMov
 
     // Return an empty path if no path was found
     return TArray<TSharedPtr<FMoveNode>>();
+}
+
+TArray<FIntPoint> UMS_PathfindingSubsystem::FindPathPoints(TSharedPtr<FMoveNode> StartNode, TSharedPtr<FMoveNode> GoalNode)
+{
+    if (!StartNode || !GoalNode)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindPath: StartNode or GoalNode is null."));
+        return TArray<FIntPoint>();
+    }
+
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindPath: No valid world context."));
+        return TArray<FIntPoint>();
+    }
+    TArray<TSharedPtr<FMoveNode>> NodePath = FindPathNodes(StartNode, GoalNode);
+    TArray<FIntPoint> Path;
+
+    
+    for (auto MoveNode : NodePath)
+    {
+        Path.Add(MoveNode->GridPosition);
+    }
+    return Path;
+    // Return an empty path if no path was found
+    return TArray<FIntPoint>();
 }
 
 
@@ -375,4 +402,17 @@ bool UMS_PathfindingSubsystem::PerformRaycastToPosition(const FVector& Start, co
 
 
     return false;
+}
+
+TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindNodeByGridPosition(const FIntPoint& GridPosition)
+{
+
+    if (NodeMap.Contains(GridPosition))
+    {
+       
+        return NodeMap[GridPosition];
+    }
+    
+
+    return nullptr;
 }

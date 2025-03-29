@@ -63,8 +63,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
 	FVector CurrentTargetLocation;
 
-
-	TArray<TSharedPtr<FMoveNode>> Path_;
+	
+	TArray<FIntPoint> Path_;
 
 
 	UFUNCTION()
@@ -78,8 +78,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
+	//virtual void Serialize(FArchive& Ar);
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -99,7 +99,7 @@ public:
 	UFUNCTION()
 	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
-	TArray<TSharedPtr<FMoveNode>> CreateMovementPath(AActor* ClosestWorkplace);
+	TArray<FIntPoint> CreateMovementPath(AActor* ClosestWorkplace);
 	
 	UFUNCTION()
 	void OnPathUpdated(FIntPoint ChangedNodePos);
