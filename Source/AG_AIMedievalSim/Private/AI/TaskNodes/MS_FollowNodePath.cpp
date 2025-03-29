@@ -62,7 +62,7 @@ void UMS_FollowNodePath::MoveToNextNode(UBehaviorTreeComponent& OwnerComp, AAICo
         return;
     }
 
-    TSharedPtr<FNode> CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
+    TSharedPtr<FMoveNode> CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
     if (!CurrentNode)
     {
         FinishLatentTask(OwnerComp, EBTNodeResult::Failed);

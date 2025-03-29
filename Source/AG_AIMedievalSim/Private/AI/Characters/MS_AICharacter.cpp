@@ -290,12 +290,12 @@ void AMS_AICharacter:: NewQuestAdded() {
 }
 
 // Use the pathfinding subsistem to get a path to the objective
-TArray<TSharedPtr<FNode>> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
+TArray<TSharedPtr<FMoveNode>> AMS_AICharacter::CreateMovementPath(AActor* ClosestWorkplace) {
 	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	if (PathfindingSubsystem)
 	{
-		TSharedPtr<FNode> Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
-		TSharedPtr<FNode> End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
+		TSharedPtr<FMoveNode> Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
+		TSharedPtr<FMoveNode> End = PathfindingSubsystem->FindClosestNodeToActor(ClosestWorkplace);
 		//DrawDebugSphere(GetWorld(), Begin->Position, 100.0f, 16, FColor::Red, false, 5.0f);
 		//if(End)
 		//DrawDebugSphere(GetWorld(), End->Position, 100.0f, 16, FColor::Green, false, 5.0f);
@@ -320,7 +320,7 @@ TArray<TSharedPtr<FNode>> AMS_AICharacter::CreateMovementPath(AActor* ClosestWor
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem not found."));
 	}
-	return TArray<TSharedPtr<FNode>>();
+	return TArray<TSharedPtr<FMoveNode>>();
 }
 
 
@@ -328,7 +328,7 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
 {
 	if (Path_.Num() == 0) return;
 
-	for (TSharedPtr<FNode> Node : Path_)
+	for (TSharedPtr<FMoveNode> Node : Path_)
 	{
 		if (ChangedNodePos == Node->GridPosition) // If the changed node is on the path
 		{
@@ -340,7 +340,7 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
 			UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 			if (PathfindingSubsystem)
 			{
-				TArray<TSharedPtr<FNode>> NewPath = PathfindingSubsystem->FindPath(
+				TArray<TSharedPtr<FMoveNode>> NewPath = PathfindingSubsystem->FindPath(
 					PathfindingSubsystem->FindClosestNodeToPosition(AIPosition),
 					PathfindingSubsystem->FindClosestNodeToPosition(TargetPosition)
 				);
