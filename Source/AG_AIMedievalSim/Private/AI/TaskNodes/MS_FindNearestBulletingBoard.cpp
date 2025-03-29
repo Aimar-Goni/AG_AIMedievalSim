@@ -9,6 +9,9 @@
 EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 
+  //// ESTOY COMPROBANDO QUE PONIENDO LOS POOLS A VER SI FUNCIONA
+// ISSUE: THE GAME IS LOADING THE NAV before THE BULLETING POOL SO IT  sends the done broadcast before it linkes it to the pools so it DOESNT GET THE UPDATES
+	
 	// Get the AI controller
 	if (AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner()))
 	{

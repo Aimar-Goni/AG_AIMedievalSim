@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "MS_InventoryComponent.h"
 #include "MS_ResourceSystem.generated.h"
 
 USTRUCT(BlueprintType)

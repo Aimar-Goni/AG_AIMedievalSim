@@ -106,9 +106,11 @@ void AMS_AIManager::Tick(float DeltaTime)
                         FQuest NewQuest;
                         NewQuest.Type = Type;
                         NewQuest.Amount = QuestAmount;
-
-                        BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->AddQuest(NewQuest);
-                        ActiveQuests_.Add(NewQuest);            
+                        if (BulletingBoardPool_->BulletingBoards_.Num() >0)
+                        {
+	                        BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->AddQuest(NewQuest);
+	                        ActiveQuests_.Add(NewQuest);            
+                        }
                     
                     }
                     NeededResources -= QuestAmount;
