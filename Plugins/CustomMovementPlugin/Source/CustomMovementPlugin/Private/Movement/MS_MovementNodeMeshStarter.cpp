@@ -360,3 +360,16 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
         }
     }
 }
+AMS_MovementNodeMeshStarter::~AMS_MovementNodeMeshStarter()
+{
+    // Clear the NodeMap, releasing all shared pointers
+    NodeMap.Empty();
+
+    // Ensure the timer is cleared to prevent any invalid references
+    if (GetWorld())
+    {
+        GetWorld()->GetTimerManager().ClearTimer(PathCheckTimer);
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("AMS_MovementNodeMeshStarter destructor called. NodeMap cleared."));
+}

@@ -33,8 +33,6 @@ AMS_MovementNode::AMS_MovementNode()
     // Set the collision preset to OverlapAllDynamic
     MeshComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
-
-
     //CollisionTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionTrigger"));
     //CollisionTrigger->SetupAttachment(RootComponent);
     //CollisionTrigger->SetBoxExtent(FVector(50.0f)); // Adjust size based on node spacing

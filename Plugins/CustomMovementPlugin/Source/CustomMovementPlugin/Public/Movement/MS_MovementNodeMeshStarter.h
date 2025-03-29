@@ -35,7 +35,8 @@ public:
 public:	
 	// Sets default values for this actor's properties
 	AMS_MovementNodeMeshStarter();
-
+	virtual ~AMS_MovementNodeMeshStarter() override;
+	
 	void GenerateNodes(FVector FirstPos);
 
 	bool PerformRaycastAtPosition(const FVector& Position);

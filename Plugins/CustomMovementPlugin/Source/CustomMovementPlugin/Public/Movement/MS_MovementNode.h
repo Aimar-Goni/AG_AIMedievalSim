@@ -16,7 +16,10 @@ struct FMoveNode
 
 	UPROPERTY()
 	FIntPoint GridPosition;
-
+	
+	FMoveNode()
+		 : Position(FVector::ZeroVector), GridPosition(FIntPoint::ZeroValue) // Ensure values are set
+	 {}
 	
 	TMap<TSharedPtr<FMoveNode>, bool> Neighbors;
 };

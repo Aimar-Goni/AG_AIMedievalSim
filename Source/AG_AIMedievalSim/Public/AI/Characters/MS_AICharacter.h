@@ -100,6 +100,7 @@ public:
 	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
 	TArray<TSharedPtr<FMoveNode>> CreateMovementPath(AActor* ClosestWorkplace);
-
+	
+	UFUNCTION()
 	void OnPathUpdated(FIntPoint ChangedNodePos);
 };
