@@ -21,8 +21,7 @@ void UMS_PathfindingSubsystem::Deinitialize()
 
 
 
-void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, TSharedPtr<FMoveNode>> newNodeMap)
-{
+void UMS_PathfindingSubsystem::SetNodeMap(TMap<FIntPoint, TSharedPtr<FMoveNode>> newNodeMap) {
     NodeMap = newNodeMap;
 }
 
@@ -221,8 +220,7 @@ TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindClosestNodeToPosition(FVecto
 
 
 // Setter for the node separation
-void UMS_PathfindingSubsystem::SetNodeSeparation(int32 newSeparation)
-{
+void UMS_PathfindingSubsystem::SetNodeSeparation(int32 newSeparation) {
     NodeSeparation_ = newSeparation;
 }
 
