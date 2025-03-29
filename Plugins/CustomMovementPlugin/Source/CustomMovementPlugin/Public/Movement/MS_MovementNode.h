@@ -6,19 +6,11 @@
 #include "Components/BoxComponent.h"
 #include "MS_MovementNode.generated.h"
 
-USTRUCT()
-struct FMoveNode
+struct FNode : public TSharedFromThis<FNode>
 {
-	GENERATED_BODY()
-
-	UPROPERTY()
 	FVector Position;
-
-	UPROPERTY()
 	FIntPoint GridPosition;
-
-	
-	TMap<TSharedPtr<FMoveNode>, bool> Neighbors;
+	TMap<TSharedPtr<FNode>, bool> Neighbors;
 };
 static bool bShowDebugLines = false;  // Set to false to disable debug lines
 
@@ -27,7 +19,7 @@ class  AMS_MovementNode : public AActor
 {
 	GENERATED_BODY()
 	
-	FMoveNode node;
+	FNode node;
 
 public:	
 	// Sets default values for this actor's properties

@@ -251,7 +251,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
     FIntPoint StartGridPos = FIntPoint(0, 0); 
 
     // Create the starting node
-    TSharedPtr<FMoveNode> StartNode = MakeShared<FMoveNode>();
+    TSharedPtr<FNode> StartNode = MakeShared<FNode>();
     StartNode->Position = FirstPos;
     StartNode->GridPosition = StartGridPos;
 
@@ -259,7 +259,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
     NodeMap.Add(StartGridPos, StartNode);
 
     // Keep track of nodes to process
-    TQueue<TSharedPtr<FMoveNode>> NodeQueue;
+    TQueue<TSharedPtr<FNode>> NodeQueue;
     NodeQueue.Enqueue(StartNode);
 
     // Set to keep track of visited grid positions
@@ -275,7 +275,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
 
     while (!NodeQueue.IsEmpty())
     {
-        TSharedPtr<FMoveNode> CurrentNode;
+        TSharedPtr<FNode> CurrentNode;
         NodeQueue.Dequeue(CurrentNode);
 
         // For each direction
@@ -292,17 +292,17 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
 
             if (bIsAvailable)
             {
-                TSharedPtr<FMoveNode> NeighborNode = nullptr;
+                TSharedPtr<FNode> NeighborNode = nullptr;
 
                 // Check if the neighbor node already exists
-                if (TSharedPtr<FMoveNode>* ExistingNode = NodeMap.Find(NeighborGridPos))
+                if (TSharedPtr<FNode>* ExistingNode = NodeMap.Find(NeighborGridPos))
                 {
                     NeighborNode = *ExistingNode;
                 }
                 else
                 {
                     // Create a new node
-                    NeighborNode = MakeShared<FMoveNode>();
+                    NeighborNode = MakeShared<FNode>();
                     NeighborNode->Position = NeighborPosition;
                     NeighborNode->GridPosition = NeighborGridPos;
 
@@ -339,7 +339,7 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
 {
     for (auto& Pair : NodeMap)
     {
-        TSharedPtr<FMoveNode> Node = Pair.Value;
+        TSharedPtr<FNode> Node = Pair.Value;
 
         for (auto& NeighborPair : Node->Neighbors)
         {
