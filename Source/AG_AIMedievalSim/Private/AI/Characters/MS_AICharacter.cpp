@@ -168,6 +168,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					}
 					Inventory_->ResetInventory();
 					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
+					AIController->GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
+
 				}
 				// If it is Getting food it means it needs to take food
 				if (AIController->GetBlackboardComponent()->GetValueAsBool("GettingFood")) {

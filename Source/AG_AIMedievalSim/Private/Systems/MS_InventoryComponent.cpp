@@ -34,7 +34,10 @@ void UInventoryComponent::AddToResources(ResourceType Type, int32 NewAmount)
         ResourceValue += NewAmount;
 
         // Broadcast changes based on the resource type
-        OnResourceChanged.Broadcast(Type, ResourceValue);
+        if (OnResourceChanged.IsBound())
+        {
+            OnResourceChanged.Broadcast(Type, ResourceValue);
+        }
     }
 }
 
