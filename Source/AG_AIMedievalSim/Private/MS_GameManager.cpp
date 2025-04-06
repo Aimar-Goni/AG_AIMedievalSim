@@ -7,14 +7,11 @@
 #include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
-void AMS_GameManager::BeginPlay()
-{
-    Super::BeginPlay();
-    Initialize();
-}
 
-void AMS_GameManager::Initialize()
+
+void UMS_GameManager::Initialize(FSubsystemCollectionBase& Collection)
 {
+    Super::Initialize(Collection);
     UWorld* World = GetWorld();
 
     // Initialize PoolManager
@@ -26,4 +23,13 @@ void AMS_GameManager::Initialize()
     //TaskManager->Initialize(ResourceManager->GetBulletingBoardPool());
 
 
+}
+void UMS_GameManager::Deinitialize()
+{
+    Super::Deinitialize();
+ 
+}
+AMS_WorkpPlacePool* UMS_GameManager::GetWorkPlacePool() const
+{
+    return PoolManager ? PoolManager->GetWorkPlacePool() : nullptr;
 }

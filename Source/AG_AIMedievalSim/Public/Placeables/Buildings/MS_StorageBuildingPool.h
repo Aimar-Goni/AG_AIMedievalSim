@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReactivateStorageBuilding(AMS_StorageBuilding* Building, const FVector& NewLocation);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Spawn")
 	TSubclassOf<AMS_StorageBuilding> StorageBuildingClass;
 
 };

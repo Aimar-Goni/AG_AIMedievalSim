@@ -11,6 +11,7 @@
 #include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Components/BoxComponent.h"
 #include "Systems/MS_PawnStatComponent.h"
+#include "MS_GameManager.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -90,7 +91,7 @@ void AMS_AICharacter::BeginPlay()
 		AMS_BulletingBoardPool* Pool = Cast<AMS_BulletingBoardPool>(BulletingBoardPool_);
 
 		// Link delegate to call when a new quest is added
-		for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : Pool->BulletingBoards_)
+		for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : Pool->ActiveBulletingBoards_)
 		{
 			BulletinBoard->OnQuestAvaliable.AddDynamic(this, &AMS_AICharacter::NewQuestAdded);
 		}
@@ -256,6 +257,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					FResource recieved = WorkPlace->TakeResources();
 					//Add them to inventory
 					Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
+					UMS_GameManager* GameManager = GetGameInstance()->GetSubsystem<UMS_GameManager>();
+					GameManager->GetWorkPlacePool()->RemoveWorkplaceAndFreeNode(WorkPlace);
 				}
 				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
 			

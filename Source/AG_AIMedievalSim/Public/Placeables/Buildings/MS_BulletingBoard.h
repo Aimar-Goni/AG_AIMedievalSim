@@ -40,9 +40,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	bool placeActive_ = false;
-
+	
 	FQuest GetQuest();
 	void AddQuest(FQuest NewQuest);
 };

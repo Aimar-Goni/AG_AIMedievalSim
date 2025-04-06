@@ -60,7 +60,7 @@ void AMS_AIManager::BeginPlay()
 void AMS_AIManager::OnBulletingBoardPoolReady()
 {
     // Add a delegate that calls when a AI takes a quest from the bulleting board
-    for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : BulletingBoardPool_->BulletingBoards_)
+    for (TWeakObjectPtr<AMS_BulletingBoard> BulletinBoard : BulletingBoardPool_->ActiveBulletingBoards_)
     {
         BulletinBoard->OnQuestObtained.AddDynamic(this, &AMS_AIManager::RemoveQuest);
     }
@@ -106,9 +106,9 @@ void AMS_AIManager::Tick(float DeltaTime)
                         FQuest NewQuest;
                         NewQuest.Type = Type;
                         NewQuest.Amount = QuestAmount;
-                        if (BulletingBoardPool_->BulletingBoards_.Num() >0)
+                        if (BulletingBoardPool_->ActiveBulletingBoards_.Num() >0)
                         {
-	                        BulletingBoardPool_->BulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->BulletingBoards_.Num()-1)]->AddQuest(NewQuest);
+	                        BulletingBoardPool_->ActiveBulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->ActiveBulletingBoards_.Num()-1)]->AddQuest(NewQuest);
 	                        ActiveQuests_.Add(NewQuest);            
                         }
                     

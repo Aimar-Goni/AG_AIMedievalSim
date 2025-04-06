@@ -25,6 +25,9 @@ public:
 
     TSharedPtr<FMoveNode> FindNodeByGridPosition(const FIntPoint& GridPosition);
     
+    UFUNCTION()
+    bool GetRandomFreeNode(FVector& OutLocation, FIntPoint& OutGrid);
+    
     TSharedPtr<FMoveNode> FindClosestNodeToActor(AActor* TargetActor);
     TSharedPtr<FMoveNode> FindClosestNodeToPosition(FVector position);
 

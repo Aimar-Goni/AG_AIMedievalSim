@@ -25,6 +25,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	float WorkplaceSpawnInterval = 0.5f;
+	
+	FTimerHandle SpawnTimerHandle;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	int n_workplaces_;
 	
@@ -40,7 +45,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReactivateWorkplace(AMS_BaseWorkPlace* Workplace, const FVector& NewLocation);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Spawn")
 	TArray<TSubclassOf<AMS_BaseWorkPlace>> WorkplaceClasses;
+	
+	UFUNCTION(BlueprintCallable)
+	void SpawnWorkplaceAtRandomNode();
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveWorkplaceAndFreeNode(AMS_BaseWorkPlace* TargetWorkplace);
 
 };

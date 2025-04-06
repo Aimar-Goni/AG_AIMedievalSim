@@ -16,7 +16,7 @@ AMS_WorkpPlacePool::AMS_WorkpPlacePool()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	WorkplaceClasses = { AMS_TreeWorkPlace::StaticClass(), AMS_WellWorkPlace::StaticClass(), AMS_BushWorkPlace::StaticClass() };
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -24,6 +24,8 @@ void AMS_WorkpPlacePool::BeginPlay()
 {
 	Super::BeginPlay();
 	FindWorkplacesOnScene();
+	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode, WorkplaceSpawnInterval, true);
+
 }
 
 // Called every frame
@@ -92,13 +94,74 @@ void AMS_WorkpPlacePool::DeactivateWorkplace(AMS_BaseWorkPlace* Workplace)
 
 void AMS_WorkpPlacePool::ReactivateWorkplace(AMS_BaseWorkPlace* Workplace, const FVector& NewLocation)
 {
+
 	if (!Workplace) return;
-	Workplace->placeActive_ = false;
+	
+	Workplace->placeActive_ = true;
 
 	Workplace->SetActorLocation(NewLocation);
 	Workplace->SetActorHiddenInGame(false);
 	Workplace->SetActorEnableCollision(true);
 	Workplace->SetActorTickEnabled(true);
 
-	// You can add node registration here if pathfinding is needed like for storage
+}
+
+
+void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
+{
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+	if (!PathfindingSubsystem || WorkplaceClasses.Num() == 0) return;
+
+	// Get a random free node position
+	FVector NodeWorldLocation;
+	FIntPoint NodeGrid;
+	if (!PathfindingSubsystem->GetRandomFreeNode(NodeWorldLocation, NodeGrid)) return;
+
+	// Pick a random workplace class
+	int32 ClassIndex = FMath::RandRange(0, WorkplaceClasses.Num() - 1);
+	TSubclassOf<AMS_BaseWorkPlace> SelectedClass = WorkplaceClasses[ClassIndex];
+	
+	AMS_BaseWorkPlace* NewWorkplace = nullptr;
+	for (int32 i = Workplaces_.Num() - 1; i >= 0; --i)
+	{
+		TWeakObjectPtr<AMS_BaseWorkPlace> Candidate = Workplaces_[i];
+		if (Candidate.Get() && Candidate->GetClass() == SelectedClass && !Candidate->placeActive_)
+		{
+			NewWorkplace = Candidate.Get();
+			break;
+		}
+	}
+	
+	if (NewWorkplace)
+	{
+		
+		// Register workplace node and block original node
+		PathfindingSubsystem->BlockNode(NodeWorldLocation);
+		NewWorkplace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NodeWorldLocation);
+
+		ReactivateWorkplace(NewWorkplace, NodeWorldLocation);
+	}
+}
+
+
+
+void AMS_WorkpPlacePool::RemoveWorkplaceAndFreeNode(AMS_BaseWorkPlace* TargetWorkplace)
+{
+	if (!TargetWorkplace || !Workplaces_.Contains(TargetWorkplace))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid or unknown workplace passed to RemoveWorkplaceAndFreeNode."));
+		return;
+	}
+
+	// Deactivate the workplace logic
+	DeactivateWorkplace(TargetWorkplace);
+	
+	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+
+	// Free the node
+	if (PathfindingSubsystem)
+	{
+		FVector Position = TargetWorkplace->GetActorLocation();
+		PathfindingSubsystem->UnblockNode(Position);
+	}
 }

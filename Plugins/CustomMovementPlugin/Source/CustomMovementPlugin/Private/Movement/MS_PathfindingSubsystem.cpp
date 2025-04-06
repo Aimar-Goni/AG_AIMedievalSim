@@ -416,3 +416,28 @@ TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindNodeByGridPosition(const FIn
 
     return nullptr;
 }
+
+bool UMS_PathfindingSubsystem::GetRandomFreeNode(FVector& OutLocation, FIntPoint& OutGrid)
+{
+    TArray<FIntPoint> Keys;
+    NodeMap.GetKeys(Keys);
+
+    if (Keys.Num() == 0) return false;
+
+    int32 MaxTries = 20;
+    for (int32 i = 0; i < MaxTries; ++i)
+    {
+        int32 Index = FMath::RandRange(0, Keys.Num() - 1);
+        FIntPoint RandomKey = Keys[Index];
+
+        TSharedPtr<FMoveNode> Node = NodeMap.FindRef(RandomKey);
+        if (Node.IsValid() && Node->Neighbors.Num()>0)
+        {
+            OutGrid = RandomKey;
+            OutLocation = FVector(RandomKey.X * NodeSeparation_, RandomKey.Y * NodeSeparation_, 0.f);
+            return true;
+        }
+    }
+
+    return false; // No free node found in MaxTries
+}

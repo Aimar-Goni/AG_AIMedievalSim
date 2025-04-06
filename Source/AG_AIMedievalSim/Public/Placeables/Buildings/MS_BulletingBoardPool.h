@@ -33,8 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
 	int n_BulletingBoards_;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TArray< TWeakObjectPtr<AMS_BulletingBoard>> BulletingBoards_;
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AMS_BulletingBoard>> ActiveBulletingBoards_;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AMS_BulletingBoard>> InactiveBulletingBoards_;
+
 
 	void FindBulletingBoardsOnScene();
 
@@ -46,7 +50,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReactivateBulletingBoardBuilding(AMS_BulletingBoard* Building, const FVector& NewLocation);
 
-	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Spawn")
 	TSubclassOf<AMS_BulletingBoard> BulletingBoardClass;
 
 	
