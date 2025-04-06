@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,7 +22,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	float WorkplaceSpawnInterval = 0.5f;
 	
@@ -33,9 +30,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	int n_workplaces_;
 	
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	TArray< TWeakObjectPtr<AMS_BaseWorkPlace>> Workplaces_;
+	// Active and Inactive pools
 
+	TArray<TWeakObjectPtr<AMS_BaseWorkPlace>> ActiveWorkplaces_;
+
+
+	TArray<TWeakObjectPtr<AMS_BaseWorkPlace>> InactiveWorkplaces_;
 
 	void FindWorkplacesOnScene();
 

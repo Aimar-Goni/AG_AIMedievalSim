@@ -1,10 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "Movement/MS_PathfindingSubsystem.h"
-
 #include "Kismet/GameplayStatics.h"
 #include "Placeables/Buildings/MS_WellWorkPlace.h"
 #include "Placeables/Interactables/MS_BushWorkPlace.h"
@@ -25,14 +21,12 @@ void AMS_WorkpPlacePool::BeginPlay()
 	Super::BeginPlay();
 	FindWorkplacesOnScene();
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode, WorkplaceSpawnInterval, true);
-
 }
 
 // Called every frame
 void AMS_WorkpPlacePool::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Checks the scene for already existing workplaces to add to the pool
@@ -50,14 +44,14 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 			{
 				AMS_BaseWorkPlace* workPlace = Cast<AMS_BaseWorkPlace>(actor);
 				workPlace->placeActive_ = true;
-				Workplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(workPlace));
-				// Adds the billboard to the navigation mesh
+				ActiveWorkplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(workPlace));
+				// Adds the workplace to the navigation mesh
 				workPlace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
 				n_workplaces_++;
 			}
 		}
 
-
+		// Spawn new workplaces if necessary
 		for (int32 i = 0; i < 100; ++i)
 		{
 			int32 ClassIndex = i % WorkplaceClasses.Num(); // Cycle through available classes
@@ -74,13 +68,14 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 			AMS_BaseWorkPlace* NewWorkplace = world->SpawnActor<AMS_BaseWorkPlace>(SelectedClass, SpawnLocation, SpawnRotation, SpawnParams);
 			if (NewWorkplace)
 			{
-				Workplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(NewWorkplace));
+				InactiveWorkplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(NewWorkplace));
 				DeactivateWorkplace(NewWorkplace);
 				n_workplaces_++;
 			}
 		}
 	}
 }
+
 void AMS_WorkpPlacePool::DeactivateWorkplace(AMS_BaseWorkPlace* Workplace)
 {
 	if (!Workplace) return;
@@ -90,22 +85,26 @@ void AMS_WorkpPlacePool::DeactivateWorkplace(AMS_BaseWorkPlace* Workplace)
 	Workplace->SetActorHiddenInGame(true);
 	Workplace->SetActorEnableCollision(false);
 	Workplace->SetActorTickEnabled(false);
+
+	// Move the workplace to the inactive pool
+	ActiveWorkplaces_.Remove(TWeakObjectPtr<AMS_BaseWorkPlace>(Workplace));
+	InactiveWorkplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(Workplace));
 }
 
 void AMS_WorkpPlacePool::ReactivateWorkplace(AMS_BaseWorkPlace* Workplace, const FVector& NewLocation)
 {
-
 	if (!Workplace) return;
 	
 	Workplace->placeActive_ = true;
-
 	Workplace->SetActorLocation(NewLocation);
 	Workplace->SetActorHiddenInGame(false);
 	Workplace->SetActorEnableCollision(true);
 	Workplace->SetActorTickEnabled(true);
 
+	// Move the workplace to the active pool
+	InactiveWorkplaces_.Remove(TWeakObjectPtr<AMS_BaseWorkPlace>(Workplace));
+	ActiveWorkplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(Workplace));
 }
-
 
 void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 {
@@ -122,10 +121,10 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	TSubclassOf<AMS_BaseWorkPlace> SelectedClass = WorkplaceClasses[ClassIndex];
 	
 	AMS_BaseWorkPlace* NewWorkplace = nullptr;
-	for (int32 i = Workplaces_.Num() - 1; i >= 0; --i)
+	for (int32 i = InactiveWorkplaces_.Num() - 1; i >= 0; --i)
 	{
-		TWeakObjectPtr<AMS_BaseWorkPlace> Candidate = Workplaces_[i];
-		if (Candidate.Get() && Candidate->GetClass() == SelectedClass && !Candidate->placeActive_)
+		TWeakObjectPtr<AMS_BaseWorkPlace> Candidate = InactiveWorkplaces_[i];
+		if (Candidate.Get() && Candidate->GetClass() == SelectedClass)
 		{
 			NewWorkplace = Candidate.Get();
 			break;
@@ -134,7 +133,6 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	
 	if (NewWorkplace)
 	{
-		
 		// Register workplace node and block original node
 		PathfindingSubsystem->BlockNode(NodeWorldLocation);
 		NewWorkplace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NodeWorldLocation);
@@ -143,11 +141,9 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	}
 }
 
-
-
 void AMS_WorkpPlacePool::RemoveWorkplaceAndFreeNode(AMS_BaseWorkPlace* TargetWorkplace)
 {
-	if (!TargetWorkplace || !Workplaces_.Contains(TargetWorkplace))
+	if (!TargetWorkplace || !ActiveWorkplaces_.Contains(TargetWorkplace))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid or unknown workplace passed to RemoveWorkplaceAndFreeNode."));
 		return;

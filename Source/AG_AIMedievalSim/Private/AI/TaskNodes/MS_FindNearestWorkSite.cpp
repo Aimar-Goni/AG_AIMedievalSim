@@ -17,7 +17,7 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 
 	// Retrieve the pool of workplaces and previous target
 	auto* WorkplacePool = Cast<AMS_WorkpPlacePool>(AICharacter->WorkPlacesPool_);
-	if (!WorkplacePool || WorkplacePool->Workplaces_.IsEmpty()) return EBTNodeResult::Failed;
+	if (!WorkplacePool || WorkplacePool->ActiveWorkplaces_.IsEmpty()) return EBTNodeResult::Failed;
 
 	auto* PreviousTarget = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 
@@ -26,7 +26,7 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 	float ClosestDistance = FLT_MAX;
 
 	// Check the pool and compare workplaces until find the closest one
-	for (TWeakObjectPtr<AMS_BaseWorkPlace> Workplace : WorkplacePool->Workplaces_)
+	for (TWeakObjectPtr<AMS_BaseWorkPlace> Workplace : WorkplacePool->ActiveWorkplaces_)
 	{
 		if (!Workplace->placeActive_) break;
 
