@@ -36,7 +36,7 @@ void AMS_StorageBuildingPool::BeginPlay()
 		}
 	}
 
-
+	StorageBuildingClass =  AMS_StorageBuilding::StaticClass();
 
 }
 
@@ -68,11 +68,61 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 				n_StorageBuldings_++;
 			}
 		}
+
+		if (!StorageBuildingClass) return;
+	
+
+		 for (int32 i = 0; i < 10; ++i)
+		 {
+		 	FVector SpawnLocation = FVector(100 * i, 0, 0); // Offset spawn to avoid overlaps
+		 	FRotator SpawnRotation = FRotator::ZeroRotator;
+		
+		 	FActorSpawnParameters SpawnParams;
+		 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		
+		 	AMS_StorageBuilding* NewStorage = world->SpawnActor<AMS_StorageBuilding>(StorageBuildingClass, SpawnLocation, SpawnRotation, SpawnParams);
+		 	if (NewStorage)
+		 	{
+		 		DeactivateStorageBuilding(NewStorage);
+		 		StorageBuldings_.Add(TWeakObjectPtr<AMS_StorageBuilding>(NewStorage));
+		 		n_StorageBuldings_++;
+		 	}
+		 }
 	}
+		
+	
 }
 
 void AMS_StorageBuildingPool::OnNodeMapInitialized()
 {
 	UE_LOG(LogTemp, Log, TEXT("Node Map is ready. Initializing Storage Buildings."));
 	FindStorageBuildingsOnScene();
+}
+
+void AMS_StorageBuildingPool::DeactivateStorageBuilding(AMS_StorageBuilding* Building)
+{
+	if (!Building) return;
+	
+	Building->placeActive_ = false;
+	Building->SetActorLocation(FVector(0, 0, -50000));
+	Building->SetActorHiddenInGame(true);
+	Building->SetActorEnableCollision(false);
+	Building->SetActorTickEnabled(false);
+}
+
+void AMS_StorageBuildingPool::ReactivateStorageBuilding(AMS_StorageBuilding* Building, const FVector& NewLocation)
+{
+	if (!Building) return;
+	
+	Building->placeActive_ = false;
+	Building->SetActorLocation(NewLocation);
+	Building->SetActorHiddenInGame(false);
+	Building->SetActorEnableCollision(true);
+	Building->SetActorTickEnabled(true);
+
+	// Recalculate grid position if needed
+	if (UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>())
+	{
+		Building->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NewLocation);
+	}
 }

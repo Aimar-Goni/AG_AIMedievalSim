@@ -27,13 +27,20 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	int n_workplaces_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	TSubclassOf<AActor> BushWorkPlace_;
-
+	
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	TArray< TWeakObjectPtr<AMS_BaseWorkPlace>> Workplaces_;
 
 
 	void FindWorkplacesOnScene();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateWorkplace(AMS_BaseWorkPlace* Workplace);
+
+	UFUNCTION(BlueprintCallable)
+	void ReactivateWorkplace(AMS_BaseWorkPlace* Workplace, const FVector& NewLocation);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	TArray<TSubclassOf<AMS_BaseWorkPlace>> WorkplaceClasses;
+
 };

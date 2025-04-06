@@ -6,6 +6,7 @@
 void AMS_TreeWorkPlace::BeginPlay()
 {
 	Super::BeginPlay();
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 

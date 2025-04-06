@@ -28,10 +28,20 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	int n_StorageBuldings_;
+	int n_StorageBuldings_ = 0;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
 	TArray< TWeakObjectPtr<AMS_StorageBuilding>> StorageBuldings_;
 
 	void FindStorageBuildingsOnScene();
+
+	UFUNCTION(BlueprintCallable)
+	void DeactivateStorageBuilding(AMS_StorageBuilding* Building);
+
+	UFUNCTION(BlueprintCallable)
+	void ReactivateStorageBuilding(AMS_StorageBuilding* Building, const FVector& NewLocation);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	TSubclassOf<AMS_StorageBuilding> StorageBuildingClass;
+
 };

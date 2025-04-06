@@ -4,7 +4,7 @@
 
 UMS_PawnStatComponent::UMS_PawnStatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 // Called when the game starts

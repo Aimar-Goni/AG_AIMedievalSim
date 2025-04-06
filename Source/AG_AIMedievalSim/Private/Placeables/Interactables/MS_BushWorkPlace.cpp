@@ -8,7 +8,7 @@
 void AMS_BushWorkPlace::BeginPlay()
 {
 	Super::BeginPlay();
-
+	this->SetActorTickEnabled(false);
 }
 
 // Called every frame

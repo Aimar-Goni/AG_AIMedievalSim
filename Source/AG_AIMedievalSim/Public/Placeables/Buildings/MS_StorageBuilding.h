@@ -36,5 +36,6 @@ public:
 
 	void TakeResources();
 
+	bool placeActive_ = false;
 
 };

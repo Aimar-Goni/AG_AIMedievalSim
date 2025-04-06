@@ -10,8 +10,8 @@
 // Sets default values
 AMS_BulletingBoardPool::AMS_BulletingBoardPool()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+ 	PrimaryActorTick.bCanEverTick = false;
+	BulletingBoardClass =  AMS_BulletingBoard::StaticClass();
 
 
 }
@@ -64,10 +64,32 @@ void AMS_BulletingBoardPool::FindBulletingBoardsOnScene() {
 
 				// Adds the billboard to the navigation mesh
 				bulletingBoard->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(bulletingBoard->GetActorLocation());
-
+				bulletingBoard->placeActive_ = true;
 				n_BulletingBoards_++;
 			}
 		}
+
+
+		if (!BulletingBoardClass) return;
+		
+		
+		for (int32 i = 0; i < 10; ++i)
+		{
+			FVector SpawnLocation = FVector(100 * i, 0, 0); // Offset spawn to avoid overlaps
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+		
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		
+			AMS_BulletingBoard* NewBoard = world->SpawnActor<AMS_BulletingBoard>(BulletingBoardClass, SpawnLocation, SpawnRotation, SpawnParams);
+			if (NewBoard)
+			{
+				DeactivateBulletingBoardBuilding(NewBoard);
+				BulletingBoards_.Add(TWeakObjectPtr<AMS_BulletingBoard>(NewBoard));
+				n_BulletingBoards_++;
+			}
+		}
+		
 	}
 }
 
@@ -77,4 +99,32 @@ void AMS_BulletingBoardPool::OnNodeMapInitialized()
 	FindBulletingBoardsOnScene();
 	OnBulletingBoardPoolInitialized.Broadcast();
 
+}
+
+void AMS_BulletingBoardPool::DeactivateBulletingBoardBuilding(AMS_BulletingBoard* Building)
+{
+	if (!Building) return;
+
+	Building->placeActive_ = false;
+	Building->SetActorLocation(FVector(0, 0, -50000));
+	Building->SetActorHiddenInGame(true);
+	Building->SetActorEnableCollision(false);
+	Building->SetActorTickEnabled(false);
+}
+
+void AMS_BulletingBoardPool::ReactivateBulletingBoardBuilding(AMS_BulletingBoard* Building, const FVector& NewLocation)
+{
+	if (!Building) return;
+	
+	Building->placeActive_ = false;
+	Building->SetActorLocation(NewLocation);
+	Building->SetActorHiddenInGame(false);
+	Building->SetActorEnableCollision(true);
+	Building->SetActorTickEnabled(true);
+
+	// Recalculate grid position if needed
+	if (UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>())
+	{
+		Building->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NewLocation);
+	}
 }

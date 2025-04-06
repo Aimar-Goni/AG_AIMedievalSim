@@ -31,7 +31,7 @@ EBTNodeResult::Type UMS_FindNearestBulletingBoard::ExecuteTask(UBehaviorTreeComp
 			// Check the pool and compare workplaces until find the closest one
 			for (TWeakObjectPtr<AMS_BulletingBoard> Workplace : Pool)
 			{
-				if (Workplace->Quests_.Num()>0) {
+				if (Workplace->Quests_.Num()>0 && Workplace->placeActive_) {
 
 					float CurrentDistance = AICharacter->GetDistanceTo(Workplace.Get());
 					if (CurrentDistance < ClosestDistance)

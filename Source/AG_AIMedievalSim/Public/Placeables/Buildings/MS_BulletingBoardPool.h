@@ -40,4 +40,14 @@ public:
 
 	FOnBulletingBoardPoolInitialized OnBulletingBoardPoolInitialized;
 
+	UFUNCTION(BlueprintCallable)
+	void DeactivateBulletingBoardBuilding(AMS_BulletingBoard* Building);
+
+	UFUNCTION(BlueprintCallable)
+	void ReactivateBulletingBoardBuilding(AMS_BulletingBoard* Building, const FVector& NewLocation);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spawning")
+	TSubclassOf<AMS_BulletingBoard> BulletingBoardClass;
+
+	
 };

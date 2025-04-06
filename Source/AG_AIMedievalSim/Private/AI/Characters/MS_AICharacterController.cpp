@@ -7,6 +7,7 @@
 AMS_AICharacterController::AMS_AICharacterController() {
     behaviorTree_ = CreateDefaultSubobject<UBehaviorTreeComponent>("behaviorComp_");
     blackboard_ = CreateDefaultSubobject<UBlackboardComponent>("blackboardComp_");
+    PrimaryActorTick.bCanEverTick = true;
 
 
 }

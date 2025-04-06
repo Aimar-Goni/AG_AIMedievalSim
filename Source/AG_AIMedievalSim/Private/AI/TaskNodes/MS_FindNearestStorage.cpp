@@ -31,8 +31,12 @@ EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& 
 	// Check the pool and compare storages until find the closest one
 	for (TWeakObjectPtr<AMS_StorageBuilding> Storage : StoragePool->StorageBuldings_)
 	{
+		if (!Storage->placeActive_)
+		{
+			break;
+		}
 		float CurrentDistance = AICharacter->GetDistanceTo(Storage.Get());
-		if (CurrentDistance < ClosestDistance)
+		if (CurrentDistance < ClosestDistance )
 		{
 			ClosestDistance = CurrentDistance;
 			Closest = Storage.Get();

@@ -28,6 +28,8 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 	// Check the pool and compare workplaces until find the closest one
 	for (TWeakObjectPtr<AMS_BaseWorkPlace> Workplace : WorkplacePool->Workplaces_)
 	{
+		if (!Workplace->placeActive_) break;
+
 		if (Workplace->ResourceType_ == AICharacter->Quest_.Type && Workplace->ResourceAvaliable_ && Workplace != PreviousTarget)
 		{
 			const float CurrentDistance = AICharacter->GetDistanceTo(Workplace.Get());
