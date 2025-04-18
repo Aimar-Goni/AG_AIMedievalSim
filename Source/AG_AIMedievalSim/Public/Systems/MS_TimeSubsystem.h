@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Tickable.h" 
+#include "Engine/SkyLight.h"
 #include "MS_TimeSubsystem.generated.h"
 
 // Delegate signatures
@@ -33,6 +34,8 @@ public:
 	virtual bool IsTickable() const override;
 	virtual TStatId GetStatId() const override;
 
+
+	
 	// --- Debugging ---
 
 	/** If true, displays current time information on the screen. */
@@ -44,7 +47,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time", meta = (ClampMin = "0.0"))
 	float TimeScale = 60.0f; // Default: 1 real minute = 1 game hour
 
-	/** The current hour (0.0 to 23.99...). */
+	/** The current hour (0.0 to 23.59...). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time")
 	float CurrentHour = 8.0f; // Start at 8 AM
 
@@ -116,7 +119,9 @@ public:
 	UFUNCTION(Exec)
 	void TimeSystem_SetDay(int32 NewDay);
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Lighting")
+	ASkyLight* SkyLightActor;
+	
 private:
 	// ... (private members remain the same)
 	/** Internal state to track if it was night in the previous tick, used for delegate broadcasting. */

@@ -1,14 +1,13 @@
 
 #include "Systems/MS_TimeSubsystem.h"
 #include "Engine/Engine.h"         
+#include "EngineUtils.h"
 #include "Logging/LogMacros.h"      
-
-
 
 UMS_TimeSubsystem::UMS_TimeSubsystem()
 {
-	TimeScale = 360.0f; // 1 real second = 6 game minutes (10 real minutes per day cycle)
-	CurrentHour = 8.0f;
+	TimeScale =  36000.0f; // 1 real second = 6 game minutes (10 real minutes per day cycle)
+	CurrentHour = 18.0f;
 	CurrentDay = 1;
 	DayStartHour = 6.0f;
 	NightStartHour = 20.0f;
@@ -42,6 +41,7 @@ TStatId UMS_TimeSubsystem::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UMS_TimeSubsystem, STATGROUP_Tickables);
 }
+
 
 void UMS_TimeSubsystem::Tick(float DeltaTime)
 {
@@ -153,11 +153,33 @@ void UMS_TimeSubsystem::UpdateCycleState(bool bForceImmediateBroadcast)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Night Started. Day: %d, Hour: %.2f"), CurrentDay, CurrentHour);
 			OnNightStart.Broadcast();
+			// for (TActorIterator<ASkyLight> It(GetWorld()); It; ++It)
+			// {
+			// 	SkyLightActor = *It;
+			// 	break; // Only get the first one
+			// }
+			// if (SkyLightActor)
+			// {
+			// 	SkyLightActor->SetActorHiddenInGame(true);
+			// 	//SkyLightActor->GetLightComponent()->SetVisibility(false);
+			// 	UE_LOG(LogTemp, Log, TEXT("Night started: Skylight disabled"));
+			// }
 		}
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("Day Started. Day: %d, Hour: %.2f"), CurrentDay, CurrentHour);
 			OnDayStart.Broadcast();
+			// for (TActorIterator<ASkyLight> It(GetWorld()); It; ++It)
+			// {
+			// 	SkyLightActor = *It;
+			// 	break; // Only get the first one
+			// }
+			// if (SkyLightActor)
+			// {
+			// 	SkyLightActor->SetActorHiddenInGame(false);
+			// 	//SkyLightActor->GetLightComponent()->SetVisibility(true);
+			// 	UE_LOG(LogTemp, Log, TEXT("Day started: Skylight enabled"));
+			// }
 		}
 	}
 }
