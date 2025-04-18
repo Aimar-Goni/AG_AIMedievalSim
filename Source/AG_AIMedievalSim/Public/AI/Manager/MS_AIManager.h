@@ -10,6 +10,7 @@
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Systems/MS_InventoryComponent.h"
+#include "Systems/MS_TimeSubsystem.h"
 #include "MS_AIManager.generated.h"
 
 UCLASS()
@@ -52,5 +53,6 @@ public:
 
 	UFUNCTION()
 	void OnBulletingBoardPoolReady();
+
 
 };

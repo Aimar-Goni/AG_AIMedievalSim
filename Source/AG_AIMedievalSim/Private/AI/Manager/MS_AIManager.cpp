@@ -3,7 +3,7 @@
 #include "AI/Manager/MS_AIManager.h"
 #include "Systems/MS_InventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Systems/MS_TimeSubsystem.h"
 
 // Sets default values
 AMS_AIManager::AMS_AIManager()
@@ -51,8 +51,7 @@ void AMS_AIManager::BeginPlay()
 
     // Add delegate that calls when the bulleting boards have been initialized, so it doesnt use an empty pool
     BulletingBoardPool_->OnBulletingBoardPoolInitialized.AddDynamic(this, &AMS_AIManager::OnBulletingBoardPoolReady);
-    
-
+	
 
 }
 
@@ -121,12 +120,14 @@ void AMS_AIManager::Tick(float DeltaTime)
 }
 
 
-void AMS_AIManager::UpdateResources(ResourceType type, int32 amount) {
+void AMS_AIManager::UpdateResources(ResourceType type, int32 amount)
+{
 	Inventory_->SetResource(type, amount);
 }
 
 // Once the quest is accepted by the AI, it gets removed from active quests so it can be send again
-void AMS_AIManager::RemoveQuest(FQuest Quest) {
+void AMS_AIManager::RemoveQuest(FQuest Quest)
+{
     int i = 0;
     for (FQuest ActiveQuest : ActiveQuests_)
     {
