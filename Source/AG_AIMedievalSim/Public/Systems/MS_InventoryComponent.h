@@ -8,12 +8,11 @@
 
 UENUM(BlueprintType)
 enum class ResourceType : uint8 {
-
 	ERROR UMETA(DisplayName = "Error"),
 	BERRIES UMETA(DisplayName = "Berries"),
 	WOOD UMETA(DisplayName = "Wood"),
 	WATER UMETA(DisplayName = "Water"),
-	//WHEAT UMETA(DisplayName = "Wheat"),
+	WHEAT UMETA(DisplayName = "Wheat"), 
 
 };
 

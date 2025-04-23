@@ -253,16 +253,19 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			if (AIController->GetBlackboardComponent()->GetValueAsObject("Target") == WorkPlace && WorkPlace->ResourceAvaliable_)
 			{
 
-				if (!AIController->GetBlackboardComponent()->GetValueAsBool("Ignoring"))
-				{
-					//Extect resources
-					FResource recieved = WorkPlace->TakeResources();
-					//Add them to inventory
-					Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
-					UMS_GameManager* GameManager = GetGameInstance()->GetSubsystem<UMS_GameManager>();
-					GameManager->GetWorkPlacePool()->RemoveWorkplaceAndFreeNode(WorkPlace);
-				}
-				UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
+				// if (!AIController->GetBlackboardComponent()->GetValueAsBool("Ignoring"))
+				// {
+				// 	//Extect resources
+				// 	FResource recieved = WorkPlace->TakeResources();
+				// 	//Add them to inventory
+				// 	Inventory_->Resources_.FindOrAdd(recieved.Type) += recieved.Amount;
+				// 	UMS_GameManager* GameManager = GetGameInstance()->GetSubsystem<UMS_GameManager>();
+				// 	GameManager->GetWorkPlacePool()->RemoveWorkplaceAndFreeNode(WorkPlace);
+				// }
+				// UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the workplace!"));
+
+				AIController->GetBlackboardComponent()->SetValueAsBool(FName("AtWorkLocation"), true);
+				UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting AtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
 			
 			}
 		}

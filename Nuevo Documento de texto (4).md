@@ -27,7 +27,7 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Define delegates `OnDayStart`, `OnNightStart` and broadcast them when the time transitions.
         *   **(Optional UI):** Create a simple UI widget to display time/day.
 
-</span>
+
 
 *   **Step 2: Basic Economy - Money & Quest Rewards**
     *   **What:** Pawns need money, quests need to give money.
@@ -37,6 +37,8 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Modify `AMS_AIManager::Tick` (or wherever quests are generated) to assign a `Reward` value to new quests based on `Amount` and `Type`.
         *   Modify the AI logic where a quest is considered "complete". This is likely after storing items in `AMS_AICharacter::OnOverlapBegin` (for resource quests). Add `AICharacter->Money += Quest_.Reward;` there. Log this for debugging.
         *   **(Refinement):** You'll need a more robust way to signal quest completion later, perhaps a dedicated function or event.
+
+</span>
 
 *   **Step 3: Interaction Feedback - Work Duration & Animation Hooks**
     *   **What:** Replace instant resource gathering with a timed action. Add animation triggers.
