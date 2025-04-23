@@ -55,7 +55,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	TMap<ResourceType, int32> Resources_;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	int32 Money;
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

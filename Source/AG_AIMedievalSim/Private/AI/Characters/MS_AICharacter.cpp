@@ -167,6 +167,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					{
 						StorageBuilding->Inventory_->AddToResources(Resource.Key, Resource.Value);
 					}
+					this->Inventory_->Money += Quest_.Reward;
+				
 					Inventory_->ResetInventory();
 					UE_LOG(LogTemp, Warning, TEXT("AI Character has entered the storage!"));
 					AIController->GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
@@ -187,7 +189,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 						AIController->GetBlackboardComponent()->SetValueAsBool("Ignoring", true);
 						
 						// Force the quest to food
-						Quest_ = FQuest(ResourceType::BERRIES, 10);
+						Quest_ = FQuest(ResourceType::BERRIES, 10, 0);
 					}
 					else {
 						//Take the resources if there is enough
@@ -210,7 +212,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 						AIController->GetBlackboardComponent()->SetValueAsBool("Ignoring", true);
 
 						// Force the quest to water
-						Quest_ = FQuest(ResourceType::WATER, 10);
+						Quest_ = FQuest(ResourceType::WATER, 10, 0);
 
 					}
 					else {

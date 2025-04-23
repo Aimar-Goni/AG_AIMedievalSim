@@ -59,7 +59,7 @@ public:
 
 	/** Minimum intensity the light will have (at night). Should be > 0 to avoid pitch black. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Intensity", meta = (ClampMin = "0.0"))
-	float MinNightIntensity = 0.05f;
+	float MinNightIntensity = 12.0f;
 
 	/** Maximum intensity the light will have (at midday). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Intensity", meta = (ClampMin = "0.0"))
@@ -75,15 +75,15 @@ public:
 
 	/** Rotation of the sun at sunrise (Pitch). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Rotation")
-	float SunrisePitch = -5.0f; // Sun slightly above horizon
+	float SunrisePitch = -15.0f; // Sun slightly above horizon
 
 	/** Rotation of the sun at midday (Pitch - Highest point). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Rotation")
-	float MiddayPitch = 90.0f; // Directly overhead
+	float MiddayPitch = -90.0f; // Directly overhead
 
 	/** Rotation of the sun at sunset (Pitch). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Rotation")
-	float SunsetPitch = -5.0f; // Sun slightly above horizon
+	float SunsetPitch = -165.0f; // Sun slightly above horizon
 
 	/** Fixed Yaw rotation for the sun's path. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sky Controller|Rotation")

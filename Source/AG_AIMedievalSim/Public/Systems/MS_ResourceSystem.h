@@ -18,6 +18,10 @@ struct FQuest
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
 	int32 Amount;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
+	int32 Reward;
+
+	
 	bool operator<(const FQuest& Other) const
 	{
 		return Amount > Other.Amount;
@@ -26,11 +30,13 @@ struct FQuest
 	FQuest(){
 		Type = ResourceType::ERROR;
 		Amount = 0;
+		Reward = 0;
 	}
 
-	FQuest(ResourceType type, int32 amount) {
+	FQuest(ResourceType type, int32 amount, int32 reward) {
 		Type = type;
 		Amount = amount;
+		Reward = reward;
 	}
 };
 

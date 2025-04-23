@@ -65,6 +65,30 @@ void AMS_AIManager::OnBulletingBoardPoolReady()
     }
 }
 
+static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
+{
+	int32 GoldPerUnit = 0;
+
+	switch (Resource)
+	{
+	case ResourceType::BERRIES:
+		GoldPerUnit = 2;
+		break;
+	case ResourceType::WOOD:
+		GoldPerUnit = 3;
+		break;
+	case ResourceType::WATER:
+		GoldPerUnit = 1;
+		break;
+	case ResourceType::ERROR:
+	default:
+		GoldPerUnit = 0;
+		break;
+	}
+
+	return GoldPerUnit * Amount;
+}
+
 // Checks the avaliable resources and sends quest to the billboard
 void AMS_AIManager::Tick(float DeltaTime)
 {
@@ -104,7 +128,8 @@ void AMS_AIManager::Tick(float DeltaTime)
                     {
                         FQuest NewQuest;
                         NewQuest.Type = Type;
-                        NewQuest.Amount = QuestAmount;
+                    	NewQuest.Amount = QuestAmount;
+                    	NewQuest.Reward = CalculateGoldReward(Type, QuestAmount);
                         if (BulletingBoardPool_->ActiveBulletingBoards_.Num() >0)
                         {
 	                        BulletingBoardPool_->ActiveBulletingBoards_[FMath::RandRange(0, BulletingBoardPool_->ActiveBulletingBoards_.Num()-1)]->AddQuest(NewQuest);

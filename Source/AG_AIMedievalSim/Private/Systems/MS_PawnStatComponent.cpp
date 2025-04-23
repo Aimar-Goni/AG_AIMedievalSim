@@ -71,6 +71,8 @@ void UMS_PawnStatComponent::ModifyHappiness(float Amount)
 }
 
 
+
+
 bool UMS_PawnStatComponent::IsHungry() { return Hungry; }
 
 bool UMS_PawnStatComponent::IsThirsty() { return Thirsty; }

@@ -38,7 +38,7 @@ EBTNodeResult::Type UMS_ConsumeDirectlyTask::ExecuteTask(UBehaviorTreeComponent&
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
 			
 			// Reset Quest
-			AICharacter->Quest_ = FQuest(ResourceType::ERROR,0);
+			AICharacter->Quest_ = FQuest(ResourceType::ERROR,0, 0);
 			return EBTNodeResult::Succeeded;
 		}
 	}

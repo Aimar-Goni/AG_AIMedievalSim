@@ -39,6 +39,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	float Happiness = 100.0f;
 
+	
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	float HungryThreshold = 30.0f;
 	UPROPERTY(EditAnywhere, Category = "Stats")
@@ -77,6 +78,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStatChanged OnHappinessChanged;
+
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStateChanged OnStateChanged;
