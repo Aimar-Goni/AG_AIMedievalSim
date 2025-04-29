@@ -38,7 +38,6 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Modify the AI logic where a quest is considered "complete". This is likely after storing items in `AMS_AICharacter::OnOverlapBegin` (for resource quests). Add `AICharacter->Money += Quest_.Reward;` there. Log this for debugging.
         *   **(Refinement):** You'll need a more robust way to signal quest completion later, perhaps a dedicated function or event.
 
-</span>
 
 *   **Step 3: Interaction Feedback - Work Duration & Animation Hooks**
     *   **What:** Replace instant resource gathering with a timed action. Add animation triggers.
@@ -59,6 +58,8 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
                 *   `FinishLatentTask` with `Succeeded`.
             *   **If AI Moves/Aborts:** The BT needs logic (e.g., using Abort triggers or decorators) to cancel this task if the AI leaves the location or conditions change. Handle cleanup (stop montage, `FinishLatentTask` with `Aborted`).
         *   Modify BT: After reaching the workplace (MoveTo succeeds), use a sequence: [Set `bIsAtWorkLocation`=true (maybe via overlap?), Run `UMS_PerformWorkAction` Task].
+
+</span>
 
 **Week 2: Core Gameplay Loop Change - Job Assignment**
 

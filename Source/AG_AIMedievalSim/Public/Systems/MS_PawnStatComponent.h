@@ -94,6 +94,11 @@ public:
 	bool IsTired();
 	bool IsSad();
 
+	float GetHunger();
+	float GetThirst();
+	float GetHappiness();
+	float GetEnergy();
+	
 private:
 	void BroadcastStatChange(float& Stat, float Amount, FOnStatChanged& Delegate);
 };

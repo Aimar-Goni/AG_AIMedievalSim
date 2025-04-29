@@ -71,6 +71,23 @@ void UMS_PawnStatComponent::ModifyHappiness(float Amount)
 }
 
 
+float UMS_PawnStatComponent::GetHunger()
+{
+	return Hunger;
+}
+float UMS_PawnStatComponent::GetThirst()
+{
+	return Thirst;
+}
+float UMS_PawnStatComponent::GetEnergy()
+{
+	return Energy;
+}
+float UMS_PawnStatComponent::GetHappiness()
+{
+	return Happiness;
+}
+
 
 
 bool UMS_PawnStatComponent::IsHungry() { return Hungry; }

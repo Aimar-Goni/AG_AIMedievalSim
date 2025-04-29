@@ -4,14 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Systems/MS_ResourceSystem.h"
+#include "Systems/MS_ResourceSystem.h"        
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
-#include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
-#include "Placeables/Buildings/MS_BulletingBoard.h"
 #include "Systems/MS_InventoryComponent.h"
-#include "Systems/MS_TimeSubsystem.h"
+#include "TimerManager.h"   
 #include "MS_AIManager.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuestAvailable, const FQuest&, NewQuest);
+
+USTRUCT()
+struct FBidInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TWeakObjectPtr<AMS_AICharacter> Bidder;
+
+	UPROPERTY()
+	float BidValue = 0.0f;
+	
+	UPROPERTY()
+	float BidTimestamp = 0.0f;
+};
+
+
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_AIManager : public AActor
@@ -19,40 +36,68 @@ class AG_AIMEDIEVALSIM_API AMS_AIManager : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AMS_AIManager();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	virtual void GenerateQuests();
+
+	UFUNCTION()
+	void SelectQuestWinner_Internal(FGuid QuestID);
+
+	void StartBidTimer(const FQuest& Quest);
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Dependencies")
 	TWeakObjectPtr<AMS_StorageBuildingPool> StorageBuldingsPool_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Dependencies")
 	TWeakObjectPtr<AMS_BulletingBoardPool> BulletingBoardPool_;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Inventory")
+	TObjectPtr<UInventoryComponent> Inventory_;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
-	UInventoryComponent* Inventory_;
+	// --- Quest Management ---
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Manager|Quests")
+	TArray<FQuest> AvailableQuests_;
+	
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Manager|Quests")
+	TMap<FGuid, TWeakObjectPtr<AMS_AICharacter>> AssignedQuests_;
+	
+	//UPROPERTY(VisibleAnywhere, Category = "AI Manager|Bidding")
+	TMap<FGuid, TArray<FBidInfo>> CurrentBids;
+	
+    UPROPERTY()
+    TMap<FGuid, FTimerHandle> BidTimers;
+	
+	UPROPERTY(BlueprintAssignable, Category = "AI Manager|Events")
+	FOnQuestAvailable OnQuestAvailable;
+	
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Bidding")
+    float BidDuration = 3.0f;
+	
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
+    int32 LowResourceThreshold = 50;
+	
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
+    int32 MaxResourcePerQuest = 15;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
-	TArray<FQuest> ActiveQuests_;
+	// --- Public Functions ---
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
-	bool SendingQuests = false;
 
-	UFUNCTION()
-	void UpdateResources(ResourceType type, int32 amount);
+	UFUNCTION(BlueprintCallable, Category = "AI Manager|Bidding")
+	void ReceiveBid(AMS_AICharacter* Bidder, FQuest Quest, float BidValue);
+	
+    UFUNCTION(BlueprintCallable, Category = "AI Manager|Quests")
+    void RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID);
 
-	UFUNCTION()
-	void RemoveQuest(FQuest Quest);
 
-	UFUNCTION()
-	void OnBulletingBoardPoolReady();
-
+	//UFUNCTION() void UpdateResources(ResourceType type, int32 amount);
+	//UFUNCTION() void RemoveQuest(FQuest Quest); 
+	//UFUNCTION() void OnBulletingBoardPoolReady();
 
 };

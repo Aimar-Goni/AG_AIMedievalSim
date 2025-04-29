@@ -12,31 +12,43 @@ struct FQuest
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	ResourceType Type;
+	// Unique identifier for this specific quest instance
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
+	FGuid QuestID;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Amount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest|Resources")
+	ResourceType Type = ResourceType::ERROR;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Resources")
-	int32 Reward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest|Resources")
+	int32 Amount = 0;
 
-	
+	// Monetary reward for completing the quest
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest|Reward")
+	int32 Reward = 0;
+
+	// Optional: Target destination for delivery quests (like construction)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest|Targeting")
+	TWeakObjectPtr<AActor> TargetDestination = nullptr;
+
+	FQuest()
+		: QuestID(FGuid::NewGuid()), // Assign a new ID by default
+		Type(ResourceType::ERROR),
+		Amount(0),
+		Reward(0),
+		TargetDestination(nullptr)
+	{}
+
+	FQuest(ResourceType InType, int32 InAmount, int32 InReward = 0, AActor* InTarget = nullptr)
+		: QuestID(FGuid::NewGuid()), // Assign a new ID
+		Type(InType),
+		Amount(InAmount),
+		Reward(InReward),
+		TargetDestination(InTarget)
+	{}
+
 	bool operator<(const FQuest& Other) const
 	{
-		return Amount > Other.Amount;
-	}
-
-	FQuest(){
-		Type = ResourceType::ERROR;
-		Amount = 0;
-		Reward = 0;
-	}
-
-	FQuest(ResourceType type, int32 amount, int32 reward) {
-		Type = type;
-		Amount = amount;
-		Reward = reward;
+		return QuestID < Other.QuestID;
 	}
 };
 

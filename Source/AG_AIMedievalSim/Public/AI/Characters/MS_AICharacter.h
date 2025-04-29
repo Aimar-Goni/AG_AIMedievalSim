@@ -10,14 +10,12 @@
 #include "Components/WidgetComponent.h"
 #include "Systems/MS_InventoryComponent.h"
 #include "Systems/MS_PawnStatComponent.h"
-#include "Systems/MS_ResourceSystem.h"
+#include "Systems/MS_ResourceSystem.h" 
 #include "Movement/MS_PathfindingSubsystem.h"
 #include "MS_AICharacter.generated.h"
 
-
-
-
-
+class AMS_AIManager; 
+class UMS_PathfindingSubsystem;
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_AICharacter : public ACharacter
@@ -25,82 +23,98 @@ class AG_AIMEDIEVALSIM_API AMS_AICharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-
+	AMS_AICharacter(); 
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|AI")
-	class UBehaviorTree* behaviorTree_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Behavior")
-	TWeakObjectPtr<AActor> target_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
-	TWeakObjectPtr<AActor> WorkPlacesPool_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TWeakObjectPtr<AActor> StorageBuldingsPool_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
-	TWeakObjectPtr<AActor> BulletingBoardPool_;
+	TObjectPtr<UBehaviorTree> behaviorTree_;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Inventory")
-	UInventoryComponent* Inventory_;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Quests")
-	FQuest Quest_;
-
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	UBoxComponent* ShopCollision;
+	TObjectPtr<UInventoryComponent> Inventory_;
 
 	UPROPERTY(EditAnywhere, Category = "Design|Stats")
-	UMS_PawnStatComponent* PawnStats_;
+	TObjectPtr<UMS_PawnStatComponent> PawnStats_;
 
 	UPROPERTY(EditAnywhere, Category = "Internal|Stats")
-	UWidgetComponent* WidgetComponent_;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
-	int32 CurrentNodeIndex;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
-	FVector CurrentTargetLocation;
-
+	TObjectPtr<UWidgetComponent> WidgetComponent_;
 	
-	TArray<FIntPoint> Path_;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Dependencies") 
+	TWeakObjectPtr<AActor> WorkPlacesPool_; 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Dependencies")
+	TWeakObjectPtr<AActor> StorageBuldingsPool_; 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Storages")
+	TWeakObjectPtr<AActor> BulletingBoardPool_;
+	
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Design|Dependencies")
+    TWeakObjectPtr<AMS_AIManager> AIManager;
+	
+    UPROPERTY()
+    TObjectPtr<UMS_PathfindingSubsystem> PathfindingSubsystem;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Design|Quests")
+	FQuest AssignedQuest;
+	
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Economy")
+    int32 Money = 20; 
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
+	int32 CurrentNodeIndex = -1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
+	FVector CurrentTargetLocation;
+	TArray<FIntPoint> Path_;
+	
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	TObjectPtr<UBoxComponent> ShopCollision; 
+
+protected:
+	
+	virtual void BeginPlay() override;
+
+public:
+
+	UFUNCTION()
+	void OnNewQuestReceived(const FQuest& NewQuest);
+
+
+	UFUNCTION()
+	void EvaluateQuestAndBid(const FQuest& Quest);
+
+
+    UFUNCTION()
+    float CalculateBidValue(const FQuest& Quest);
+
+
+    UFUNCTION()
+    void AssignQuest(const FQuest& Quest);
+	
+    UFUNCTION(BlueprintCallable, Category="AI|Quests")
+    void CompleteCurrentQuest();
+
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
-
-	// Sets default values for this character's properties
-	AMS_AICharacter();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	//virtual void Serialize(FArchive& Ar);
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	UFUNCTION()
-	void CheckIfHungry();
-
-	UFUNCTION()
-	void NewQuestAdded();
+	void CheckIfHungry(); 
 
 	UFUNCTION()
 	void ConsumeResourceDirectly(ResourceType type, int32 ammount);
 
-	TArray<FIntPoint> CreateMovementPath(AActor* ClosestWorkplace);
-	
+	TArray<FIntPoint> CreateMovementPath(AActor* TargetActor);
+
 	UFUNCTION()
 	void OnPathUpdated(FIntPoint ChangedNodePos);
+
+    UFUNCTION(BlueprintPure, Category="AI|State")
+    bool IsIdle() const;
+
+	//UFUNCTION()
+	//void NewQuestAdded();
 };
