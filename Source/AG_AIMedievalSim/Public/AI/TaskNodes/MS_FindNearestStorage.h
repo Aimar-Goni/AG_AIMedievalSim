@@ -14,5 +14,11 @@ class AG_AIMEDIEVALSIM_API UMS_FindNearestStorage : public UBTTaskNode
 {
 	GENERATED_BODY()
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
+	
+public:
+	UMS_FindNearestStorage();
+	
+	UPROPERTY(EditAnywhere, Category = Blackboard)
+	FBlackboardKeySelector BlackboardKey_TargetStorage;
+	
 };

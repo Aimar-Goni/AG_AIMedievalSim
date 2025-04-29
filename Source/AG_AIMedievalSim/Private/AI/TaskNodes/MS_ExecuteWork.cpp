@@ -18,8 +18,8 @@ EBTNodeResult::Type UMS_ExecuteWork::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 			AMS_BaseWorkPlace* Workplace = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 			
-			ResourceType ResourceTypeNeeded = AICharacter->Quest_.Type;
-			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
+			ResourceType ResourceTypeNeeded = AICharacter->AssignedQuest.Type;
+			int32 ResourceAmountNeeded = AICharacter->AssignedQuest.Amount;
 			auto a  = Cast<UInventoryComponent>(AICharacter->Inventory_);
 
 			// Get resources

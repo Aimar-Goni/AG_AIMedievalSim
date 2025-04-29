@@ -8,50 +8,73 @@
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Movement/MS_PathfindingSubsystem.h"
 
+UMS_FindNearestStorage::UMS_FindNearestStorage()
+{
+	NodeName = "Find Nearest Storage";
+	BlackboardKey_TargetStorage.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UMS_FindNearestStorage, BlackboardKey_TargetStorage), AActor::StaticClass());
+}
 
 EBTNodeResult::Type UMS_FindNearestStorage::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-
-	// Get the AI controller and pawn
 	auto* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner());
 	auto* AICharacter = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
-	if (!AICharacter) return EBTNodeResult::Failed;
+    auto* Blackboard = OwnerComp.GetBlackboardComponent();
 
-	// Retrieve the pool of workplaces and previous target
-	AMS_StorageBuildingPool* StoragePool = Cast<AMS_StorageBuildingPool>(AICharacter->StorageBuldingsPool_);
-	if (!StoragePool) return EBTNodeResult::Failed;
-
-	auto* PreviousTarget = Cast<AMS_StorageBuilding>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
-
-	// Find the closest matching workplace
-	AMS_StorageBuilding* Closest = nullptr;
-	float ClosestDistance = FLT_MAX;
+	if (!AICharacter || !Blackboard) return EBTNodeResult::Failed;
 
 
-	// Check the pool and compare storages until find the closest one
-	for (TWeakObjectPtr<AMS_StorageBuilding> Storage : StoragePool->StorageBuldings_)
+	AMS_StorageBuildingPool* StoragePool = Cast<AMS_StorageBuildingPool>(AICharacter->StorageBuldingsPool_.Get());
+	if (!StoragePool || StoragePool->StorageBuldings_.IsEmpty()) 
+    {
+         UE_LOG(LogTemp, Warning, TEXT("FindNearestStorage: Storage Pool invalid or empty for %s."), *AICharacter->GetName());
+        return EBTNodeResult::Failed;
+    }
+
+
+	AMS_StorageBuilding* ClosestStorage = nullptr;
+	float ClosestDistanceSq = FLT_MAX;
+
+    UE_LOG(LogTemp, Verbose, TEXT("FindNearestStorage: %s searching for storage."), *AICharacter->GetName());
+
+	for (TWeakObjectPtr<AMS_StorageBuilding> StoragePtr : StoragePool->StorageBuldings_)
 	{
-		if (!Storage->placeActive_)
+		if (StoragePtr.IsValid() && StoragePtr->placeActive_) 
 		{
-			break;
-		}
-		float CurrentDistance = AICharacter->GetDistanceTo(Storage.Get());
-		if (CurrentDistance < ClosestDistance )
-		{
-			ClosestDistance = CurrentDistance;
-			Closest = Storage.Get();
+            AMS_StorageBuilding* Storage = StoragePtr.Get();
+			float CurrentDistanceSq = FVector::DistSquared(AICharacter->GetActorLocation(), Storage->GetActorLocation());
+			if (CurrentDistanceSq < ClosestDistanceSq)
+			{
+				ClosestDistanceSq = CurrentDistanceSq;
+				ClosestStorage = Storage;
+			}
 		}
 	}
 
-	//Modify BB states
-	if (Closest)
+	if (ClosestStorage)
 	{
-		AICharacter->CreateMovementPath(Closest);
-		OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", Closest);
-		return EBTNodeResult::Succeeded;
+        UE_LOG(LogTemp, Log, TEXT("FindNearestStorage: %s found storage %s (DistSq: %.0f)."),
+            *AICharacter->GetName(), *ClosestStorage->GetName(), ClosestDistanceSq);
+		
+        Blackboard->SetValueAsObject(BlackboardKey_TargetStorage.SelectedKeyName, ClosestStorage);
+        Blackboard->SetValueAsObject(FName("Target"), ClosestStorage);
+
+        AICharacter->CreateMovementPath(ClosestStorage);
+         if(AICharacter->Path_.Num() > 0)
+        {
+		    return EBTNodeResult::Succeeded;
+        }
+        else
+        {
+             UE_LOG(LogTemp, Warning, TEXT("FindNearestStorage: Found storage %s for %s, but failed to generate path."), *ClosestStorage->GetName(), *AICharacter->GetName());
+             Blackboard->ClearValue(BlackboardKey_TargetStorage.SelectedKeyName);
+             Blackboard->ClearValue(FName("Target"));
+             return EBTNodeResult::Failed;
+        }
 	}
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindNearestStorage: %s could not find any active storage."), *AICharacter->GetName());
+    }
 
 	return EBTNodeResult::Failed;
-
-
 }

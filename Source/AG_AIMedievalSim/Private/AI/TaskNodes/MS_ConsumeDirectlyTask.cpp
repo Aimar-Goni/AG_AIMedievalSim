@@ -19,8 +19,8 @@ EBTNodeResult::Type UMS_ConsumeDirectlyTask::ExecuteTask(UBehaviorTreeComponent&
 
 			AMS_BaseWorkPlace* Workplace = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 
-			ResourceType ResourceTypeNeeded = AICharacter->Quest_.Type;
-			int32 ResourceAmountNeeded = AICharacter->Quest_.Amount;
+			ResourceType ResourceTypeNeeded = AICharacter->AssignedQuest.Type;
+			int32 ResourceAmountNeeded = AICharacter->AssignedQuest.Amount;
 			auto a = Cast<UInventoryComponent>(AICharacter->Inventory_);
 
 			// Consume resources
@@ -38,7 +38,7 @@ EBTNodeResult::Type UMS_ConsumeDirectlyTask::ExecuteTask(UBehaviorTreeComponent&
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool("StoringItems", false);
 			
 			// Reset Quest
-			AICharacter->Quest_ = FQuest(ResourceType::ERROR,0, 0);
+			AICharacter->AssignedQuest = FQuest(ResourceType::ERROR,0, 0);
 			return EBTNodeResult::Succeeded;
 		}
 	}

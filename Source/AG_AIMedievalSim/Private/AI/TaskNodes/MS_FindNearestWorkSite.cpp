@@ -1,59 +1,92 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AI/TaskNodes/MS_FindNearestWorkSite.h"
-#include "AI/Characters/MS_AICharacterController.h"
-#include "AI/Characters/MS_AICharacter.h"
+#include "AI/TaskNodes/MS_FindNearestWorkSite.h" 
+#include "AI/Characters/MS_AICharacterController.h" 
+#include "AI/Characters/MS_AICharacter.h" 
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
-#include "Placeables/Interactables/MS_BaseWorkPlace.h"
-
-
+#include "Placeables/Interactables/MS_BaseWorkPlace.h" 
+#include "BehaviorTree/BlackboardComponent.h"      
+#include "Systems/MS_InventoryComponent.h"  
 
 EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	// Get the AI controller and pawn
 	auto* AIController = Cast<AMS_AICharacterController>(OwnerComp.GetAIOwner());
 	auto* AICharacter = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
-	if (!AICharacter) return EBTNodeResult::Failed;
+    auto* Blackboard = OwnerComp.GetBlackboardComponent(); // Get Blackboard
 
-	// Retrieve the pool of workplaces and previous target
-	auto* WorkplacePool = Cast<AMS_WorkpPlacePool>(AICharacter->WorkPlacesPool_);
-	if (!WorkplacePool || WorkplacePool->ActiveWorkplaces_.IsEmpty()) return EBTNodeResult::Failed;
+	if (!AICharacter || !Blackboard) return EBTNodeResult::Failed;
 
-	auto* PreviousTarget = Cast<AMS_BaseWorkPlace>(OwnerComp.GetBlackboardComponent()->GetValueAsObject("Target"));
 
-	// Find the closest matching workplace
+    FName QuestTypeKeyName = FName("QuestType"); 
+    if (Blackboard->GetKeyID(QuestTypeKeyName) != FBlackboard::InvalidKey) // Check if the key exists
+    {
+         UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: Blackboard key 'QuestType' does not exist!"));
+         return EBTNodeResult::Failed;
+    }
+    ResourceType ResourceTypeNeeded = static_cast<ResourceType>(Blackboard->GetValueAsEnum(QuestTypeKeyName));
+
+    if (ResourceTypeNeeded == ResourceType::ERROR)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: QuestType in Blackboard is ERROR for %s."), *AICharacter->GetName());
+        return EBTNodeResult::Failed; // No valid quest type
+    }
+ 
+
+
+	// Retrieve the pool of workplaces
+	auto* WorkplacePool = Cast<AMS_WorkpPlacePool>(AICharacter->WorkPlacesPool_.Get()); 
+	if (!WorkplacePool || WorkplacePool->ActiveWorkplaces_.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: WorkplacePool invalid or empty for %s."), *AICharacter->GetName());
+        return EBTNodeResult::Failed;
+    }
+	
+	auto* PreviousTarget = Cast<AMS_BaseWorkPlace>(Blackboard->GetValueAsObject(FName("Target"))); 
+	
 	AMS_BaseWorkPlace* ClosestWorkplace = nullptr;
-	float ClosestDistance = FLT_MAX;
+	float ClosestDistanceSq = FLT_MAX; 
 
-	// Check the pool and compare workplaces until find the closest one
-	for (TWeakObjectPtr<AMS_BaseWorkPlace> Workplace : WorkplacePool->ActiveWorkplaces_)
+    UE_LOG(LogTemp, Verbose, TEXT("FindNearestWorkSite: %s searching for %s."), *AICharacter->GetName(), *UEnum::GetValueAsString(ResourceTypeNeeded));
+
+	for (TWeakObjectPtr<AMS_BaseWorkPlace> WorkplacePtr : WorkplacePool->ActiveWorkplaces_)
 	{
-		if (!Workplace->placeActive_) break;
-
-		if (Workplace->ResourceType_ == AICharacter->Quest_.Type && Workplace->ResourceAvaliable_ && Workplace != PreviousTarget)
-		{
-			const float CurrentDistance = AICharacter->GetDistanceTo(Workplace.Get());
-			if (CurrentDistance < ClosestDistance)
-			{
-				ClosestDistance = CurrentDistance;
-				ClosestWorkplace = Workplace.Get();
-			}
-		}
+		if (WorkplacePtr.IsValid()) 
+        {
+            AMS_BaseWorkPlace* Workplace = WorkplacePtr.Get();
+            if (Workplace->ResourceType_ == ResourceTypeNeeded && Workplace->ResourceAvaliable_ && Workplace != PreviousTarget)
+            {
+                const float CurrentDistanceSq = FVector::DistSquared(AICharacter->GetActorLocation(), Workplace->GetActorLocation());
+                if (CurrentDistanceSq < ClosestDistanceSq)
+                {
+                    ClosestDistanceSq = CurrentDistanceSq;
+                    ClosestWorkplace = Workplace;
+                }
+            }
+        }
 	}
-
-
-
-
-
-	UE_LOG(LogTemp, Warning, TEXT("Closest: %f"), ClosestDistance);
 
 	// Update the Blackboard if a workplace was found
 	if (ClosestWorkplace)
 	{
-		AICharacter->CreateMovementPath(ClosestWorkplace);
-		OwnerComp.GetBlackboardComponent()->SetValueAsObject("Target", ClosestWorkplace);
-		return EBTNodeResult::Succeeded;
+        UE_LOG(LogTemp, Log, TEXT("FindNearestWorkSite: %s found %s at %s (DistSq: %.0f)."),
+            *AICharacter->GetName(), *UEnum::GetValueAsString(ResourceTypeNeeded), *ClosestWorkplace->GetName(), ClosestDistanceSq);
+
+		AICharacter->CreateMovementPath(ClosestWorkplace); // Generate path
+        if(AICharacter->Path_.Num() > 0) // Check if path was successful
+        {
+            Blackboard->SetValueAsObject(FName("Target"), ClosestWorkplace); 
+		    return EBTNodeResult::Succeeded;
+        }
+        else
+        {
+             UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: Found workplace %s for %s, but failed to generate path."), *ClosestWorkplace->GetName(), *AICharacter->GetName());
+             return EBTNodeResult::Failed; // Pathfinding failed
+        }
 	}
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: %s could not find any available workplace for %s."), *AICharacter->GetName(), *UEnum::GetValueAsString(ResourceTypeNeeded));
+    }
 
 	return EBTNodeResult::Failed;
 }

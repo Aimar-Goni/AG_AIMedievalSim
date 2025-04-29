@@ -63,7 +63,7 @@ EBTNodeResult::Type UMS_PerformWorkAction::ExecuteTask(UBehaviorTreeComponent& O
 	}
 
 	// *** Get Quest Type ***
-	ResourceType CurrentQuestType = AICharacter->Quest_.Type;
+	ResourceType CurrentQuestType = AICharacter->AssignedQuest.Type;
 	if (CurrentQuestType == ResourceType::ERROR) // Make sure the AI has a valid quest assigned
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PerformWorkAction: AI Character '%s' has no valid Quest Type (ERROR). Cannot determine animation."), *AICharacter->GetName());
@@ -148,7 +148,7 @@ void UMS_PerformWorkAction::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 		if (AICharacter && MyMemory->WorkplaceActor.IsValid())
 		{
 			AMS_BaseWorkPlace* Workplace = MyMemory->WorkplaceActor.Get();
-			ResourceType CurrentQuestType = AICharacter->Quest_.Type; // Get type for finish anim
+			ResourceType CurrentQuestType = AICharacter->AssignedQuest.Type; // Get type for finish anim
 
             if(Workplace->ResourceAvaliable_)
             {
