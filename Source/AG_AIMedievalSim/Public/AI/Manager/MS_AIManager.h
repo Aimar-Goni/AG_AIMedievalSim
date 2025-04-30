@@ -40,8 +40,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
-	virtual void GenerateQuests();
 
 	UFUNCTION()
 	void SelectQuestWinner_Internal(FGuid QuestID);
@@ -60,7 +58,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Inventory")
 	TObjectPtr<UInventoryComponent> Inventory_;
 
-	// --- Quest Management ---
+	//  Quest Management 
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Manager|Quests")
 	TArray<FQuest> AvailableQuests_;
@@ -85,19 +83,28 @@ public:
 	
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
     int32 MaxResourcePerQuest = 15;
-
-	// --- Public Functions ---
-
-
+	
 	UFUNCTION(BlueprintCallable, Category = "AI Manager|Bidding")
 	void ReceiveBid(AMS_AICharacter* Bidder, FQuest Quest, float BidValue);
 	
     UFUNCTION(BlueprintCallable, Category = "AI Manager|Quests")
     void RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID);
 
+protected:
 
-	//UFUNCTION() void UpdateResources(ResourceType type, int32 amount);
-	//UFUNCTION() void RemoveQuest(FQuest Quest); 
-	//UFUNCTION() void OnBulletingBoardPoolReady();
+	// Generates resource gathering quests for a specific resource type if needed. 
+	void GenerateQuestsForResourceType(ResourceType ResourceTypeToCheck);
+
+	// Checks if an identical quest already exists (available, bidding, or assigned). 
+	bool DoesIdenticalQuestExist(ResourceType Type, int32 Amount) const;
+	
+
+public:
+
+	// Resource types the AIManager actively manages and generates quests for. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
+	TArray<ResourceType> ManagedResourceTypes = {
+		ResourceType::WOOD, ResourceType::BERRIES, ResourceType::WATER, ResourceType::WHEAT
+	};
 
 };

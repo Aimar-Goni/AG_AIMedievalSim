@@ -44,7 +44,7 @@ void UInventoryComponent::AddToResources(ResourceType Type, int32 NewAmount)
 // Takes resources out of storage
 int32 UInventoryComponent::ExtractFromResources(ResourceType Type, int32 ExtactAmount)
 {
-    if (ExtactAmount < GetResourceAmount(Type))
+    if (ExtactAmount <= GetResourceAmount(Type))
     {
         int32& ResourceValue = Resources_.FindOrAdd(Type);
         ResourceValue -= ExtactAmount;

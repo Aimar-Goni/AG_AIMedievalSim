@@ -89,11 +89,11 @@ EBTNodeResult::Type UMS_PerformWorkAction::ExecuteTask(UBehaviorTreeComponent& O
     MyMemory->bAnimationStarted = false;
     MyMemory->ActiveWorkMontage = nullptr; // Reset active montage
 
-	// *** Select Montage based on Quest Type ***
+	// Select Montage based on Quest Type 
 	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
 	if (TObjectPtr<UAnimMontage>* FoundMontage = WorkMontages.Find(CurrentQuestType))
 	{
-		MontageToPlay = *FoundMontage; // Use the montage found in the map
+		MontageToPlay = *FoundMontage; 
 	}
 
     // If no specific montage found, try the default one

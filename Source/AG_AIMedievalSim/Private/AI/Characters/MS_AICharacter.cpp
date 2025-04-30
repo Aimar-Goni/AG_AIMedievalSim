@@ -262,11 +262,10 @@ void AMS_AICharacter::AssignQuest(const FQuest& Quest)
         Blackboard->SetValueAsEnum(FName("QuestType"), static_cast<uint8>(Quest.Type));
         Blackboard->SetValueAsInt(FName("QuestAmount"), Quest.Amount);
         Blackboard->SetValueAsInt(FName("QuestReward"), Quest.Reward);
-        Blackboard->SetValueAsString(FName("QuestID"), Quest.QuestID.ToString()); // Store ID as string
-        Blackboard->SetValueAsObject(FName("QuestTargetDestination"), Quest.TargetDestination.Get()); // Store target if any
-        Blackboard->SetValueAsObject(FName("Target"), nullptr); // Clear previous target? Or let BT handle finding first step.
-        Blackboard->SetValueAsBool(FName("bIsAtWorkLocation"), false); // Ensure this is reset
-        // Set other relevant states, e.g., trigger the BT to start the quest sequence
+        Blackboard->SetValueAsString(FName("QuestID"), Quest.QuestID.ToString()); 
+        Blackboard->SetValueAsObject(FName("QuestTargetDestination"), Quest.TargetDestination.Get()); 
+        Blackboard->SetValueAsObject(FName("Target"), nullptr); 
+        Blackboard->SetValueAsBool(FName("AtWorkLocation"), false); 
 	}
     else {
          UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to get Blackboard when assigning quest."), *GetName());
@@ -279,8 +278,7 @@ void AMS_AICharacter::CompleteCurrentQuest()
     {
         UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Requesting completion for Quest ID %s."), *GetName(), *AssignedQuest.QuestID.ToString());
         AIManager->RequestQuestCompletion(this, AssignedQuest.QuestID);
-
-         // Reset internal quest state AFTER notifying manager
+    	
          AssignedQuest.QuestID.Invalidate(); // Mark quest as invalid/done internally
          AssignedQuest.Type = ResourceType::ERROR;
 
@@ -328,7 +326,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
     if (!AIController || !AIController->GetBlackboardComponent()) return;
     UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
 
-	// Example: Collision with Storage Building
+	// Collision with Storage Building
 	AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
 	if (StorageBuilding && Blackboard->GetValueAsObject("Target") == StorageBuilding)
 	{
@@ -382,8 +380,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 	AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor);
 	if (WorkPlace && Blackboard->GetValueAsObject("Target") == WorkPlace)
 	{
-		Blackboard->SetValueAsBool(FName("bIsAtWorkLocation"), true);
-		UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting bIsAtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
+		Blackboard->SetValueAsBool(FName("AtWorkLocation"), true);
+		UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting AtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
 	}
 	
 }
@@ -399,10 +397,10 @@ void AMS_AICharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
         if (Blackboard->GetValueAsObject("Target") == WorkPlace)
         {
              // Check if currently supposed to be working there
-             if(Blackboard->GetValueAsBool(FName("bIsAtWorkLocation")))
+             if(Blackboard->GetValueAsBool(FName("AtWorkLocation")))
              {
-                 Blackboard->SetValueAsBool(FName("bIsAtWorkLocation"), false);
-                 UE_LOG(LogTemp, Log, TEXT("AI Character '%s' left workplace '%s' trigger. Setting bIsAtWorkLocation=false."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
+                 Blackboard->SetValueAsBool(FName("AtWorkLocation"), false);
+                 UE_LOG(LogTemp, Log, TEXT("AI Character '%s' left workplace '%s' trigger. Setting AtWorkLocation=false."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
                  // The Decorator on the PerformWorkAction sequence should abort the task.
              }
         }

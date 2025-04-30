@@ -2,8 +2,10 @@
 
 #include "AI/Manager/MS_AIManager.h"
 #include "Systems/MS_InventoryComponent.h"
-#include "AI/Characters/MS_AICharacter.h" 
+#include "AI/Characters/MS_AICharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Movement/MS_PathfindingSubsystem.h"
+
 
 AMS_AIManager::AMS_AIManager()
 {
@@ -38,8 +40,15 @@ void AMS_AIManager::BeginPlay()
 void AMS_AIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-    // Periodically check if new quests need to be generated
-    GenerateQuests();
+	if (Inventory_)
+	{
+		for (ResourceType type : ManagedResourceTypes)
+		{
+			GenerateQuestsForResourceType(type);
+		}
+	}
+	
+
 }
 static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 {
@@ -64,78 +73,89 @@ static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 
 	return GoldPerUnit * Amount;
 }
-void AMS_AIManager::GenerateQuests()
+void AMS_AIManager::GenerateQuestsForResourceType(ResourceType ResourceTypeToCheck)
 {
+	if (!Inventory_ || ResourceTypeToCheck == ResourceType::ERROR) return;
 
-    ResourceType typeToGenerate = ResourceType::WOOD; // Example
-    int32 currentAmount = Inventory_ ? Inventory_->GetResourceAmount(typeToGenerate) : 0;
+	int32 currentAmount = Inventory_->GetResourceAmount(ResourceTypeToCheck);
 
-    if (currentAmount < LowResourceThreshold)
-    {
-        int32 neededResources = LowResourceThreshold - currentAmount;
-       // UE_LOG(LogTemp, Log, TEXT("AIManager: Low on %s (%d/%d). Generating quests."), *UEnum::GetValueAsString(typeToGenerate), currentAmount, LowResourceThreshold);
+	if (currentAmount < LowResourceThreshold)
+	{
+		int32 neededResources = LowResourceThreshold - currentAmount;
+		// UE_LOG(LogTemp, Log, TEXT("AIManager: Low on %s (%d/%d). Need %d."), *UEnum::GetValueAsString(ResourceTypeToCheck), currentAmount, LowResourceThreshold, neededResources);
 
-        while (neededResources > 0)
-        {
-            int32 questAmount = FMath::Min(neededResources, MaxResourcePerQuest);
-        	
-            bool bQuestExists = false;
-            // Check AvailableQuests
-            for (const FQuest& availableQuest : AvailableQuests_)
-            {
-                if (availableQuest.Type == typeToGenerate && availableQuest.Amount == questAmount)
-                {
-                    bQuestExists = true;
-                    break;
-                }
-            }
-            // Check CurrentBids (quests being bid on)
-            if (!bQuestExists)
-            {
-                 for(const auto& bidPair : CurrentBids)
-                 {
-                    // Need to find the quest details for the ID being bid on
-                    // This requires AvailableQuests_ to hold quests even while bidding is active
-                    // Let's adjust the flow slightly: Keep quest in Available until assigned.
-                 }
-                 // More efficient: Check if a bid is active for a quest matching type/amount.
-                 // This requires storing quest details with bids or looking up in Available.
-                 // For now, let's skip this check for simplicity, potentially creating duplicate quests if generated quickly.
-                 // TODO: Add robust check against CurrentBids if needed.
-            }
-            // Check AssignedQuests (if we want only one active quest of a type/amount)
-            // TODO: Add check against AssignedQuests if needed.
+		while (neededResources > 0)
+		{
+			int32 questAmount = FMath::Min(neededResources, MaxResourcePerQuest);
+			if (questAmount <= 0) break; // Safety break
+
+			// --- Check for Duplicates ---
+			if (!DoesIdenticalQuestExist(ResourceTypeToCheck, questAmount))
+			{
+				// Calculate reward
+				int32 reward = CalculateGoldReward(ResourceTypeToCheck, questAmount);
+
+				// Create the quest
+				FQuest newQuest(ResourceTypeToCheck, questAmount, reward);
+
+				// Add to available list
+				AvailableQuests_.Add(newQuest);
+
+				UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Quest ID %s - Gather %d %s for %d reward."), *newQuest.QuestID.ToString(), questAmount, *UEnum::GetValueAsString(ResourceTypeToCheck), reward);
+
+				// Start the bidding timer immediately
+				StartBidTimer(newQuest);
+
+				// Broadcast AFTER adding to list and starting timer
+				OnQuestAvailable.Broadcast(newQuest);
+			}
+			else
+			{
+				// UE_LOG(LogTemp, Verbose, TEXT("AIManager: Identical quest for %d %s already exists. Skipping generation."), questAmount, *UEnum::GetValueAsString(ResourceTypeToCheck));
+			}
+
+			neededResources -= questAmount;
+		}
+	}
+}
+
+bool AMS_AIManager::DoesIdenticalQuestExist(ResourceType Type, int32 Amount) const
+{
+	// 1. Check Available Quests (not yet bid on / assigned)
+	for (const FQuest& availableQuest : AvailableQuests_)
+	{
+		// Only check quests not currently being bid on (timer map check)
+		// And ensure it's not a delivery quest (TargetDestination == null)
+		if (!BidTimers.Contains(availableQuest.QuestID) && !AssignedQuests_.Contains(availableQuest.QuestID) &&
+			availableQuest.Type == Type && availableQuest.Amount == Amount && !availableQuest.TargetDestination.IsValid())
+		{
+			return true;
+		}
+	}
+
+	// 2. Check Quests Currently Being Bid On
+	for (const FQuest& availableQuest : AvailableQuests_)
+	{
+		if (BidTimers.Contains(availableQuest.QuestID) &&
+		   availableQuest.Type == Type && availableQuest.Amount == Amount && !availableQuest.TargetDestination.IsValid())
+		{
+			return true;
+		}
+	}
 
 
-            if (!bQuestExists) // Simplified check for now
-            {
-                // Calculate reward
-                int32 reward = CalculateGoldReward(typeToGenerate, questAmount);
+	// 3. Check Assigned Quests
+	for (const auto& pair : AssignedQuests_)
+	{
+		AMS_AICharacter* character = pair.Value.Get();
+		if (character && character->AssignedQuest.Type == Type && character->AssignedQuest.Amount == Amount && !character->AssignedQuest.TargetDestination.IsValid())
+		{
+			return true;
+		}
+	}
+	
 
-                // Create the quest (assigns new GUID automatically)
-                FQuest newQuest(typeToGenerate, questAmount, reward);
-
-                // Add to available list
-                AvailableQuests_.Add(newQuest);
-
-                UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Quest ID %s - Gather %d %s for %d reward."), *newQuest.QuestID.ToString(), questAmount, *UEnum::GetValueAsString(typeToGenerate), reward);
-
-            	// Start the bidding timer immediately after announcing
-                 StartBidTimer(newQuest);
-
-                // Broadcast to listening AI
-                OnQuestAvailable.Broadcast(newQuest);
-
-            }
-
-            neededResources -= questAmount;
-
-            // Safety break to prevent infinite loop if logic is flawed
-            if (questAmount <= 0) break;
-        }
-    }
-     // TODO: Add generation logic for other resource types (Berries, Water, Wheat etc.)
-     // TODO: Add generation logic for Construction delivery quests
+	return false;
 }
 
 void AMS_AIManager::StartBidTimer(const FQuest& Quest)
