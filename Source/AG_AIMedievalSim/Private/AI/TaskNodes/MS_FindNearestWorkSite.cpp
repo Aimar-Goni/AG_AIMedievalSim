@@ -18,12 +18,8 @@ EBTNodeResult::Type UMS_FindNearestWorkSite::ExecuteTask(UBehaviorTreeComponent&
 
 
     FName QuestTypeKeyName = FName("QuestType"); 
-    if (Blackboard->GetKeyID(QuestTypeKeyName) != FBlackboard::InvalidKey) // Check if the key exists
-    {
-         UE_LOG(LogTemp, Warning, TEXT("FindNearestWorkSite: Blackboard key 'QuestType' does not exist!"));
-         return EBTNodeResult::Failed;
-    }
     ResourceType ResourceTypeNeeded = static_cast<ResourceType>(Blackboard->GetValueAsEnum(QuestTypeKeyName));
+
 
     if (ResourceTypeNeeded == ResourceType::ERROR)
     {

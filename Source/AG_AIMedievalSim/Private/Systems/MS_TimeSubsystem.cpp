@@ -6,7 +6,7 @@
 
 UMS_TimeSubsystem::UMS_TimeSubsystem()
 {
-	TimeScale =  36000.0f; // 1 real second = 6 game minutes (10 real minutes per day cycle)
+	TimeScale =  36.0f; // 1 real second = 6 game minutes (10 real minutes per day cycle)
 	CurrentHour = 18.0f;
 	CurrentDay = 1;
 	DayStartHour = 6.0f;
@@ -76,7 +76,7 @@ void UMS_TimeSubsystem::Tick(float DeltaTime)
 			{
 				int32 BroadcastHour = (PreviousHourInteger + 1 + i) % 24; // Calculate the hour that was passed
 				OnHourChanged.Broadcast(BroadcastHour);
-				UE_LOG(LogTemp, Log, TEXT("Hour Changed: %d"), BroadcastHour);
+				//UE_LOG(LogTemp, Log, TEXT("Hour Changed: %d"), BroadcastHour);
 
 				// Day change broadcast will happen below if CurrentHour >= 24
 			}
@@ -184,7 +184,6 @@ void UMS_TimeSubsystem::UpdateCycleState(bool bForceImmediateBroadcast)
 	}
 }
 
-// --- Console Command Implementations ---
 
 void UMS_TimeSubsystem::TimeSystem_ToggleDebug()
 {
@@ -239,7 +238,6 @@ void UMS_TimeSubsystem::TimeSystem_AddHours(float HoursToAdd)
 				UE_LOG(LogTemp, Log, TEXT("Hour Changed (via AddHours): %d"), BroadcastHour);
 			}
 		}
-		// Update PreviousHourInteger below after potential day change
 	}
 
 

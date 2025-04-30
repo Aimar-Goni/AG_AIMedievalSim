@@ -73,7 +73,7 @@ void AMS_AIManager::GenerateQuests()
     if (currentAmount < LowResourceThreshold)
     {
         int32 neededResources = LowResourceThreshold - currentAmount;
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Low on %s (%d/%d). Generating quests."), *UEnum::GetValueAsString(typeToGenerate), currentAmount, LowResourceThreshold);
+       // UE_LOG(LogTemp, Log, TEXT("AIManager: Low on %s (%d/%d). Generating quests."), *UEnum::GetValueAsString(typeToGenerate), currentAmount, LowResourceThreshold);
 
         while (neededResources > 0)
         {
@@ -120,11 +120,12 @@ void AMS_AIManager::GenerateQuests()
 
                 UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Quest ID %s - Gather %d %s for %d reward."), *newQuest.QuestID.ToString(), questAmount, *UEnum::GetValueAsString(typeToGenerate), reward);
 
+            	// Start the bidding timer immediately after announcing
+                 StartBidTimer(newQuest);
+
                 // Broadcast to listening AI
                 OnQuestAvailable.Broadcast(newQuest);
 
-                 // Start the bidding timer immediately after announcing
-                 StartBidTimer(newQuest);
             }
 
             neededResources -= questAmount;
