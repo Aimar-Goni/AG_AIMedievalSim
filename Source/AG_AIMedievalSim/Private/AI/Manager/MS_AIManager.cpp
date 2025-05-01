@@ -29,12 +29,17 @@ void AMS_AIManager::BeginPlay()
 	
     UE_LOG(LogTemp, Warning, TEXT("AIManager BeginPlay: Inventory represents CENTRAL storage. AI deposit logic required elsewhere."));
 
-
+	PathfindingSubsystemCache = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
+	if (!PathfindingSubsystemCache)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AIManager: Failed to cache Pathfinding Subsystem!"));
+	}
     // if (BulletingBoardPool_.IsValid())
     // {
     //     // BulletingBoardPool_->OnBulletingBoardPoolInitialized.AddDynamic(this, &AMS_AIManager::OnBulletingBoardPoolReady);
     // }
 
+	GetWorldTimerManager().SetTimer(HousingCheckTimerHandle, this, &AMS_AIManager::UpdateHousingState, HousingCheckInterval, true, 5.0f);
 }
 
 void AMS_AIManager::Tick(float DeltaTime)
@@ -48,7 +53,7 @@ void AMS_AIManager::Tick(float DeltaTime)
 		}
 	}
 	
-
+	//CheckAndInitiateConstruction();
 }
 static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 {
@@ -296,26 +301,277 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
     }
 }
 
-
 void AMS_AIManager::RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID)
 {
-    if(!Character) return;
-	
-    if(AssignedQuests_.Contains(QuestID) && AssignedQuests_[QuestID] == Character)
+	if(!Character) return;
+
+	// Verify assignment
+	if(AssignedQuests_.Contains(QuestID) && AssignedQuests_[QuestID] == Character)
+	{
+		int32 reward = Character->AssignedQuest.Reward;
+		AActor* target = Character->AssignedQuest.TargetDestination.Get(); // Get target
+
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Quest %s completed by %s (Target: %s). Awarding %d money."),
+			   *QuestID.ToString(), *Character->GetName(), *GetNameSafe(target), reward);
+
+		// Award money
+		Character->Money += reward;
+
+		// Remove from assigned list
+		AssignedQuests_.Remove(QuestID);
+
+		// Remove from the specific site's tracking list if it was a delivery quest
+		for (auto& Pair : ActiveConstructionDeliveryQuests)
+		{
+			if(Pair.Key.IsValid()) // Check if site still exists
+			{
+				Pair.Value.Remove(QuestID); // Remove the ID from the site's list
+			}
+		}
+		// Optional: Clean up empty entries in ActiveConstructionDeliveryQuests map?
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIManager: %s requested completion for Quest %s, but was not assigned or quest ID invalid."), *Character->GetName(), *QuestID.ToString());
+	}
+}
+
+
+void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
+{
+    if (!Inventory_ || !ConstructionSiteClass) return;
+
+    // --- Count Active Construction Projects ---
+    int32 ActiveConstructionCount = 0;
+    TArray<TWeakObjectPtr<AMS_ConstructionSite>> ActiveSites; // Keep track of sites being worked on
+    for (const auto& Pair : ActiveConstructionDeliveryQuests)
     {
+        if (!Pair.Value.IsEmpty() && Pair.Key.IsValid())
+        {
+            ActiveConstructionCount++;
+            ActiveSites.AddUnique(Pair.Key); // Add site associated with active quests
+        }
+    }
+     // Also count sites that exist but might have no *active* quests right now
+     TArray<AActor*> FoundSites;
+     UGameplayStatics::GetAllActorsOfClass(GetWorld(), ConstructionSiteClass, FoundSites);
+     ActiveConstructionCount = FoundSites.Num(); // Simpler: Just count existing sites
 
-        int32 reward = Character->AssignedQuest.Reward; // Get reward from AI's stored quest
 
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Quest %s completed by %s. Awarding %d money."), *QuestID.ToString(), *Character->GetName(), reward);
+    if (ActiveConstructionCount >= MaxConcurrentConstruction)
+    {
+        // UE_LOG(LogTemp, Verbose, TEXT("AIManager: Max concurrent constructions (%d) reached."), MaxConcurrentConstruction);
+        return; // Limit reached
+    }
+
+    // --- Determine What to Build ---
+    TSubclassOf<AActor> BuildingToSpawn = nullptr;
+    ResourceType RequiredResource = ResourceType::ERROR;
+    int32 ResourceCost = 0;
+
+    if (HouseBuildingClass && Inventory_->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost)
+    {
+        BuildingToSpawn = HouseBuildingClass;
+        RequiredResource = ResourceType::WOOD;
+        ResourceCost = HouseWoodCost;
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Prioritizing House Construction."));
+    }
+    // TODO: Add logic for other building types here based on different conditions
+
+    else if (HouseBuildingClass && Inventory_->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
+    {
+         BuildingToSpawn = HouseBuildingClass;
+         RequiredResource = ResourceType::WOOD;
+         ResourceCost = HouseWoodCost;
+         UE_LOG(LogTemp, Log, TEXT("AIManager: Considering non-priority House Construction."));
+    }
 
 
-        Character->Money += reward;
+    // --- Proceed if a building type was selected ---
+    if (BuildingToSpawn && RequiredResource != ResourceType::ERROR && ResourceCost > 0)
+    {
+        // --- Find Build Location (2x2 Check) ---
+        FVector BuildLocation = FVector::ZeroVector;
+        TArray<FIntPoint> OccupiedNodes; // Store the nodes to block
+        const int32 BuildSizeX = 2; // Example size
+        const int32 BuildSizeY = 2;
 
-        AssignedQuests_.Remove(QuestID);
-    	
+        if (FindSuitableBuildLocation(BuildSizeX, BuildSizeY, BuildLocation, OccupiedNodes))
+        {
+            UE_LOG(LogTemp, Log, TEXT("AIManager: Initiating construction for %s at location %s."), *BuildingToSpawn->GetName(), *BuildLocation.ToString());
+            StartBuildingProject(BuildingToSpawn, BuildLocation, RequiredResource, ResourceCost, OccupiedNodes); 
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("AIManager: Met resource threshold for construction, but failed to find a suitable %dx%d build location."), BuildSizeX, BuildSizeY);
+        }
+    }
+}
+
+bool AMS_AIManager::FindSuitableBuildLocation(int32 SizeX, int32 SizeY, FVector& OutCenterLocation, TArray<FIntPoint>& OutOccupiedNodes)
+{
+    if (!PathfindingSubsystemCache) return false;
+	
+    const int MaxAttempts = 1050; 
+    for (int Attempt = 0; Attempt < MaxAttempts; ++Attempt)
+    {
+        FVector RandomNodeLocation;
+        FIntPoint StartNodeGridPos;
+        if (PathfindingSubsystemCache->GetRandomFreeNode(RandomNodeLocation, StartNodeGridPos))
+        {
+            OutOccupiedNodes.Empty();
+            bool bAreaIsFree = true;
+            FVector TotalLocation = FVector::ZeroVector;
+
+            // Check the SizeX * SizeY area starting from the random node
+            for (int32 x = 0; x < SizeX; ++x)
+            {
+                for (int32 y = 0; y < SizeY; ++y)
+                {
+                    FIntPoint CurrentGridPos(StartNodeGridPos.X + x, StartNodeGridPos.Y + y);
+                    TSharedPtr<FMoveNode> CurrentNode = PathfindingSubsystemCache->FindNodeByGridPosition(CurrentGridPos);
+
+                    // Check if node exists and is free (not blocked)
+                    if (!CurrentNode.IsValid())
+                    {
+                        bAreaIsFree = false;
+                        break; // This node in the area is bad, stop checking this area
+                    }
+                    OutOccupiedNodes.Add(CurrentGridPos);
+                    TotalLocation += CurrentNode->Position;
+                }
+                if (!bAreaIsFree) break; // Stop checking this area
+            }
+
+            // If the whole area was free, calculate center and return success
+            if (bAreaIsFree && OutOccupiedNodes.Num() == (SizeX * SizeY))
+            {
+                OutCenterLocation = TotalLocation / static_cast<float>(OutOccupiedNodes.Num());
+                return true;
+            }
+        }
+    }
+
+    // Failed to find a suitable location after attempts
+    return false;
+}
+
+void AMS_AIManager::StartBuildingProject(TSubclassOf<AActor> BuildingClassToSpawn, const FVector& Location, ResourceType RequiredResource, int32 ResourceCost, const TArray<FIntPoint>& OccupiedNodes)
+{
+    if (!ConstructionSiteClass || !PathfindingSubsystemCache) return;
+
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    //  Block Nodes Before Spawning 
+    for (const FIntPoint& NodePos : OccupiedNodes)
+    {
+        TSharedPtr<FMoveNode> Node = PathfindingSubsystemCache->FindNodeByGridPosition(NodePos);
+        if (Node.IsValid())
+        {
+             PathfindingSubsystemCache->BlockNode(Node->Position); 
+        }
+    }
+	
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    AMS_ConstructionSite* NewSite = World->SpawnActor<AMS_ConstructionSite>(ConstructionSiteClass, Location, FRotator::ZeroRotator, SpawnParams);
+
+    if (NewSite)
+    {
+        // Configure the site
+        NewSite->BuildingClassToSpawn = BuildingClassToSpawn;
+        NewSite->RequiredResource = RequiredResource;
+        NewSite->AmountRequired = ResourceCost;
+        NewSite->CurrentAmount = 0;
+        NewSite->OccupiedNodes = OccupiedNodes; // Store occupied nodes for unblocking later
+
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Spawned Construction Site for %s requiring %d %s."), *BuildingClassToSpawn->GetName(), ResourceCost, *UEnum::GetValueAsString(RequiredResource));
+
+        
+        int32 RemainingCost = ResourceCost;
+        int32 DeliveryQuestIndex = 0; 
+        TArray<FGuid> GeneratedQuestIDs;
+
+        while (RemainingCost > 0)
+        {
+            int32 deliveryAmount = FMath::Min(RemainingCost, DeliveryCarryCapacity);
+            if (deliveryAmount <= 0) break; // Safety break
+
+            // Calculate reward for this specific delivery trip
+            int32 deliveryReward = CalculateGoldReward(RequiredResource, deliveryAmount);
+            FQuest deliveryQuest(RequiredResource, deliveryAmount, deliveryReward, NewSite);
+
+            AvailableQuests_.Add(deliveryQuest);
+            GeneratedQuestIDs.Add(deliveryQuest.QuestID); // Track generated IDs for this site
+            StartBidTimer(deliveryQuest);
+            OnQuestAvailable.Broadcast(deliveryQuest);
+
+            UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Delivery Quest (Trip %d) ID %s - Deliver %d %s to site for %d reward."),
+                DeliveryQuestIndex + 1, *deliveryQuest.QuestID.ToString(), deliveryAmount, *UEnum::GetValueAsString(RequiredResource), deliveryReward);
+
+            RemainingCost -= deliveryAmount;
+            DeliveryQuestIndex++;
+        }
+        // Associate these quests with the site
+        ActiveConstructionDeliveryQuests.Add(NewSite, GeneratedQuestIDs);
     }
     else
     {
-         UE_LOG(LogTemp, Warning, TEXT("AIManager: %s requested completion for Quest %s, but was not assigned or quest ID invalid."), *Character->GetName(), *QuestID.ToString());
+        UE_LOG(LogTemp, Error, TEXT("AIManager: Failed to spawn Construction Site Actor at %s."), *Location.ToString());
+        // --- Unblock Nodes if Spawning Failed ---
+        for (const FIntPoint& NodePos : OccupiedNodes)
+        {
+            TSharedPtr<FMoveNode> Node = PathfindingSubsystemCache->FindNodeByGridPosition(NodePos);
+             if (Node.IsValid()) PathfindingSubsystemCache->UnblockNode(Node->Position); // Assuming UnblockNode exists
+        }
     }
+}
+
+void AMS_AIManager::NotifyConstructionProgress(AMS_ConstructionSite* Site, int32 AmountDelivered)
+{
+	if(!Site) return;
+
+	UE_LOG(LogTemp, Log, TEXT("AIManager: Received progress report from Site %s. Total delivered: %d / %d"),
+		*Site->GetName(), Site->CurrentAmount, Site->AmountRequired);
+
+
+}
+
+
+
+void AMS_AIManager::UpdateHousingState()
+{
+	CurrentPopulation = 0;
+	TotalHousingCapacity = 0;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// Count Population
+	if (AICharacterClass)
+	{
+		TArray<AActor*> FoundCharacters;
+		UGameplayStatics::GetAllActorsOfClass(World, AICharacterClass, FoundCharacters);
+		CurrentPopulation = FoundCharacters.Num();
+	}
+
+	// Count Housing Capacity 
+	if (HouseBuildingClass) // Check if House Class is set
+	{
+		TArray<AActor*> FoundHouses;
+		UGameplayStatics::GetAllActorsOfClass(World, HouseBuildingClass, FoundHouses);
+		TotalHousingCapacity = FoundHouses.Num() * HouseCapacity;
+	}
+
+	// UE_LOG(LogTemp, Log, TEXT("AIManager Housing Check: Population=%d, Capacity=%d"), CurrentPopulation, TotalHousingCapacity);
+
+	// Check if new housing is needed AND trigger construction check
+	if (CurrentPopulation > TotalHousingCapacity)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Housing needed (Pop %d > Cap %d). Checking construction conditions."), CurrentPopulation, TotalHousingCapacity);
+		CheckAndInitiateConstruction();
+	}
+
 }

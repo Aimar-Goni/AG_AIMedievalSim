@@ -5,6 +5,7 @@
 #include "AI/Manager/MS_AIManager.h"
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
+#include "Placeables/Buildings/MS_ConstructionSite.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "Components/BoxComponent.h"
@@ -383,6 +384,49 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		Blackboard->SetValueAsBool(FName("AtWorkLocation"), true);
 		UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting AtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
 	}
+
+	AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
+    if (Site && Blackboard->GetValueAsObject("Target") == Site) // Check if site is the target
+    {
+        bool bIsDeliveringQuestItems = Blackboard->GetValueAsBool(FName("bIsDeliveringItems")); // Need this state set by BT
+
+        if (bIsDeliveringQuestItems && AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Site)
+        {
+            // Check if AI has the required resource for this quest
+            ResourceType neededType = AssignedQuest.Type;
+            int32 hasAmount = Inventory_->GetResourceAmount(neededType);
+
+            if (hasAmount > 0)
+            {
+                // Deliver amount based on quest goal or what AI has (up to quest goal)
+                int32 amountToDeliver = FMath::Min(hasAmount, AssignedQuest.Amount); // Deliver what the quest asked for
+
+                if(Site->AddResource(amountToDeliver)) // Site->AddResource returns true if construction completed
+                {
+                    UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered final %d %s to %s. Construction complete."), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName());
+                }
+                else
+                {
+                     UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered %d %s to %s. Progress: %d/%d"), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName(), Site->CurrentAmount, Site->AmountRequired);
+                }
+
+                // Remove delivered amount from inventory
+                Inventory_->ExtractFromResources(neededType, amountToDeliver);
+
+                // Complete THIS delivery quest trip
+                CompleteCurrentQuest(); // Notifies manager
+
+                Blackboard->SetValueAsBool(FName("bIsDeliveringItems"), false); // Reset state
+            }
+            else
+            {
+                 UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached site %s for delivery, but has no %s."), *GetName(), *Site->GetName(), *UEnum::GetValueAsString(neededType));
+                 // AI needs logic to handle this failure (go back to get resources?) BT should handle this.
+                 Blackboard->SetValueAsBool(FName("bIsDeliveringItems"), false); // Reset state anyway?
+            }
+        }
+    }
+
 	
 }
 

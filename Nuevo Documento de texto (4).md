@@ -59,7 +59,6 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   **If AI Moves/Aborts:** The BT needs logic (e.g., using Abort triggers or decorators) to cancel this task if the AI leaves the location or conditions change. Handle cleanup (stop montage, `FinishLatentTask` with `Aborted`).
         *   Modify BT: After reaching the workplace (MoveTo succeeds), use a sequence: [Set `bIsAtWorkLocation`=true (maybe via overlap?), Run `UMS_PerformWorkAction` Task].
 
-</span>
 
 **Week 2: Core Gameplay Loop Change - Job Assignment**
 
@@ -98,6 +97,8 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Remove the sequence involving `MS_FindNearestBulletingBoard` and `MS_GetTask`.
         *   Add a state/branch for "Idle / Waiting for Quest". This could be a service that runs periodically, checking the `bHasQuest` BB key.
         *   When `bHasQuest` becomes true (set by `AssignQuest`), the BT transitions to the "Do Task" sequence (Find Resource -> Go To Resource -> Perform Work -> etc.).
+
+</span>
 
 **Week 3: Building Construction & New Placeables (House, Field)**
 
