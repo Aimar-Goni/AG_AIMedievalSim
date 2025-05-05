@@ -320,8 +320,16 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AIManager: No valid winner found for Quest ID %s. Quest remains available?"), *QuestID.ToString());
-             AvailableQuests_.RemoveAll([QuestID](const FQuest& q){ return q.QuestID == QuestID; });
+			UE_LOG(LogTemp, Warning, TEXT("AIManager: No valid winner found for Quest ID %s. Quest sent again"), *QuestID.ToString());
+			AvailableQuests_.RemoveAll([QuestID](const FQuest& q){ return q.QuestID == QuestID; });
+
+			CurrentBids.Remove(QuestID);
+			BidTimers.Remove(QuestID);
+			
+			AvailableQuests_.Add(originalQuest);
+			StartBidTimer(originalQuest);
+			OnQuestAvailable.Broadcast(originalQuest);
+			
 		}
 
 		// Clean up bids and timer for this quest
@@ -330,9 +338,14 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
 	}
      else
     {
-         UE_LOG(LogTemp, Warning, TEXT("AIManager: No bids found for Quest ID %s during winner selection."), *QuestID.ToString());
-         AvailableQuests_.RemoveAll([QuestID](const FQuest& q){ return q.QuestID == QuestID; });
-         BidTimers.Remove(QuestID);
+     	UE_LOG(LogTemp, Warning, TEXT("AIManager: No bids found for Quest ID %s during winner selection."), *QuestID.ToString());
+     	AvailableQuests_.RemoveAll([QuestID](const FQuest& q){ return q.QuestID == QuestID; });
+     	BidTimers.Remove(QuestID);
+     						
+     	AvailableQuests_.Add(originalQuest);
+     	StartBidTimer(originalQuest);
+     	OnQuestAvailable.Broadcast(originalQuest);
+				
     }
 }
 

@@ -471,7 +471,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting AtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
 	}
 
-	   AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
+	AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
     if (Site && CurrentTarget == Site)
     {
          UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Overlapped with Target Construction Site %s."), *GetName(), *Site->GetName());
