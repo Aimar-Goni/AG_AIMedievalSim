@@ -10,7 +10,6 @@
 AMS_AIManager::AMS_AIManager()
 {
 	PrimaryActorTick.bCanEverTick = true; 
-	Inventory_ = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void AMS_AIManager::BeginPlay()
@@ -18,7 +17,8 @@ void AMS_AIManager::BeginPlay()
     Super::BeginPlay();
 
 	UWorld* world = GetWorld();
-
+	
+	InitializeCentralStorage();
 
 	AActor* FoundActor = UGameplayStatics::GetActorOfClass(GetWorld(), AMS_StorageBuildingPool::StaticClass());
 	StorageBuldingsPool_ = FoundActor ? Cast<AMS_StorageBuildingPool>(FoundActor) : world->SpawnActor<AMS_StorageBuildingPool>();
@@ -42,18 +42,52 @@ void AMS_AIManager::BeginPlay()
 	GetWorldTimerManager().SetTimer(HousingCheckTimerHandle, this, &AMS_AIManager::UpdateHousingState, HousingCheckInterval, true, 5.0f);
 }
 
+void AMS_AIManager::InitializeCentralStorage()
+{
+	TArray<AActor*> FoundStorages;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMS_StorageBuilding::StaticClass(), FoundStorages);
+
+	if (FoundStorages.Num() == 1)
+	{
+		CentralStorageBuilding = Cast<AMS_StorageBuilding>(FoundStorages[0]);
+		if (CentralStorageBuilding.IsValid())
+		{
+			UE_LOG(LogTemp, Log, TEXT("AIManager: Found Central Storage Building: %s"), *CentralStorageBuilding->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("AIManager: Found actor of StorageBuilding class, but failed to cast or it's invalid!"));
+		}
+	}
+	else if (FoundStorages.Num() > 1)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AIManager: Found %d Storage Buildings! Only ONE central storage is supported in this configuration. Using the first one found: %s"), FoundStorages.Num(), *GetNameSafe(FoundStorages[0]));
+		CentralStorageBuilding = Cast<AMS_StorageBuilding>(FoundStorages[0]);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("AIManager: CRITICAL - No Storage Building found in the level! Resource checks will fail."));
+	}
+}
+UInventoryComponent* AMS_AIManager::GetCentralStorageInventory() const
+{
+	if (CentralStorageBuilding.IsValid())
+	{
+		return CentralStorageBuilding->Inventory_;
+	}
+	return nullptr;
+}
+
 void AMS_AIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Inventory_)
+
+	for (ResourceType type : ManagedResourceTypes)
 	{
-		for (ResourceType type : ManagedResourceTypes)
-		{
-			GenerateQuestsForResourceType(type);
-		}
+		GenerateQuestsForResourceType(type);
 	}
 	
-	//CheckAndInitiateConstruction();
+	
 }
 static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 {
@@ -80,9 +114,10 @@ static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 }
 void AMS_AIManager::GenerateQuestsForResourceType(ResourceType ResourceTypeToCheck)
 {
-	if (!Inventory_ || ResourceTypeToCheck == ResourceType::ERROR) return;
+	UInventoryComponent* StorageInventory = GetCentralStorageInventory();
+	if (!StorageInventory || ResourceTypeToCheck == ResourceType::ERROR) return;
 
-	int32 currentAmount = Inventory_->GetResourceAmount(ResourceTypeToCheck);
+	int32 currentAmount = StorageInventory->GetResourceAmount(ResourceTypeToCheck);
 
 	if (currentAmount < LowResourceThreshold)
 	{
@@ -272,7 +307,7 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
             }
 		}
 
-		if (winner)
+		if (winner && !winner->AssignedQuest.QuestID.IsValid())
 		{
 			UE_LOG(LogTemp, Log, TEXT("AIManager: Assigning Quest ID %s to %s (Bid: %.2f)."), *QuestID.ToString(), *winner->GetName(), highestBid);
 
@@ -328,8 +363,6 @@ void AMS_AIManager::RequestQuestCompletion(AMS_AICharacter* Character, FGuid Que
 				Pair.Value.Remove(QuestID); // Remove the ID from the site's list
 			}
 		}
-		// Optional: Clean up empty entries in ActiveConstructionDeliveryQuests map?
-
 	}
 	else
 	{
@@ -340,7 +373,8 @@ void AMS_AIManager::RequestQuestCompletion(AMS_AICharacter* Character, FGuid Que
 
 void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
 {
-    if (!Inventory_ || !ConstructionSiteClass) return;
+	UInventoryComponent* StorageInventory = GetCentralStorageInventory();
+    if (!StorageInventory || !ConstructionSiteClass) return;
 
     // --- Count Active Construction Projects ---
     int32 ActiveConstructionCount = 0;
@@ -370,7 +404,7 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
     ResourceType RequiredResource = ResourceType::ERROR;
     int32 ResourceCost = 0;
 
-    if (HouseBuildingClass && Inventory_->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost)
+    if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost)
     {
         BuildingToSpawn = HouseBuildingClass;
         RequiredResource = ResourceType::WOOD;
@@ -379,7 +413,7 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
     }
     // TODO: Add logic for other building types here based on different conditions
 
-    else if (HouseBuildingClass && Inventory_->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
+    else if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
     {
          BuildingToSpawn = HouseBuildingClass;
          RequiredResource = ResourceType::WOOD;
@@ -489,7 +523,7 @@ void AMS_AIManager::StartBuildingProject(TSubclassOf<AActor> BuildingClassToSpaw
 
         UE_LOG(LogTemp, Log, TEXT("AIManager: Spawned Construction Site for %s requiring %d %s."), *BuildingClassToSpawn->GetName(), ResourceCost, *UEnum::GetValueAsString(RequiredResource));
 
-        
+    	PathfindingSubsystemCache->AddNodeAtPosition(Location);
         int32 RemainingCost = ResourceCost;
         int32 DeliveryQuestIndex = 0; 
         TArray<FGuid> GeneratedQuestIDs;

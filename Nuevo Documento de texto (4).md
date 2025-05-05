@@ -98,7 +98,7 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Add a state/branch for "Idle / Waiting for Quest". This could be a service that runs periodically, checking the `bHasQuest` BB key.
         *   When `bHasQuest` becomes true (set by `AssignQuest`), the BT transitions to the "Do Task" sequence (Find Resource -> Go To Resource -> Perform Work -> etc.).
 
-</span>
+
 
 **Week 3: Building Construction & New Placeables (House, Field)**
 
@@ -124,6 +124,8 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   **Crucially:** How does the wood get *from* the AIManager storage *to* the site? This needs a new type of task. Generate a quest: `FQuest BuildQuest(BuildingType, SiteLocation, WoodCost)`. This isn't a resource gathering quest, but a delivery quest. AIs bidding would need to know they need wood *from the AIManager storage*.
             *   **(Alternative):** Instead of AIManager holding wood, construction requires AIs to gather wood *and deliver it directly* to the site. The AIManager just spawns the site and generates "Deliver Wood to [Site]" quests. This avoids the central storage complexity for now. Let's proceed with this alternative.
         *   Modify `AIManager::Tick`: Generate `FQuest(ResourceType::WOOD, AmountNeededForSite)` quests, but somehow tag them or add target info pointing to the specific `AMS_ConstructionSite`. Maybe `FQuest` needs a `TargetActor` field?
+
+</span>
 
 *   **Step 9: AI Task - Delivering Resources to Site**
     *   **What:** AI needs to gather wood and take it to the construction site.

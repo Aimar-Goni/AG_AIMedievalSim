@@ -31,7 +31,7 @@ struct FBidInfo
 };
 
 
-
+class AMS_StorageBuilding;
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_AIManager : public AActor
 {
@@ -56,10 +56,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Dependencies")
 	TWeakObjectPtr<AMS_BulletingBoardPool> BulletingBoardPool_;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Inventory")
-	TObjectPtr<UInventoryComponent> Inventory_;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Manager|Dependencies")
+	TWeakObjectPtr<AMS_StorageBuilding> CentralStorageBuilding;
+
+	UFUNCTION(BlueprintPure, Category="AI Manager|Inventory")
+	UInventoryComponent* GetCentralStorageInventory() const;
 	//  Quest Management 
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Manager|Quests")
@@ -110,6 +112,7 @@ protected:
 	
 	void UpdateHousingState();
 	
+	void InitializeCentralStorage();
 public:
 
 	// Resource types the AIManager actively manages and generates quests for. 

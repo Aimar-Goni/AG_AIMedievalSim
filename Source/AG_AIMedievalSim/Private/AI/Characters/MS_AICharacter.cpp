@@ -245,28 +245,44 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
 
 void AMS_AICharacter::AssignQuest(const FQuest& Quest)
 {
-	AssignedQuest = Quest;
-	UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Assigned Quest ID %s (Type: %s, Amount: %d, Reward: %d)."),
+ AssignedQuest = Quest; // Assign the whole struct
+	UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Assigned Quest ID %s (Type: %s, Amount: %d, Reward: %d, Target: %s)."), // Log target
 		*GetName(),
 		*Quest.QuestID.ToString(),
 		*UEnum::GetValueAsString(Quest.Type),
 		Quest.Amount,
-        Quest.Reward);
+        Quest.Reward,
+        *GetNameSafe(Quest.TargetDestination.Get()));
 
-	// Update Blackboard
 	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(GetController());
 	if (AIController && AIController->GetBlackboardComponent())
 	{
 		UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
 		Blackboard->SetValueAsBool(FName("bHasQuest"), true);
-        // Store quest details for BT tasks (ensure keys exist in Blackboard Asset)
         Blackboard->SetValueAsEnum(FName("QuestType"), static_cast<uint8>(Quest.Type));
-        Blackboard->SetValueAsInt(FName("QuestAmount"), Quest.Amount);
+        Blackboard->SetValueAsInt(FName("QuestAmount"), Quest.Amount); // This is now the amount for THIS TRIP for fetch quests
         Blackboard->SetValueAsInt(FName("QuestReward"), Quest.Reward);
-        Blackboard->SetValueAsString(FName("QuestID"), Quest.QuestID.ToString()); 
-        Blackboard->SetValueAsObject(FName("QuestTargetDestination"), Quest.TargetDestination.Get()); 
-        Blackboard->SetValueAsObject(FName("Target"), nullptr); 
-        Blackboard->SetValueAsBool(FName("AtWorkLocation"), false); 
+        Blackboard->SetValueAsString(FName("QuestID"), Quest.QuestID.ToString());
+        Blackboard->SetValueAsObject(FName("QuestTargetDestination"), Quest.TargetDestination.Get());
+		
+        if (Quest.TargetDestination.IsValid() && AIManager.IsValid()) 
+        {
+          
+            Blackboard->SetValueAsObject(FName("QuestResourceSource"), AIManager->CentralStorageBuilding.Get());
+             UE_LOG(LogTemp, Verbose, TEXT("AICharacter %s: Setting QuestResourceSource to Central Storage for fetch quest."), *GetName());
+        }
+        else
+        {
+            Blackboard->ClearValue(FName("QuestResourceSource")); // Clear for gathering quests
+        }
+
+        Blackboard->SetValueAsObject(FName("Target"), nullptr);
+        Blackboard->SetValueAsBool(FName("bIsAtWorkLocation"), false);
+        Blackboard->ClearValue(FName("bIsFetchingConstructionMaterials"));
+        Blackboard->ClearValue(FName("bIsDeliveringConstructionMaterials"));
+        Blackboard->ClearValue(FName("bIsStoringGatheredItems"));
+        Blackboard->ClearValue(FName("bGettingFood"));
+        Blackboard->ClearValue(FName("bGettingWater"));
 	}
     else {
          UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to get Blackboard when assigning quest."), *GetName());
@@ -323,59 +339,129 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 	bool bFromSweep, const FHitResult& SweepResult)
 {
 
-	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(this->GetController());
+	    AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(GetController());
     if (!AIController || !AIController->GetBlackboardComponent()) return;
     UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+    AActor* CurrentTarget = Cast<AActor>(Blackboard->GetValueAsObject(FName("Target"))); // Get current movement target
 
-	// Collision with Storage Building
+    // Interaction with CENTRAL STORAGE BUILDING 
 	AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
-	if (StorageBuilding && Blackboard->GetValueAsObject("Target") == StorageBuilding)
+	if (StorageBuilding && CurrentTarget == StorageBuilding) // Only interact if it was the destination
 	{
-        // Check the AI's *intended* action based on BB state or quest
-        bool bIsStoringQuestItems = Blackboard->GetValueAsBool(FName("bIsStoringItems")); // Need this key set by BT task
+        UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Overlapped with Target Storage %s."), *GetName(), *StorageBuilding->GetName());
 
-        if(bIsStoringQuestItems && AssignedQuest.QuestID.IsValid())
+        // Fetching for Construction/Delivery 
+        if (Blackboard->GetValueAsBool(FName("bIsFetchingConstructionMaterials")) && AssignedQuest.QuestID.IsValid())
         {
-            // Store items related to the quest
-            int32 amountToStore = Inventory_->GetResourceAmount(AssignedQuest.Type);
-            if(amountToStore > 0)
-            {
-                StorageBuilding->Inventory_->AddToResources(AssignedQuest.Type, amountToStore);
-                Inventory_->ExtractFromResources(AssignedQuest.Type, amountToStore); // Remove from AI
-                UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Stored %d %s at %s"), *GetName(), amountToStore, *UEnum::GetValueAsString(AssignedQuest.Type), *StorageBuilding->GetName());
-            	
-                CompleteCurrentQuest(); // Notify manager quest is done
+            ResourceType typeNeeded = AssignedQuest.Type;
+            int32 amountNeededForTrip = AssignedQuest.Amount; // Amount for this specific trip
 
-                 Blackboard->SetValueAsBool(FName("bIsStoringItems"), false); // Reset state
+            UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Attempting to fetch %d %s for Quest %s."),
+                *GetName(), amountNeededForTrip, *UEnum::GetValueAsString(typeNeeded), *AssignedQuest.QuestID.ToString());
+
+            UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
+            if (StorageInventory && StorageInventory->GetResourceAmount(typeNeeded) >= amountNeededForTrip)
+            {
+                // Extract from storage
+                int32 extractedAmount = StorageInventory->ExtractFromResources(typeNeeded, amountNeededForTrip);
+                if(extractedAmount > 0)
+                {
+                    // Add to AI inventory
+                    Inventory_->AddToResources(typeNeeded, extractedAmount);
+                    UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Successfully fetched %d %s from storage."), *GetName(), extractedAmount, *UEnum::GetValueAsString(typeNeeded));
+
+                    // Update State: Now delivering
+                    Blackboard->SetValueAsBool(FName("bIsFetchingConstructionMaterials"), false);
+                    Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), true);
+
+                    // Set new Target: The actual construction site
+                    AActor* Destination = AssignedQuest.TargetDestination.Get();
+                    if(Destination)
+                    {
+                        Blackboard->SetValueAsObject(FName("Target"), Destination);
+                        CreateMovementPath(Destination); 
+                    }
+                    else {
+                         UE_LOG(LogTemp, Error, TEXT("AICharacter %s: Fetched items but QuestTargetDestination is invalid! Quest stuck."), *GetName());
+                         // Handle error state in BT? Maybe drop items? Complete quest with failure?
+                    }
+                }
+                else {
+                    UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Storage %s ExtractFromResources failed (returned %d) even though check passed?"), *GetName(), *StorageBuilding->GetName(), extractedAmount);
+                    // BT needs to handle failure (wait and retry?)
+                }
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached storage %s to fetch %d %s, but not enough available!"),
+                    *GetName(), *StorageBuilding->GetName(), amountNeededForTrip, *UEnum::GetValueAsString(typeNeeded));
+                // BT needs to handle failure (wait for resources, abandon quest?)
+                 Blackboard->SetValueAsBool(FName("bIsFetchingConstructionMaterials"), false); // Stop trying for now?
+                 // Maybe clear quest? Or just let AI idle until resources appear?
             }
         }
-        else if (Blackboard->GetValueAsBool(FName("bGettingFood"))) 
-        {
 
-             if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::BERRIES, 20) != -1) // Check if extraction worked
+        // Storing GATHERED resources
+        else if (Blackboard->GetValueAsBool(FName("bIsStoringGatheredItems")) && AssignedQuest.QuestID.IsValid())
+        {
+             ResourceType typeToStore = AssignedQuest.Type;
+             int32 amountToStore = Inventory_->GetResourceAmount(typeToStore);
+
+             if (amountToStore > 0)
              {
-                 PawnStats_->ModifyHunger(100); // Example value
-                 UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Berries from %s."), *GetName(), *StorageBuilding->GetName());
-                 Blackboard->SetValueAsBool(FName("bGettingFood"), false); // Reset state
-             } else {
-                 UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Berries from %s (not enough?)."), *GetName(), *StorageBuilding->GetName());
-             	// TODO: Add option that the storage empty
+                 StorageBuilding->Inventory_->AddToResources(typeToStore, amountToStore);
+                 Inventory_->ExtractFromResources(typeToStore, amountToStore); // Remove from AI
+                 UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Stored %d %s (gathered) at %s."), *GetName(), amountToStore, *UEnum::GetValueAsString(typeToStore), *StorageBuilding->GetName());
+
+                 // Complete the GATHER quest
+                 CompleteCurrentQuest();
+
+                 Blackboard->SetValueAsBool(FName("bIsStoringGatheredItems"), false); // Reset state
+             }
+             else {
+                  UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached storage to store %s, but has none."), *GetName(), *UEnum::GetValueAsString(typeToStore));
+                  CompleteCurrentQuest(); 
+                  Blackboard->SetValueAsBool(FName("bIsStoringGatheredItems"), false);
              }
         }
-		else if (Blackboard->GetValueAsBool(FName("bGettingWater")))
-		{
-	
-			if (StorageBuilding->Inventory_->ExtractFromResources(ResourceType::WATER, 20) != -1) // Check if extraction worked
-			{
-				PawnStats_->ModifyThirst(100); 
-				UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Water from %s."), *GetName(), *StorageBuilding->GetName());
-				Blackboard->SetValueAsBool(FName("bGettingWater"), false); 
-			} else {
-				UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Water from %s (not enough?)."), *GetName(), *StorageBuilding->GetName());
-				// TODO: Add option that the storage empty
-			}
-		}
-	}
+
+        // Getting Food/Water for SELF 
+        else if (Blackboard->GetValueAsBool(FName("bGettingFood")))
+        {
+            UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
+            if (StorageInventory && StorageInventory->ExtractFromResources(ResourceType::BERRIES, 20) != -1)
+            {
+                PawnStats_->ModifyHunger(100);
+                UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Berries for self from %s."), *GetName(), *StorageBuilding->GetName());
+                Blackboard->SetValueAsBool(FName("bGettingFood"), false);
+                CheckIfHungry(); // Update need state
+            } else
+            {
+            	Blackboard->SetValueAsBool(FName("bEmergencyFood"), true);
+	            UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Berries for self from %s."), *GetName(), *StorageBuilding->GetName());
+            }
+        }
+        else if (Blackboard->GetValueAsBool(FName("bGettingWater")))
+        {
+             UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
+            if (StorageInventory && StorageInventory->ExtractFromResources(ResourceType::WATER, 20) != -1)
+            {
+                PawnStats_->ModifyThirst(100);
+                UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Water for self from %s."), *GetName(), *StorageBuilding->GetName());
+                Blackboard->SetValueAsBool(FName("bGettingWater"), false);
+                CheckIfHungry(); // Update need state
+            } else
+            {
+            	Blackboard->SetValueAsBool(FName("bEmergencyWater"), true);
+
+	            UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Water for self from %s."), *GetName(), *StorageBuilding->GetName());
+            }
+        }
+        else
+        {
+             UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached storage %s but has no clear action state (Fetching/Storing/Needs)."), *GetName(), *StorageBuilding->GetName());
+        }
+	} 
 
 	// Collision with workplace 
 	AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor);
@@ -385,46 +471,39 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 		UE_LOG(LogTemp, Log, TEXT("AI Character '%s' reached target workplace '%s'. Setting AtWorkLocation=true."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
 	}
 
-	AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
-    if (Site && Blackboard->GetValueAsObject("Target") == Site) // Check if site is the target
+	   AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
+    if (Site && CurrentTarget == Site)
     {
-        bool bIsDeliveringQuestItems = Blackboard->GetValueAsBool(FName("bIsDeliveringItems")); // Need this state set by BT
+         UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Overlapped with Target Construction Site %s."), *GetName(), *Site->GetName());
 
-        if (bIsDeliveringQuestItems && AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Site)
-        {
-            // Check if AI has the required resource for this quest
-            ResourceType neededType = AssignedQuest.Type;
-            int32 hasAmount = Inventory_->GetResourceAmount(neededType);
+         bool bIsDelivering = Blackboard->GetValueAsBool(FName("bIsDeliveringConstructionMaterials"));
 
-            if (hasAmount > 0)
-            {
-                // Deliver amount based on quest goal or what AI has (up to quest goal)
-                int32 amountToDeliver = FMath::Min(hasAmount, AssignedQuest.Amount); // Deliver what the quest asked for
+         if (bIsDelivering && AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Site)
+         {
+             ResourceType neededType = AssignedQuest.Type;
+             int32 hasAmount = Inventory_->GetResourceAmount(neededType);
+             int32 amountToDeliver = FMath::Min(hasAmount, AssignedQuest.Amount); // Deliver amount for this trip
 
-                if(Site->AddResource(amountToDeliver)) // Site->AddResource returns true if construction completed
-                {
-                    UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered final %d %s to %s. Construction complete."), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName());
-                }
-                else
-                {
-                     UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered %d %s to %s. Progress: %d/%d"), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName(), Site->CurrentAmount, Site->AmountRequired);
-                }
+             if (amountToDeliver > 0)
+             {
+                 if(Site->AddResource(amountToDeliver)) // Site completed
+                 { UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered final %d %s to %s. Construction complete."), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName()); }
+                 else { UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered %d %s to %s. Progress: %d/%d"), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName(), Site->CurrentAmount, Site->AmountRequired); }
 
-                // Remove delivered amount from inventory
-                Inventory_->ExtractFromResources(neededType, amountToDeliver);
-
-                // Complete THIS delivery quest trip
-                CompleteCurrentQuest(); // Notifies manager
-
-                Blackboard->SetValueAsBool(FName("bIsDeliveringItems"), false); // Reset state
-            }
-            else
-            {
+                 Inventory_->ExtractFromResources(neededType, amountToDeliver);
+                 CompleteCurrentQuest(); // Complete THIS delivery trip quest
+                 Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), false); // Reset state
+             }
+             else
+             {
                  UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached site %s for delivery, but has no %s."), *GetName(), *Site->GetName(), *UEnum::GetValueAsString(neededType));
-                 // AI needs logic to handle this failure (go back to get resources?) BT should handle this.
-                 Blackboard->SetValueAsBool(FName("bIsDeliveringItems"), false); // Reset state anyway?
-            }
-        }
+                 // BT needs to handle failure (e.g., go back to storage?)
+                 Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), false); // Reset state
+             }
+         }
+          else {
+             UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached site %s but wasn't delivering or quest invalid."), *GetName(), *Site->GetName());
+         }
     }
 
 	
@@ -443,7 +522,7 @@ void AMS_AICharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
              // Check if currently supposed to be working there
              if(Blackboard->GetValueAsBool(FName("AtWorkLocation")))
              {
-                 Blackboard->SetValueAsBool(FName("AtWorkLocation"), false);
+                 //Blackboard->SetValueAsBool(FName("AtWorkLocation"), false);
                  UE_LOG(LogTemp, Log, TEXT("AI Character '%s' left workplace '%s' trigger. Setting AtWorkLocation=false."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
                  // The Decorator on the PerformWorkAction sequence should abort the task.
              }

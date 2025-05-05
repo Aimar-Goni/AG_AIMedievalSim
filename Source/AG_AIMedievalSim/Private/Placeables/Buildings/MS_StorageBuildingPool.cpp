@@ -73,22 +73,22 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 		if (!StorageBuildingClass) return;
 	
 
-		 for (int32 i = 0; i < 10; ++i)
-		 {
-		 	FVector SpawnLocation = FVector(100 * i, 0, 0); // Offset spawn to avoid overlaps
-		 	FRotator SpawnRotation = FRotator::ZeroRotator;
-		
-		 	FActorSpawnParameters SpawnParams;
-		 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		
-		 	AMS_StorageBuilding* NewStorage = world->SpawnActor<AMS_StorageBuilding>(StorageBuildingClass, SpawnLocation, SpawnRotation, SpawnParams);
-		 	if (NewStorage)
-		 	{
-		 		DeactivateStorageBuilding(NewStorage);
-		 		StorageBuldings_.Add(TWeakObjectPtr<AMS_StorageBuilding>(NewStorage));
-		 		n_StorageBuldings_++;
-		 	}
-		 }
+		 // for (int32 i = 0; i < 10; ++i)
+		 // {
+		 // 	FVector SpawnLocation = FVector(100 * i, 0, 0); // Offset spawn to avoid overlaps
+		 // 	FRotator SpawnRotation = FRotator::ZeroRotator;
+		 //
+		 // 	FActorSpawnParameters SpawnParams;
+		 // 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		 //
+		 // 	AMS_StorageBuilding* NewStorage = world->SpawnActor<AMS_StorageBuilding>(StorageBuildingClass, SpawnLocation, SpawnRotation, SpawnParams);
+		 // 	if (NewStorage)
+		 // 	{
+		 // 		DeactivateStorageBuilding(NewStorage);
+		 // 		StorageBuldings_.Add(TWeakObjectPtr<AMS_StorageBuilding>(NewStorage));
+		 // 		n_StorageBuldings_++;
+		 // 	}
+		 // }
 	}
 		
 	
