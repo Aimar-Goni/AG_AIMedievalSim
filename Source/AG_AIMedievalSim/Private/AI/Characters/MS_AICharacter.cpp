@@ -6,12 +6,14 @@
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
 #include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "Placeables/Buildings/MS_ConstructionSite.h"
+#include "Placeables/Buildings/MS_WheatField.h"
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
 #include "Placeables/Buildings/MS_StorageBuilding.h"
 #include "Components/BoxComponent.h"
 #include "Systems/MS_PawnStatComponent.h"
 #include "Movement/MS_PathfindingSubsystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Placeables/Buildings/MS_House.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 AMS_AICharacter::AMS_AICharacter()
@@ -90,11 +92,7 @@ bool AMS_AICharacter::IsIdle() const
     {
         // Check relevant blackboard keys to determine idleness
         const bool bHasQuest = AIController->GetBlackboardComponent()->GetValueAsBool(FName("bHasQuest")); // Need this key
-        const bool bIsSleeping = false; // TODO: Add Blackboard key bIsSleeping
-        const bool bIsCriticallyNeedy = PawnStats_ ? (PawnStats_->IsHungry() || PawnStats_->IsThirsty()) : false; // Example check
-
-        // Idle if no quest, not sleeping, and needs aren't critical
-        return !bHasQuest && !bIsSleeping && !bIsCriticallyNeedy;
+        return !bHasQuest;
     }
     return false; 
 }
@@ -125,7 +123,7 @@ void AMS_AICharacter::EvaluateQuestAndBid(const FQuest& Quest)
 	float bidValue = CalculateBidValue(Quest);
 
     // Define a minimum acceptable bid threshold (don't bid if value is too low)
-    const float MinBidThreshold = 1.0f;
+    const float MinBidThreshold = 0.0f;
 
 	if (bidValue > MinBidThreshold)
 	{
@@ -156,6 +154,7 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
 	float MinResourceDistSq = FLT_MAX;
     FVector ResourceLocation = FVector::ZeroVector;
 
+	
     for (TWeakObjectPtr<AMS_BaseWorkPlace> WorkplacePtr : WPPool->ActiveWorkplaces_)
 	{
         if(WorkplacePtr.IsValid())
@@ -174,35 +173,33 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
         }
 	}
 
-    if(!ClosestResource) {
+    if(!ClosestResource && !Quest.TargetDestination.IsValid()) {
         UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Cannot find available resource %s for bid calculation."), *GetName(), *UEnum::GetValueAsString(Quest.Type));
         return 0.0f; 
     }
 
-    // Find closest Storage (assuming resource quests deliver to storage)
+	AMS_StorageBuilding* ClosestStorage = nullptr;
+	float MinStorageDistSq = FLT_MAX;
+	for (TWeakObjectPtr<AMS_StorageBuilding> StoragePtr : StoragePool->StorageBuldings_) // Assumes StorageBuldings_ has active ones
+	{
+		if(StoragePtr.IsValid() && StoragePtr->placeActive_) // Check if storage is active
+		{
+			// Calculate distance from the RESOURCE location to the storage
+			float DistSq = FVector::DistSquared(ResourceLocation, StoragePtr->GetActorLocation());
+			if (DistSq < MinStorageDistSq)
+			{
+				MinStorageDistSq = DistSq;
+				ClosestStorage = StoragePtr.Get();
+			}
+		}
+	}
     AActor* DestinationActor = nullptr;
+	DestinationActor = ClosestStorage;
+	
     if(Quest.TargetDestination.IsValid())
     {
         DestinationActor = Quest.TargetDestination.Get(); // For specific delivery quests
-    }
-    else // Default to nearest storage
-    {
-        AMS_StorageBuilding* ClosestStorage = nullptr;
-        float MinStorageDistSq = FLT_MAX;
-         for (TWeakObjectPtr<AMS_StorageBuilding> StoragePtr : StoragePool->StorageBuldings_) // Assumes StorageBuldings_ has active ones
-        {
-             if(StoragePtr.IsValid() && StoragePtr->placeActive_) // Check if storage is active
-             {
-                // Calculate distance from the RESOURCE location to the storage
-                float DistSq = FVector::DistSquared(ResourceLocation, StoragePtr->GetActorLocation());
-                 if (DistSq < MinStorageDistSq)
-                 {
-                     MinStorageDistSq = DistSq;
-                     ClosestStorage = StoragePtr.Get();
-                 }
-             }
-        }
-        DestinationActor = ClosestStorage;
+    	ResourceLocation = ClosestStorage->GetActorLocation();
     }
 
 
@@ -211,7 +208,7 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
         return 0.0f; // Cannot calculate path if no destination
     }
 
-	// TODO: Change the calculations so it checks the nav system
+
     float EstimateDistToResource = FMath::Abs(GetActorLocation().X - ResourceLocation.X) + FMath::Abs(GetActorLocation().Y - ResourceLocation.Y);
     float EstimateDistResourceToDest = FMath::Abs(ResourceLocation.X - DestinationActor->GetActorLocation().X) + FMath::Abs(ResourceLocation.Y - DestinationActor->GetActorLocation().Y);
     float TotalEstimatedDistance = EstimateDistToResource + EstimateDistResourceToDest;
@@ -228,11 +225,6 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
 
     // Combine needs penalties 
     NeedsPenalty = 1.0f / FMath::Max(1.0f, 1.0f + HungerPenalty + ThirstPenalty); // Higher penalty = lower multiplier
-
-    // Other Factors 
-    // float SkillFactor = 1.0f; // TODO: Add skill system
-    // float EnergyFactor = FMath::Clamp(PawnStats_->Energy / 100.0f, 0.1f, 1.0f); // Less likely to bid if tired
-
 
     float CalculatedValue = RewardFactor * NeedsPenalty * DistanceFactor; 
 
@@ -318,6 +310,28 @@ void AMS_AICharacter::CompleteCurrentQuest()
     }
 }
 
+void AMS_AICharacter::SetAssignedHouse(AMS_House* NewHouse)
+{
+	if (MyHouse.IsValid() && MyHouse.Get() != NewHouse)
+	{
+		MyHouse->LeaveHouse(this);
+	}
+
+	MyHouse = NewHouse;
+	if (NewHouse)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Assigned to House %s."), *GetName(), *NewHouse->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Unassigned from any house."), *GetName());
+	}
+}
+
+AMS_House* AMS_AICharacter::GetAssignedHouse() const
+{
+	return MyHouse.Get();
+}
 
 void AMS_AICharacter::CheckIfHungry() {
 
@@ -508,7 +522,51 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
          }
     }
 
-	
+	 AMS_WheatField* Field = Cast<AMS_WheatField>(OtherActor); // Or get from Target BB key
+    if (Field && CurrentTarget == Field) // Make sure it's the intended target
+    {
+        if (AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Field)
+        {
+            bool bActionDone = false;
+            // Case 1: Planting Quest (using Amount == -1 convention)
+            if (AssignedQuest.Amount == -1 && Field->GetCurrentFieldState() == EFieldState::Constructed)
+            {
+                if (Field->PlantSeeds()) bActionDone = true;
+            }
+            // Case 2: Watering Quest (AI needs to have fetched water first)
+            else if (AssignedQuest.Type == ResourceType::WATER && Field->GetCurrentFieldState() == EFieldState::Planted)
+            {
+                // Check if AI has water
+                if (Inventory_->GetResourceAmount(ResourceType::WATER) >= AssignedQuest.Amount)
+                {
+                    if (Field->WaterField())
+                    {
+                        Inventory_->ExtractFromResources(ResourceType::WATER, AssignedQuest.Amount); // Consume water
+                        bActionDone = true;
+                    }
+                } else { UE_LOG(LogTemp, Warning, TEXT("AI %s: Reached field %s to water, but has no water!"), *GetName(), *Field->GetName()); /* BT needs fallback */ }
+            }
+            // Case 3: Harvesting Quest
+            else if (AssignedQuest.Type == ResourceType::WHEAT && Field->GetCurrentFieldState() == EFieldState::ReadyToHarvest)
+            {
+                 FResource Harvested = Field->HarvestField();
+                 if (Harvested.Type != ResourceType::ERROR && Harvested.Amount > 0)
+                 {
+                     Inventory_->AddToResources(Harvested.Type, Harvested.Amount);
+                     bActionDone = true;
+                 }
+            }
+
+            // If action was successful, complete the current quest step
+            if (bActionDone)
+            {
+                UE_LOG(LogTemp, Log, TEXT("AI %s: Completed action (%s) at Field %s."), *GetName(), *UEnum::GetValueAsString(AssignedQuest.Type), *Field->GetName());
+                CompleteCurrentQuest(); // Complete this specific action quest
+                // Reset relevant blackboard states if needed
+            }
+        }
+        else { UE_LOG(LogTemp, Warning, TEXT("AI %s: Reached field %s but quest invalid/mismatch."), *GetName(), *Field->GetName()); }
+    }
 }
 
 void AMS_AICharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

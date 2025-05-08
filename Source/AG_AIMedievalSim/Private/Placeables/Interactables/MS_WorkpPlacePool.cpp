@@ -111,6 +111,8 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
 	if (!PathfindingSubsystem || WorkplaceClasses.Num() == 0) return;
 
+	if (!bSpawning) return;
+	
 	// Get a random free node position
 	FVector NodeWorldLocation;
 	FIntPoint NodeGrid;

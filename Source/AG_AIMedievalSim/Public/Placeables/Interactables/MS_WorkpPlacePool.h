@@ -29,6 +29,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
 	int n_workplaces_;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design|Workplaces")
+	bool bSpawning;
 	
 	// Active and Inactive pools
 

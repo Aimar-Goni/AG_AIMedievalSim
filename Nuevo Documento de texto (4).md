@@ -137,10 +137,8 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   Move To `Quest.TargetDestination`.
             *   New BT Task/Overlap Logic: `UMS_DeliverToConstructionSite`. Interacts with `AMS_ConstructionSite::AddResource()`, removing wood from AI inventory.
 
-</span>
 
-TODO: Fix the hunger and thirst and fix house spawning so its closer
-TODO: Fix the fps drops with multiple pawns
+
 
 *   **Step 10: House Actor & Basic Sleep Behavior**
     *   **What:** A place for AIs to sleep at night.
@@ -164,6 +162,13 @@ TODO: Fix the fps drops with multiple pawns
         *   `AIManager`: When a field is `ReadyToHarvest`, generate `FQuest(ResourceType::WHEAT, HarvestAmount)` targeting this field.
         *   AI BT: Handle Wheat quest. Go to field. `PerformWorkAction` task (maybe shorter duration). On success, AI gains `ResourceType::WHEAT`. The field needs to reset (`State = Idle` or `Growing`).
         *   Add `ResourceType::WHEAT` to `UInventoryComponent`. Decide how Wheat is used (Needs conversion to Food? A bakery building later?). For now, maybe it directly satisfies hunger slightly less effectively than berries?
+
+</span>
+
+
+TODO: fix house spawning so its closer
+TODO: Fix the fps drops with multiple pawns
+Fix the not having resource source
 
 **Week 4: Pub, Refinements & Polish**
 

@@ -78,7 +78,8 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = "AI Manager|Events")
 	FOnQuestAvailable OnQuestAvailable;
-	
+
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Bidding")
     float BidDuration = 3.0f;
 	
@@ -100,7 +101,7 @@ protected:
 	void GenerateQuestsForResourceType(ResourceType ResourceTypeToCheck);
 
 	// Checks if an identical quest already exists (available, bidding, or assigned). 
-	bool DoesIdenticalQuestExist(ResourceType Type, int32 Amount) const;
+	bool DoesIdenticalQuestExist(ResourceType Type, int32 Amount, AActor* Target ) const;
 
 	// Checks conditions and potentially initiates a construction project.
 	void CheckAndInitiateConstruction();
@@ -113,6 +114,21 @@ protected:
 	void UpdateHousingState();
 	
 	void InitializeCentralStorage();
+
+	void InitializeFieldListeners();
+
+	UFUNCTION()
+	void OnWheatFieldReady(AMS_WheatField* ReadyField);
+	
+	bool ShouldBuildWheatField() const;
+	
+	UFUNCTION()
+	void OnWheatFieldNeedsPlanting(AMS_WheatField* Field);
+	UFUNCTION()
+	void OnWheatFieldNeedsWatering(AMS_WheatField* Field);
+	UFUNCTION()
+	void OnWheatFieldReadyToHarvest(AMS_WheatField* Field); // Renamed from OnWheatFieldReady
+
 public:
 
 	// Resource types the AIManager actively manages and generates quests for. 
@@ -153,6 +169,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AI Manager|Construction") // Called by ConstructionSite maybe?
 	void NotifyConstructionProgress(AMS_ConstructionSite* Site, int32 AmountDelivered);
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	int32 WheatFieldWoodCost = 25;
+
+	/** Class reference for the Wheat Field building. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	TSubclassOf<AMS_WheatField> WheatFieldClass;
+
 private:
 
 	int32 CurrentPopulation = 0;

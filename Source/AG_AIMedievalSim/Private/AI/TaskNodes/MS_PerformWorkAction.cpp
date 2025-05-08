@@ -8,6 +8,7 @@
 #include "AI/Characters/MS_AICharacter.h" 
 #include "Placeables/Interactables/MS_BaseWorkPlace.h" 
 #include "Placeables/Interactables/MS_WorkpPlacePool.h"
+#include "Placeables/Buildings/MS_WheatField.h"
 #include "Systems/MS_ResourceSystem.h"
 #include "Systems/MS_InventoryComponent.h"
 #include "GameFramework/Character.h"
@@ -150,11 +151,31 @@ void UMS_PerformWorkAction::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 			AMS_BaseWorkPlace* Workplace = MyMemory->WorkplaceActor.Get();
 			ResourceType CurrentQuestType = AICharacter->AssignedQuest.Type; // Get type for finish anim
 
+			AMS_WheatField* WheatFieldTarget = Cast<AMS_WheatField>(Workplace); // Workplace is the Target
+			FResource ReceivedResource = {ResourceType::ERROR, 0}; // Initialize
+
+			if (WheatFieldTarget) // If the target is a Wheat Field
+			{
+				if (CurrentQuestType == ResourceType::WHEAT && WheatFieldTarget->GetCurrentFieldState() == EFieldState::ReadyToHarvest)
+				{
+					ReceivedResource = WheatFieldTarget->HarvestField();
+					UE_LOG(LogTemp, Log, TEXT("PerformWorkAction: %s harvested WheatField %s."), *AICharacter->GetName(), *WheatFieldTarget->GetName());
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("PerformWorkAction: %s at WheatField %s, but quest type (%s) or field state (%s) not suitable for default harvest action."),
+						*AICharacter->GetName(), *WheatFieldTarget->GetName(), *UEnum::GetValueAsString(CurrentQuestType), *UEnum::GetValueAsString(WheatFieldTarget->GetCurrentFieldState()));
+					CleanupTask(OwnerComp, NodeMemory);
+					FinishLatentTask(OwnerComp, EBTNodeResult::Failed); // Action not applicable
+					return; 
+				}
+			}
+				
             if(Workplace->ResourceAvaliable_)
             {
                 UE_LOG(LogTemp, Log, TEXT("PerformWorkAction: Work duration complete for %s at %s."), *AICharacter->GetName(), *Workplace->GetName());
 
-                FResource ReceivedResource = Workplace->TakeResources();
+                ReceivedResource = Workplace->TakeResources();
                 if (AICharacter->Inventory_)
                 {
                     AICharacter->Inventory_->AddToResources(ReceivedResource.Type, ReceivedResource.Amount);

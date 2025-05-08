@@ -4,6 +4,8 @@
 #include "Systems/MS_InventoryComponent.h"
 #include "AI/Characters/MS_AICharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Placeables/Buildings/MS_House.h"
+#include "Placeables/Buildings/MS_WheatField.h"
 #include "Movement/MS_PathfindingSubsystem.h"
 
 
@@ -38,7 +40,7 @@ void AMS_AIManager::BeginPlay()
     // {
     //     // BulletingBoardPool_->OnBulletingBoardPoolInitialized.AddDynamic(this, &AMS_AIManager::OnBulletingBoardPoolReady);
     // }
-
+	InitializeFieldListeners();
 	GetWorldTimerManager().SetTimer(HousingCheckTimerHandle, this, &AMS_AIManager::UpdateHousingState, HousingCheckInterval, true, 5.0f);
 }
 
@@ -95,6 +97,9 @@ static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 
 	switch (Resource)
 	{
+	case ResourceType::WHEAT:
+		GoldPerUnit = 4;
+		break;
 	case ResourceType::BERRIES:
 		GoldPerUnit = 2;
 		break;
@@ -130,7 +135,7 @@ void AMS_AIManager::GenerateQuestsForResourceType(ResourceType ResourceTypeToChe
 			if (questAmount <= 0) break; // Safety break
 
 			// --- Check for Duplicates ---
-			if (!DoesIdenticalQuestExist(ResourceTypeToCheck, questAmount))
+			if (!DoesIdenticalQuestExist(ResourceTypeToCheck, questAmount, nullptr))
 			{
 				// Calculate reward
 				int32 reward = CalculateGoldReward(ResourceTypeToCheck, questAmount);
@@ -159,41 +164,27 @@ void AMS_AIManager::GenerateQuestsForResourceType(ResourceType ResourceTypeToChe
 	}
 }
 
-bool AMS_AIManager::DoesIdenticalQuestExist(ResourceType Type, int32 Amount) const
+bool AMS_AIManager::DoesIdenticalQuestExist(ResourceType Type, int32 Amount, AActor* Target ) const
 {
-	// 1. Check Available Quests (not yet bid on / assigned)
 	for (const FQuest& availableQuest : AvailableQuests_)
 	{
-		// Only check quests not currently being bid on (timer map check)
-		// And ensure it's not a delivery quest (TargetDestination == null)
-		if (!BidTimers.Contains(availableQuest.QuestID) && !AssignedQuests_.Contains(availableQuest.QuestID) &&
-			availableQuest.Type == Type && availableQuest.Amount == Amount && !availableQuest.TargetDestination.IsValid())
+		if (availableQuest.Type == Type && availableQuest.Amount == Amount && availableQuest.TargetDestination == Target)
 		{
-			return true;
+
+			if (!BidTimers.Contains(availableQuest.QuestID) && !AssignedQuests_.Contains(availableQuest.QuestID))
+				return true; // Found identical available quest
+			if (BidTimers.Contains(availableQuest.QuestID))
+				return true; // Found identical quest being bid on
 		}
 	}
-
-	// 2. Check Quests Currently Being Bid On
-	for (const FQuest& availableQuest : AvailableQuests_)
-	{
-		if (BidTimers.Contains(availableQuest.QuestID) &&
-		   availableQuest.Type == Type && availableQuest.Amount == Amount && !availableQuest.TargetDestination.IsValid())
-		{
-			return true;
-		}
-	}
-
-
-	// 3. Check Assigned Quests
 	for (const auto& pair : AssignedQuests_)
 	{
 		AMS_AICharacter* character = pair.Value.Get();
-		if (character && character->AssignedQuest.Type == Type && character->AssignedQuest.Amount == Amount && !character->AssignedQuest.TargetDestination.IsValid())
+		if (character && character->AssignedQuest.Type == Type && character->AssignedQuest.Amount == Amount && character->AssignedQuest.TargetDestination == Target)
 		{
-			return true;
+			return true; // Found identical assigned quest
 		}
 	}
-	
 
 	return false;
 }
@@ -416,23 +407,28 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
     TSubclassOf<AActor> BuildingToSpawn = nullptr;
     ResourceType RequiredResource = ResourceType::ERROR;
     int32 ResourceCost = 0;
+	bool bIsWheatField = false;
+	int32 woodAmount = GetCentralStorageInventory() ? GetCentralStorageInventory()->GetResourceAmount(ResourceType::WOOD) : 0;
 
-    if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost)
-    {
-        BuildingToSpawn = HouseBuildingClass;
-        RequiredResource = ResourceType::WOOD;
-        ResourceCost = HouseWoodCost;
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Prioritizing House Construction."));
-    }
-    // TODO: Add logic for other building types here based on different conditions
+	if (CurrentPopulation > TotalHousingCapacity || (CurrentPopulation > 0 && TotalHousingCapacity == 0) ) // Also build if pop >0 and no houses
+	{
+		if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
+		{
+			BuildingToSpawn = HouseBuildingClass;
+			RequiredResource = ResourceType::WOOD;
+			ResourceCost = HouseWoodCost;
+			UE_LOG(LogTemp, Log, TEXT("AIManager: Considering non-priority House Construction."));
+		}
+	}
+	else if (ShouldBuildWheatField() && WheatFieldClass && woodAmount >= WheatFieldWoodCost) // Add ShouldBuildWheatField() logic
+	{
+		BuildingToSpawn = WheatFieldClass;
+		RequiredResource = ResourceType::WOOD;
+		ResourceCost = WheatFieldWoodCost;
+		bIsWheatField = true;
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Considering Wheat Field Construction."));
+	}
 
-    else if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
-    {
-         BuildingToSpawn = HouseBuildingClass;
-         RequiredResource = ResourceType::WOOD;
-         ResourceCost = HouseWoodCost;
-         UE_LOG(LogTemp, Log, TEXT("AIManager: Considering non-priority House Construction."));
-    }
 
 
     // --- Proceed if a building type was selected ---
@@ -454,6 +450,18 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
             UE_LOG(LogTemp, Warning, TEXT("AIManager: Met resource threshold for construction, but failed to find a suitable %dx%d build location."), BuildSizeX, BuildSizeY);
         }
     }
+}
+bool AMS_AIManager::ShouldBuildWheatField() const
+{
+	
+	const int32 MaxFields = 5; 
+	TArray<AActor*> FoundFields;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), WheatFieldClass, FoundFields);
+
+	UInventoryComponent* StorageInv = GetCentralStorageInventory();
+	int32 CurrentWheat = StorageInv ? StorageInv->GetResourceAmount(ResourceType::WHEAT) : 0;
+
+	return CurrentWheat < (LowResourceThreshold * 2) && FoundFields.Num() < MaxFields;
 }
 
 bool AMS_AIManager::FindSuitableBuildLocation(int32 SizeX, int32 SizeY, FVector& OutCenterLocation, TArray<FIntPoint>& OutOccupiedNodes)
@@ -586,39 +594,205 @@ void AMS_AIManager::NotifyConstructionProgress(AMS_ConstructionSite* Site, int32
 
 }
 
+void AMS_AIManager::InitializeFieldListeners()
+{
+	TArray<AActor*> FoundFields;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMS_WheatField::StaticClass(), FoundFields);
+	UE_LOG(LogTemp, Log, TEXT("AIManager: Found %d Wheat Fields to listen to."), FoundFields.Num());
+	for (AActor* FieldActor : FoundFields)
+	{
+		AMS_WheatField* Field = Cast<AMS_WheatField>(FieldActor);
+		if (Field)
+		{
+			// Bind to all relevant state changes
+			Field->OnFieldNeedsPlanting.AddDynamic(this, &AMS_AIManager::OnWheatFieldNeedsPlanting);
+			Field->OnFieldNeedsWatering.AddDynamic(this, &AMS_AIManager::OnWheatFieldNeedsWatering);
+			Field->OnFieldReadyToHarvest.AddDynamic(this, &AMS_AIManager::OnWheatFieldReadyToHarvest);
 
+			// Immediately generate quests if field is already in a waiting state
+			switch(Field->GetCurrentFieldState())
+			{
+			case EFieldState::Constructed: OnWheatFieldNeedsPlanting(Field); break;
+			case EFieldState::Planted:     OnWheatFieldNeedsWatering(Field); break;
+			case EFieldState::ReadyToHarvest: OnWheatFieldReadyToHarvest(Field); break;
+			default: break; // Other states don't need immediate quests
+			}
+		}
+	}
+}
+
+void AMS_AIManager::OnWheatFieldReady(AMS_WheatField* ReadyField)
+{
+	if (!ReadyField) return;
+
+	UE_LOG(LogTemp, Log, TEXT("AIManager: WheatField %s is ready for harvest."), *ReadyField->GetName());
+
+	// Check if a harvest quest for THIS specific field already exists
+	bool bQuestForThisFieldExists = false;
+	for (const FQuest& q : AvailableQuests_)
+	{
+		if (q.Type == ResourceType::WHEAT && q.TargetDestination == ReadyField) {
+			bQuestForThisFieldExists = true;
+			break;
+		}
+	}
+	for (const auto& pair : AssignedQuests_)
+	{
+		AMS_AICharacter* character = pair.Value.Get();
+		if (character && character->AssignedQuest.Type == ResourceType::WHEAT && character->AssignedQuest.TargetDestination == ReadyField) {
+			bQuestForThisFieldExists = true;
+			break;
+		}
+	}
+
+
+	if (!bQuestForThisFieldExists)
+	{
+		// Create a HARVEST quest targeting this specific field
+		int32 reward = CalculateGoldReward(ResourceType::WHEAT, ReadyField->HarvestAmount);
+		FQuest harvestQuest(ResourceType::WHEAT, ReadyField->HarvestAmount, reward, ReadyField); // Target is the field itself
+
+		AvailableQuests_.Add(harvestQuest);
+		StartBidTimer(harvestQuest);
+		OnQuestAvailable.Broadcast(harvestQuest);
+
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Harvest Quest ID %s for WheatField %s."), *harvestQuest.QuestID.ToString(), *ReadyField->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Harvest quest for WheatField %s already exists or is assigned."), *ReadyField->GetName());
+	}
+}
 
 void AMS_AIManager::UpdateHousingState()
 {
-	CurrentPopulation = 0;
-	TotalHousingCapacity = 0;
+    CurrentPopulation = 0;
+    TotalHousingCapacity = 0;
+    TArray<AMS_House*> AvailableHouses; 
 
-	UWorld* World = GetWorld();
-	if (!World) return;
+    UWorld* World = GetWorld();
+    if (!World) return;
 
-	// Count Population
-	if (AICharacterClass)
-	{
-		TArray<AActor*> FoundCharacters;
-		UGameplayStatics::GetAllActorsOfClass(World, AICharacterClass, FoundCharacters);
-		CurrentPopulation = FoundCharacters.Num();
-	}
+    if (AICharacterClass)
+    {
+        TArray<AActor*> FoundCharacters;
+        UGameplayStatics::GetAllActorsOfClass(World, AICharacterClass, FoundCharacters);
+        CurrentPopulation = FoundCharacters.Num();
 
-	// Count Housing Capacity 
-	if (HouseBuildingClass) // Check if House Class is set
-	{
-		TArray<AActor*> FoundHouses;
-		UGameplayStatics::GetAllActorsOfClass(World, HouseBuildingClass, FoundHouses);
-		TotalHousingCapacity = FoundHouses.Num() * HouseCapacity;
-	}
+        // --- Assign Houses to Homeless AI ---
+        TArray<AMS_AICharacter*> HomelessAI;
+        for (AActor* CharActor : FoundCharacters)
+        {
+            AMS_AICharacter* AIChar = Cast<AMS_AICharacter>(CharActor);
+            if (AIChar && !AIChar->GetAssignedHouse())
+            {
+                HomelessAI.Add(AIChar);
+            }
+        }
 
-	// UE_LOG(LogTemp, Log, TEXT("AIManager Housing Check: Population=%d, Capacity=%d"), CurrentPopulation, TotalHousingCapacity);
+        if (HouseBuildingClass)
+        {
+            TArray<AActor*> FoundHouses;
+            UGameplayStatics::GetAllActorsOfClass(World, HouseBuildingClass, FoundHouses);
+            for (AActor* HouseActor : FoundHouses)
+            {
+                AMS_House* House = Cast<AMS_House>(HouseActor);
+                if (House)
+                {
+                    TotalHousingCapacity += House->MaxOccupants;
+                    if (House->HasSpace())
+                    {
+                        AvailableHouses.Add(House);
+                    }
+                }
+            }
+        }
 
-	// Check if new housing is needed AND trigger construction check
-	if (CurrentPopulation > TotalHousingCapacity)
-	{
-		UE_LOG(LogTemp, Log, TEXT("AIManager: Housing needed (Pop %d > Cap %d). Checking construction conditions."), CurrentPopulation, TotalHousingCapacity);
-		CheckAndInitiateConstruction();
-	}
+        // Assign homeless AI to available houses
+        for (AMS_AICharacter* HomelessChar : HomelessAI)
+        {
+            for (AMS_House* House : AvailableHouses)
+            {
+                if (House->HasSpace())
+                {
+                    HomelessChar->SetAssignedHouse(House);
+                    AvailableHouses.Remove(House); 
+                    if(House->HasSpace()) AvailableHouses.Add(House); 
+                    break; 
+                }
+            }
+        }
+    }
 
+        UE_LOG(LogTemp, Log, TEXT("AIManager Housing Check: Housing needed (Pop %d > Cap %d). Checking construction conditions."), CurrentPopulation, TotalHousingCapacity);
+        CheckAndInitiateConstruction(); // Prioritize house
+    
+}
+
+void AMS_AIManager::OnWheatFieldNeedsPlanting(AMS_WheatField* Field)
+{
+    if (!Field) return;
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs planting."), *Field->GetName());
+
+
+    // Check if planting quest already exists for this field
+     bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WHEAT, -1, Field); // Use -1 Amount as placeholder for "action" quest?
+
+    if (!bQuestExists)
+    {
+        // Reward for planting? Or is the harvest the reward? Let's say small reward.
+        FQuest plantQuest(ResourceType::WHEAT, -1, 2, Field); // Amount -1 signifies "Plant" action? BT needs to interpret.
+        plantQuest.QuestID = FGuid::NewGuid(); // Ensure unique ID
+
+        AvailableQuests_.Add(plantQuest);
+        StartBidTimer(plantQuest);
+        OnQuestAvailable.Broadcast(plantQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Planting Quest ID %s for Field %s."), *plantQuest.QuestID.ToString(), *Field->GetName());
+    }
+}
+
+UFUNCTION()
+void AMS_AIManager::OnWheatFieldNeedsWatering(AMS_WheatField* Field)
+{
+     if (!Field) return;
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs watering."), *Field->GetName());
+
+    // Create a "Watering" quest. Requires AI to fetch water first.
+    // This is similar to construction: Fetch Water, Deliver to Field.
+
+    // Check if watering quest already exists
+    bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WATER, 1, Field); // 1 Water unit needed? Adjust amount.
+
+    if (!bQuestExists)
+    {
+        int32 waterAmountNeeded = 1; // How much water per watering action?
+        int32 reward = CalculateGoldReward(ResourceType::WATER, waterAmountNeeded); // Small reward for fetching water
+        FQuest waterQuest(ResourceType::WATER, waterAmountNeeded, reward, Field); // Target is the field
+
+        AvailableQuests_.Add(waterQuest);
+        StartBidTimer(waterQuest);
+        OnQuestAvailable.Broadcast(waterQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Watering Quest ID %s for Field %s."), *waterQuest.QuestID.ToString(), *Field->GetName());
+    }
+}
+
+UFUNCTION()
+void AMS_AIManager::OnWheatFieldReadyToHarvest(AMS_WheatField* Field) // Renamed function
+{
+     if (!Field) return;
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s ready for harvest."), *Field->GetName());
+
+    // Create a "Harvest" quest.
+    bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WHEAT, Field->HarvestAmount, Field);
+
+     if (!bQuestExists)
+    {
+        int32 reward = CalculateGoldReward(ResourceType::WHEAT, Field->HarvestAmount);
+        FQuest harvestQuest(ResourceType::WHEAT, Field->HarvestAmount, reward, Field); // Target is the field
+
+        AvailableQuests_.Add(harvestQuest);
+        StartBidTimer(harvestQuest);
+        OnQuestAvailable.Broadcast(harvestQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Harvest Quest ID %s for Field %s."), *harvestQuest.QuestID.ToString(), *Field->GetName());
+    }
 }

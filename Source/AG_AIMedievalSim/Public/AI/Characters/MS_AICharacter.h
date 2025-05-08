@@ -16,6 +16,7 @@
 
 class AMS_AIManager; 
 class UMS_PathfindingSubsystem;
+class AMS_House;
 
 UCLASS()
 class AG_AIMEDIEVALSIM_API AMS_AICharacter : public ACharacter
@@ -65,13 +66,23 @@ public:
 	TArray<FIntPoint> Path_;
 	
 	UPROPERTY(EditAnywhere, Category = "Collision")
-	TObjectPtr<UBoxComponent> ShopCollision; 
+	TObjectPtr<UBoxComponent> ShopCollision;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "AI|Housing") // VisibleInstanceOnly: Set by AIManager, not directly in editor per AI
+	TWeakObjectPtr<AMS_House> MyHouse;
 
 protected:
 	
 	virtual void BeginPlay() override;
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category="AI|Housing")
+	void SetAssignedHouse(AMS_House* NewHouse);
+
+	UFUNCTION(BlueprintPure, Category="AI|Housing")
+	AMS_House* GetAssignedHouse() const;
+
 
 	UFUNCTION()
 	void OnNewQuestReceived(const FQuest& NewQuest);
