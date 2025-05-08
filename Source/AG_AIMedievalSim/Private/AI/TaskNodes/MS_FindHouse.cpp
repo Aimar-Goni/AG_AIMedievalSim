@@ -19,11 +19,14 @@ EBTNodeResult::Type UMS_FindHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 
     if (!AIChar || !Blackboard) return EBTNodeResult::Failed;
-
+    
     AMS_House* MyHouse = AIChar->GetAssignedHouse();
     if (MyHouse && MyHouse->HasSpace()) // Check if house exists AND has space
     {
         Blackboard->SetValueAsObject(BlackboardKey_Target.SelectedKeyName, MyHouse);
+        Blackboard->SetValueAsBool("bHasFoundHouse", true);
+        AIChar->CreateMovementPath(MyHouse);
+
         UE_LOG(LogTemp, Log, TEXT("FindAndTargetHouse: %s targeting house %s."), *AIChar->GetName(), *MyHouse->GetName());
         return EBTNodeResult::Succeeded;
     }
@@ -35,6 +38,7 @@ EBTNodeResult::Type UMS_FindHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     {
         UE_LOG(LogTemp, Warning, TEXT("FindAndTargetHouse: %s has no assigned house."), *AIChar->GetName());
     }
+    Blackboard->SetValueAsBool("bHasFoundHouse", false);
 
     Blackboard->ClearValue(BlackboardKey_Target.SelectedKeyName); // Clear target if no valid house
     return EBTNodeResult::Failed;

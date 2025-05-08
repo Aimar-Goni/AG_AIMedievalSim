@@ -6,8 +6,8 @@
 
 UMS_TimeSubsystem::UMS_TimeSubsystem()
 {
-	TimeScale =  36.0f; // 1 real second = 6 game minutes (10 real minutes per day cycle)
-	CurrentHour = 18.0f;
+	TimeScale =  600.0f; 
+	CurrentHour = 19.0f;
 	CurrentDay = 1;
 	DayStartHour = 6.0f;
 	NightStartHour = 20.0f;

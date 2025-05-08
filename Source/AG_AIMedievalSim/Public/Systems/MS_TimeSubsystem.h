@@ -49,7 +49,7 @@ public:
 
 	/** The current hour (0.0 to 23.59...). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time")
-	float CurrentHour = 8.0f; // Start at 8 AM
+	float CurrentHour = 18.0f; // Start at 8 AM
 
 	/** The current day number. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time")
