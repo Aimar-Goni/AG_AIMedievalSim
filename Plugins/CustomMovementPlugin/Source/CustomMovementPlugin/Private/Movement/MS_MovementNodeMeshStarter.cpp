@@ -321,7 +321,7 @@ void AMS_MovementNodeMeshStarter::GenerateNodes(FVector FirstPos)
                 if (bIsTraversable)
                 {
                     // Add as a neighbor to the current node
-                    CurrentNode->Neighbors.Add(NeighborNode);
+                    CurrentNode->Neighbors.Add(NeighborNode, true);
                 }
 
                 // If the neighbor hasn't been visited yet, enqueue it for processing
@@ -341,16 +341,20 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
     for (auto& Pair : NodeMap)
     {
         TSharedPtr<FMoveNode> Node = Pair.Value;
-
+        DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 12, FColor::Yellow, false, 2.0f);
         for (auto& NeighborPair : Node->Neighbors)
         {
-            bool bIsPathClear = PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position);
-            NeighborPair.Value = bIsPathClear; // Update path status
-
-            // Update the reverse connection as well
-            if (NeighborPair.Key->Neighbors.Contains(Node))
+            bool bIsPathClear = false;
+            if (NeighborPair.Value != false)
             {
-                NeighborPair.Key->Neighbors[Node] = bIsPathClear;
+                bIsPathClear = PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position);
+                NeighborPair.Value = bIsPathClear; // Update path status
+
+                // Update the reverse connection as well
+                if (NeighborPair.Key->Neighbors.Contains(Node))
+                {
+                    NeighborPair.Key->Neighbors[Node] = bIsPathClear;
+                }
             }
 
             if (bShowDebugLinesStarter) {

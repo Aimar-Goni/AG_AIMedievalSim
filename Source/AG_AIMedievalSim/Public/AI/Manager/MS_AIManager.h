@@ -50,7 +50,11 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA |Game Speed")
+	float gameSpeed = 3.0f;  
 
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Dependencies")
 	TWeakObjectPtr<AMS_StorageBuildingPool> StorageBuldingsPool_;
 	

@@ -282,8 +282,8 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
         if (FVector::Dist(NewNode->Position, ExistingNode->Position) <= NodeSeparation_ * 2)
         {
 
-            NewNode->Neighbors.Add(ExistingNode);
-            ExistingNode->Neighbors.Add(NewNode);
+            NewNode->Neighbors.Add(ExistingNode,true);
+            ExistingNode->Neighbors.Add(NewNode, true);
             if (bShowDebugLinesPathfinding) {
 
                 DrawDebugLine(GetWorld(), NewNode->Position, ExistingNode->Position, FColor::Cyan, false, 10.0f, 0, 3.0f);

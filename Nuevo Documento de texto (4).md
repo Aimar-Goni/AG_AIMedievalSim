@@ -164,7 +164,7 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
         *   Add `ResourceType::WHEAT` to `UInventoryComponent`. Decide how Wheat is used (Needs conversion to Food? A bakery building later?). For now, maybe it directly satisfies hunger slightly less effectively than berries?
 
 </span>
-
+DOING: new construction block floor
 
 TODO: fix house spawning so its closer
 TODO: Fix the fps drops with multiple pawns

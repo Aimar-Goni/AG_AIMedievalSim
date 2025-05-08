@@ -89,7 +89,7 @@ void AMS_AIManager::Tick(float DeltaTime)
 		GenerateQuestsForResourceType(type);
 	}
 	
-	
+	GetWorld()->GetWorldSettings()->SetTimeDilation(gameSpeed);
 }
 static int32 CalculateGoldReward(ResourceType Resource, int32 Amount)
 {

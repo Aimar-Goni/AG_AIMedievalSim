@@ -7,10 +7,10 @@
 UMS_TimeSubsystem::UMS_TimeSubsystem()
 {
 	TimeScale =  600.0f; 
-	CurrentHour = 19.0f;
+	CurrentHour = 8.0f;
 	CurrentDay = 1;
-	DayStartHour = 6.0f;
-	NightStartHour = 20.0f;
+	DayStartHour = 5.0f;
+	NightStartHour = 22.0f;
 	bIsCurrentlyNight = !IsDayTime(); // Initialize based on start time
 	PreviousHourInteger = FMath::FloorToInt(CurrentHour);
 	bEnableOnScreenDebug = true; // Enable debug display by default
