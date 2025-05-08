@@ -328,8 +328,10 @@ void AMS_AICharacter::CheckIfHungry() {
         bool bIsHungry = PawnStats_->IsHungry();
         bool bIsThirsty = PawnStats_->IsThirsty();
 
-        Blackboard->SetValueAsBool(FName("bIsHungry"), bIsHungry); // Use dedicated keys
-        Blackboard->SetValueAsBool(FName("bIsThirsty"), bIsThirsty);
+        Blackboard->SetValueAsBool(FName("bIsHungry"), bIsHungry); 
+        Blackboard->SetValueAsBool(FName("bGettingFood"), bIsHungry); 
+		Blackboard->SetValueAsBool(FName("bIsThirsty"), bIsThirsty);
+		Blackboard->SetValueAsBool(FName("bGettingWater"), bIsThirsty);
 		
 	}
 }

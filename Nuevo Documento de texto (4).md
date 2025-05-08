@@ -125,7 +125,7 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   **(Alternative):** Instead of AIManager holding wood, construction requires AIs to gather wood *and deliver it directly* to the site. The AIManager just spawns the site and generates "Deliver Wood to [Site]" quests. This avoids the central storage complexity for now. Let's proceed with this alternative.
         *   Modify `AIManager::Tick`: Generate `FQuest(ResourceType::WOOD, AmountNeededForSite)` quests, but somehow tag them or add target info pointing to the specific `AMS_ConstructionSite`. Maybe `FQuest` needs a `TargetActor` field?
 
-</span>
+
 
 *   **Step 9: AI Task - Delivering Resources to Site**
     *   **What:** AI needs to gather wood and take it to the construction site.
@@ -136,6 +136,11 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   Find Path to `Quest.TargetDestination`.
             *   Move To `Quest.TargetDestination`.
             *   New BT Task/Overlap Logic: `UMS_DeliverToConstructionSite`. Interacts with `AMS_ConstructionSite::AddResource()`, removing wood from AI inventory.
+
+</span>
+
+TODO: Fix the hunger and thirst and fix house spawning so its closer
+TODO: Fix the fps drops with multiple pawns
 
 *   **Step 10: House Actor & Basic Sleep Behavior**
     *   **What:** A place for AIs to sleep at night.
