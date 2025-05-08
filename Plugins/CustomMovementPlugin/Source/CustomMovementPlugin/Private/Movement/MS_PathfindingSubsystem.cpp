@@ -294,75 +294,37 @@ FIntPoint UMS_PathfindingSubsystem::AddNodeAtPosition(const FVector& Position)
     return GridPosition;
 }
 
-
 void UMS_PathfindingSubsystem::BlockNode(FVector Position)
 {
     TSharedPtr<FMoveNode> Node = FindClosestNodeToPosition(Position);
-    if (Node)
+    if (Node.IsValid())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Blocking paths for node at %s"), *Position.ToString());
-
-        // Mark paths to neighbors as blocked
-        for (auto& NeighborPair : Node->Neighbors)
-        {
-            NeighborPair.Value = false; // Set path to blocked
-
-            // Also mark the reverse connection as blocked
-            if (NeighborPair.Key->Neighbors.Contains(Node))
-            {
-                NeighborPair.Key->Neighbors[Node] = false;
-            }
-            
-            if (bShowDebugLinesPathfinding) {
-                // Draw debug line in red to indicate blocked path
-                DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
-            }
-        }
-
-        if (bShowDebugLinesPathfinding) {
-            // Change debug color to RED for blocked node
-            DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Red, false, 10.0f);
-        }
-
-        OnPathUpdated.Broadcast(Node->GridPosition);
+        SetNodeBlockedStatus(Node->GridPosition, true);
     }
+    else { UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem: BlockNode(Vector) could not find node near %s."), *Position.ToString()); }
 }
 
+void UMS_PathfindingSubsystem::BlockNodeGrid(FIntPoint GridPosition)
+{
+    SetNodeBlockedStatus(GridPosition, true);
+}
 
+// Public unblocking functions call the helper
 void UMS_PathfindingSubsystem::UnblockNode(FVector Position)
 {
     TSharedPtr<FMoveNode> Node = FindClosestNodeToPosition(Position);
-    if (Node)
+    if (Node.IsValid())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Unblocking paths for node at %s"), *Position.ToString());
-
-        for (auto& NeighborPair : Node->Neighbors)
-        {
-            if (PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position)) // Check if path is clear
-            {
-                NeighborPair.Value = true; // Mark path as accessible
-
-                // Also update the reverse connection
-                if (NeighborPair.Key->Neighbors.Contains(Node))
-                {
-                    NeighborPair.Key->Neighbors[Node] = true;
-                }
-
-                if (bShowDebugLinesPathfinding) {
-                    // Draw debug line in blue for open path
-                    DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
-                }
-            }
-        }
-
-        if (bShowDebugLinesPathfinding) {
-            // Change debug color to GREEN for unblocked node
-            DrawDebugSphere(GetWorld(), Position, 50.0f, 12, FColor::Green, false, 10.0f);
-        }
-
-        OnPathUpdated.Broadcast(Node->GridPosition);
+        SetNodeBlockedStatus(Node->GridPosition, false);
     }
+    else { UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem: UnblockNode(Vector) could not find node near %s."), *Position.ToString()); }
 }
+
+void UMS_PathfindingSubsystem::UnblockNodeGrid(FIntPoint GridPosition)
+{
+    SetNodeBlockedStatus(GridPosition, false);
+}
+
 
 
 bool UMS_PathfindingSubsystem::PerformRaycastToPosition(const FVector& Start, const FVector& End)
@@ -406,38 +368,192 @@ bool UMS_PathfindingSubsystem::PerformRaycastToPosition(const FVector& Start, co
 
 TSharedPtr<FMoveNode> UMS_PathfindingSubsystem::FindNodeByGridPosition(const FIntPoint& GridPosition)
 {
-
-    if (NodeMap.Contains(GridPosition))
+    const TSharedPtr<FMoveNode>* FoundNodePtr = NodeMap.Find(GridPosition);
+    if (FoundNodePtr && FoundNodePtr->IsValid()) 
     {
-       
-        return NodeMap[GridPosition];
+        return *FoundNodePtr;
     }
-    
-
     return nullptr;
 }
 
 bool UMS_PathfindingSubsystem::GetRandomFreeNode(FVector& OutLocation, FIntPoint& OutGrid)
 {
-    TArray<FIntPoint> Keys;
-    NodeMap.GetKeys(Keys);
-
-    if (Keys.Num() == 0) return false;
-
-    int32 MaxTries = 20;
-    for (int32 i = 0; i < MaxTries; ++i)
+    TArray<FIntPoint> FreeNodeKeys;
+    for(const auto& Pair : NodeMap)
     {
-        int32 Index = FMath::RandRange(0, Keys.Num() - 1);
-        FIntPoint RandomKey = Keys[Index];
-
-        TSharedPtr<FMoveNode> Node = NodeMap.FindRef(RandomKey);
-        if (Node.IsValid() && Node->Neighbors.Num()>0)
+        if(!IsNodeBlocked(Pair.Key)) // Check if node is NOT blocked
         {
-            OutGrid = RandomKey;
-            OutLocation = FVector(RandomKey.X * NodeSeparation_, RandomKey.Y * NodeSeparation_, 0.f);
+            FreeNodeKeys.Add(Pair.Key);
+        }
+    }
+
+    if(FreeNodeKeys.Num() > 0)
+    {
+        int32 RandomIndex = FMath::RandRange(0, FreeNodeKeys.Num() - 1);
+        OutGrid = FreeNodeKeys[RandomIndex];
+        TSharedPtr<FMoveNode> Node = FindNodeByGridPosition(OutGrid);
+        if(Node.IsValid())
+        {
+            OutLocation = Node->Position;
             return true;
         }
     }
 
-    return false; // No free node found in MaxTries
+    // No free nodes found
+    OutLocation = FVector::ZeroVector;
+    OutGrid = FIntPoint::ZeroValue;
+    UE_LOG(LogTemp, Warning, TEXT("GetRandomFreeNode: No free nodes available in the pathfinding map."));
+    return false;
+}
+
+struct FNodeDistanceInfo
+{
+    TSharedPtr<FMoveNode> Node;
+    float DistSq;
+
+    // Comparison operator for sorting
+    bool operator<(const FNodeDistanceInfo& Other) const
+    {
+        return DistSq < Other.DistSq;
+    }
+};
+
+bool UMS_PathfindingSubsystem::IsNodeBlocked(const FIntPoint& GridPosition) const
+{
+    return BlockedNodes.Contains(GridPosition);
+}
+
+
+void UMS_PathfindingSubsystem::SetNodeBlockedStatus(const FIntPoint& GridPosition, bool bBlocked)
+{
+    TSharedPtr<FMoveNode> Node = FindNodeByGridPosition(GridPosition);
+    if (!Node.IsValid())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PathfindingSubsystem: Attempted to set blocked status for non-existent node at %s."), *GridPosition.ToString());
+        return;
+    }
+
+    bool bStatusChanged = false;
+    if (bBlocked)
+    {
+        if (!BlockedNodes.Contains(GridPosition)) // Only add and broadcast if not already blocked
+        {
+
+            for (auto& NeighborPair : Node->Neighbors)
+            {
+                NeighborPair.Value = false; // Set path to blocked
+
+                // Also mark the reverse connection as blocked
+                if (NeighborPair.Key->Neighbors.Contains(Node))
+                {
+                    NeighborPair.Key->Neighbors[Node] = false;
+                }
+            
+                if (bShowDebugLinesPathfinding) {
+                    // Draw debug line in red to indicate blocked path
+                    DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Red, false, 10.0f, 0, 3.0f);
+                }
+            }
+
+            if (bShowDebugLinesPathfinding) {
+                // Change debug color to RED for blocked node
+                DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 12, FColor::Red, false, 10.0f);
+            }
+            
+            BlockedNodes.Add(GridPosition);
+            bStatusChanged = true;
+            UE_LOG(LogTemp, Verbose, TEXT("PathfindingSubsystem: Node %s blocked."), *GridPosition.ToString());
+        }
+    }
+    else // Unblocking
+    {
+        if (BlockedNodes.Contains(GridPosition)) // Only remove and broadcast if currently blocked
+        {
+
+            for (auto& NeighborPair : Node->Neighbors)
+            {
+                if (PerformRaycastToPosition(Node->Position, NeighborPair.Key->Position)) // Check if path is clear
+                {
+                    NeighborPair.Value = true; // Mark path as accessible
+
+                    // Also update the reverse connection
+                    if (NeighborPair.Key->Neighbors.Contains(Node))
+                    {
+                        NeighborPair.Key->Neighbors[Node] = true;
+                    }
+
+                    if (bShowDebugLinesPathfinding) {
+                        // Draw debug line in blue for open path
+                        DrawDebugLine(GetWorld(), Node->Position, NeighborPair.Key->Position, FColor::Blue, false, 10.0f, 0, 3.0f);
+                    }
+                }
+            }
+
+            if (bShowDebugLinesPathfinding) {
+                // Change debug color to GREEN for unblocked node
+                DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 12, FColor::Green, false, 10.0f);
+            }
+            
+            BlockedNodes.Remove(GridPosition);
+            bStatusChanged = true;
+            UE_LOG(LogTemp, Verbose, TEXT("PathfindingSubsystem: Node %s unblocked."), *GridPosition.ToString());
+        }
+    }
+
+    if (bStatusChanged)
+    {
+        // Broadcast that this node's pathing status has changed
+        OnPathUpdated.Broadcast(GridPosition);
+    }
+}
+bool UMS_PathfindingSubsystem::DeactivateClosestNodes(const FVector& CenterPoint, TArray<FIntPoint>& OutDeactivatedNodePositions, int32 NumNodesToDeactivate)
+{
+    OutDeactivatedNodePositions.Empty(); // Clear output array
+
+    if (NumNodesToDeactivate <= 0 || NodeMap.IsEmpty())
+    {
+        return false; // Nothing to do or no nodes exist
+    }
+
+    TArray<FNodeDistanceInfo> UnblockedNodeDistances;
+    UnblockedNodeDistances.Reserve(NodeMap.Num()); // Pre-allocate for potential size
+
+    for (const auto& Pair : NodeMap)
+    {
+        const FIntPoint& GridPos = Pair.Key;
+        const TSharedPtr<FMoveNode>& Node = Pair.Value;
+
+        if (Node.IsValid() && !IsNodeBlocked(GridPos)) // Only consider valid, unblocked nodes
+        {
+            float DistSq = FVector::DistSquared(CenterPoint, Node->Position);
+            UnblockedNodeDistances.Add({Node, DistSq});
+        }
+    }
+
+    if (UnblockedNodeDistances.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DeactivateClosestNodes: No unblocked nodes found to deactivate near %s."), *CenterPoint.ToString());
+        return false; // No unblocked nodes found
+    }
+    
+    UnblockedNodeDistances.Sort();
+    
+    int32 NodesDeactivatedCount = 0;
+    int32 NumToProcess = FMath::Min(NumNodesToDeactivate, UnblockedNodeDistances.Num());
+
+    for (int32 i = 0; i < NumToProcess; ++i)
+    {
+        const FNodeDistanceInfo& Info = UnblockedNodeDistances[i];
+        if (Info.Node.IsValid()) // Should always be valid here based on earlier check
+        {
+            // Call the blocking function which handles the TSet and delegate broadcast
+            BlockNodeGrid(Info.Node->GridPosition);
+            OutDeactivatedNodePositions.Add(Info.Node->GridPosition); // Add to output list
+            NodesDeactivatedCount++;
+            UE_LOG(LogTemp, Log, TEXT("DeactivateClosestNodes: Deactivated node %s (DistSq: %.0f) near %s."),
+                *Info.Node->GridPosition.ToString(), Info.DistSq, *CenterPoint.ToString());
+        }
+    }
+
+    return NodesDeactivatedCount > 0; // Return true if we actually deactivated at least one node
 }

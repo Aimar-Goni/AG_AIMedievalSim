@@ -61,7 +61,11 @@ void UMS_FollowNodePath::MoveToNextNode(UBehaviorTreeComponent& OwnerComp, AAICo
         FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // Task is complete
         return;
     }
-
+    if (AICharacter->CurrentNodeIndex == -1)
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return;
+    }
     FIntPoint CurrentNode = AICharacter->Path_[AICharacter->CurrentNodeIndex];
     
     UMS_PathfindingSubsystem* PathfindingSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();

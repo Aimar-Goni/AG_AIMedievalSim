@@ -634,6 +634,17 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
     // Check if the changed node is part of the *remaining* path
 	for (int32 i = CurrentNodeIndex; i < Path_.Num(); ++i)
 	{
+		auto Node = PathfindingSubsystem->FindNodeByGridPosition(Path_[i]);
+		for (const auto& Pair : Node->Neighbors)
+		{
+			const TSharedPtr<FMoveNode>& Neighbor = Pair.Key;
+			if (Neighbor.IsValid() && Neighbor->GridPosition == ChangedNodePos)
+			{
+				bPathAffected = true;
+				break;
+			}
+		}
+			
 		if (ChangedNodePos == Path_[i])
 		{
             bPathAffected = true;

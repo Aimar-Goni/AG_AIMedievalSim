@@ -39,17 +39,35 @@ public:
     UFUNCTION()
     bool PerformRaycastToPosition(const FVector& Start, const FVector& End);
 
-    UFUNCTION()
+    UFUNCTION(BlueprintPure, Category = "Pathfinding|Nodes")
+    bool IsNodeBlocked(const FIntPoint& GridPosition) const;
+    
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding|Nodes")
     void BlockNode(FVector Position);
 
-    UFUNCTION()
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding|Nodes")
+    void BlockNodeGrid(FIntPoint GridPosition);
+
+
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding|Nodes")
     void UnblockNode(FVector Position);
 
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding|Nodes")
+    void UnblockNodeGrid(FIntPoint GridPosition);
+    
+    UFUNCTION(BlueprintCallable, Category = "Pathfinding|Nodes")
+    bool DeactivateClosestNodes(const FVector& CenterPoint, UPARAM(DisplayName="Deactivated Positions") TArray<FIntPoint>& OutDeactivatedNodePositions, int32 NumNodesToDeactivate = 4);
+
+    
+    
     FOnPathUpdated OnPathUpdated; 
 
 private:
     TMap<FIntPoint, TSharedPtr<FMoveNode>> NodeMap;
+    
+    TSet<FIntPoint> BlockedNodes;
 
     int32 NodeSeparation_;
 
+    void SetNodeBlockedStatus(const FIntPoint& GridPosition, bool bBlocked);
 };

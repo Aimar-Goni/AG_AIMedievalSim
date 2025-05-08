@@ -488,11 +488,16 @@ bool AMS_AIManager::FindSuitableBuildLocation(int32 SizeX, int32 SizeY, FVector&
                     TSharedPtr<FMoveNode> CurrentNode = PathfindingSubsystemCache->FindNodeByGridPosition(CurrentGridPos);
 
                     // Check if node exists and is free (not blocked)
-                    if (!CurrentNode.IsValid())
+                    if (!CurrentNode.IsValid() )
                     {
-                        bAreaIsFree = false;
-                        break; // This node in the area is bad, stop checking this area
+                    	bAreaIsFree = false;
+                    	break; 
                     }
+                	if (PathfindingSubsystemCache->IsNodeBlocked(CurrentGridPos))
+                	{
+                		bAreaIsFree = false;
+                		break; 
+                	}
                     OutOccupiedNodes.Add(CurrentGridPos);
                     TotalLocation += CurrentNode->Position;
                 }
@@ -527,8 +532,8 @@ void AMS_AIManager::StartBuildingProject(TSubclassOf<AActor> BuildingClassToSpaw
         {
              PathfindingSubsystemCache->BlockNode(Node->Position); 
         }
+		PathfindingSubsystemCache->OnPathUpdated.Broadcast(NodePos);
     }
-	
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
     AMS_ConstructionSite* NewSite = World->SpawnActor<AMS_ConstructionSite>(ConstructionSiteClass, Location, FRotator::ZeroRotator, SpawnParams);

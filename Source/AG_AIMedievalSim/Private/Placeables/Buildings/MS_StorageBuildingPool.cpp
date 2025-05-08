@@ -64,9 +64,12 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 
 				StorageBuldings_.Add(TWeakObjectPtr<AMS_StorageBuilding>(storage));
 				storage->placeActive_ = true;
+				TArray<FIntPoint> OutDeactivatedNodePositions;
+				PathfindingSubsystem->DeactivateClosestNodes(storage->GetActorLocation(), OutDeactivatedNodePositions, 4);
 				// Adds the billboard to the navigation mesh
 				storage->GridPosition_ =  PathfindingSubsystem->AddNodeAtPosition(storage->GetActorLocation());
 				n_StorageBuldings_++;
+
 			}
 		}
 
