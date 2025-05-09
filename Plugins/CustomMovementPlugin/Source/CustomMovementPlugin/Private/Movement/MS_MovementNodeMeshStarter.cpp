@@ -341,7 +341,10 @@ void AMS_MovementNodeMeshStarter::UpdateBlockedPaths()
     for (auto& Pair : NodeMap)
     {
         TSharedPtr<FMoveNode> Node = Pair.Value;
-        DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 12, FColor::Yellow, false, 2.0f);
+        if (bShowDebugLinesStarter)
+        {
+            DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 12, FColor::Yellow, false, 2.0f);
+        }
         for (auto& NeighborPair : Node->Neighbors)
         {
             bool bIsPathClear = false;

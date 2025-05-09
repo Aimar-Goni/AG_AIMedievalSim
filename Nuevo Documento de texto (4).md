@@ -217,4 +217,6 @@ Fix the not having resource source
 9.  **AI State Management:** Ensure clear transitions between states (Idle, GoingToWork, Working, GoingHome, Sleeping, GoingToPub, Bidding etc.) in the Behavior Tree and character state variables. Use Blackboard keys effectively.
 10. **Tool Requirements:** Do AIs need tools (axe for wood)? Add logic for acquiring/carrying tools if necessary.
 
-This is an ambitious plan for one month. Focus on getting the core loop functional each week. Good luck!
+
+
+Hay un error donde despues de recoger los materiales de construccion, el path se queda loco y pilla como siguiente nodo la posicion de mundo del storage

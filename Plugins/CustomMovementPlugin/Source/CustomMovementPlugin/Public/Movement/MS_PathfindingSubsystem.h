@@ -9,7 +9,7 @@
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPathUpdated, FIntPoint, ChangedNodePos);
-static bool bShowDebugLinesPathfinding = true;  // Set to false to disable debug lines
+static bool bShowDebugLinesPathfinding = false;  // Set to false to disable debug lines
 
 UCLASS()
 class CUSTOMMOVEMENTPLUGIN_API UMS_PathfindingSubsystem : public UGameInstanceSubsystem

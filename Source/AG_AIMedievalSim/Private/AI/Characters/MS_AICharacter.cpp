@@ -34,13 +34,18 @@ AMS_AICharacter::AMS_AICharacter()
 	WidgetComponent_->SetWidgetSpace(EWidgetSpace::World);
 	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass{ TEXT("/Game/Dynamic/UI/UI_PawnStats") };
 	if (WidgetClass.Succeeded()) WidgetComponent_->SetWidgetClass((WidgetClass.Class));
-	if(PawnStats_) PawnStats_->OnStateChanged.AddDynamic(this, &AMS_AICharacter::CheckIfHungry); // Connect stat delegate
+
 }
 
 void AMS_AICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (PawnStats_)
+	{
+		PawnStats_->OnStateChanged.AddDynamic(this, &AMS_AICharacter::CheckIfHungry);
+	}
+	
 	UWorld* world = GetWorld();
 	if (world) {
 
@@ -451,6 +456,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
                 UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Berries for self from %s."), *GetName(), *StorageBuilding->GetName());
                 Blackboard->SetValueAsBool(FName("bGettingFood"), false);
                 CheckIfHungry(); // Update need state
+            	Path_ = CreateMovementPath( Cast<AActor>(AIController->GetBlackboardComponent()->GetValueAsObject("Target")));
             } else
             {
             	Blackboard->SetValueAsBool(FName("bEmergencyFood"), true);
@@ -671,6 +677,8 @@ void AMS_AICharacter::OnPathUpdated(FIntPoint ChangedNodePos)
              UE_LOG(LogTemp, Warning, TEXT("OnPathUpdated: Cannot recalculate path, Target actor not found in Blackboard for %s."), *GetName());
              Path_.Empty(); // Invalidate current path
              CurrentNodeIndex = -1;
+        	 Path_ = CreateMovementPath( Cast<AActor>(AIController->GetBlackboardComponent()->GetValueAsObject("Target")));
+
              // BT needs to handle path failure
         }
     }

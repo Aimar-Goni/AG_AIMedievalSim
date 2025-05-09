@@ -17,9 +17,10 @@ EBTNodeResult::Type UMS_FindHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     AAIController* AIController = OwnerComp.GetAIOwner();
     AMS_AICharacter* AIChar = AIController ? Cast<AMS_AICharacter>(AIController->GetPawn()) : nullptr;
     UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
-
+;
     if (!AIChar || !Blackboard) return EBTNodeResult::Failed;
-    
+    Blackboard->SetValueAsBool("bHasFoundHouse", false);
+
     AMS_House* MyHouse = AIChar->GetAssignedHouse();
     if (MyHouse && MyHouse->HasSpace()) // Check if house exists AND has space
     {
@@ -41,7 +42,7 @@ EBTNodeResult::Type UMS_FindHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     Blackboard->SetValueAsBool("bHasFoundHouse", false);
 
     Blackboard->ClearValue(BlackboardKey_Target.SelectedKeyName); // Clear target if no valid house
-    return EBTNodeResult::Failed;
+    return EBTNodeResult::Succeeded;
 }
 
 FString UMS_FindHouse::GetStaticDescription() const

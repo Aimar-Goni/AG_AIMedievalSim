@@ -63,6 +63,8 @@ public:
 	int32 CurrentNodeIndex = -1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
 	FVector CurrentTargetLocation;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Internal|Movement")
 	TArray<FIntPoint> Path_;
 	
 	UPROPERTY(EditAnywhere, Category = "Collision")
