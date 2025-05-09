@@ -20,7 +20,7 @@ struct FMSPerformWorkActionMemory
 	float StartTime = -1.0f;
 
 	/** Cached pointer to the workplace actor */
-	TWeakObjectPtr<AMS_BaseWorkPlace> WorkplaceActor;
+	TWeakObjectPtr<AActor> WorkplaceActor;
 
 	/** Whether the animation started playing */
 	bool bAnimationStarted = false;

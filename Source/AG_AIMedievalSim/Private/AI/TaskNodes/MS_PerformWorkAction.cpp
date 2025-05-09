@@ -148,7 +148,7 @@ void UMS_PerformWorkAction::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 
 		if (AICharacter && MyMemory->WorkplaceActor.IsValid())
 		{
-			AMS_BaseWorkPlace* Workplace = MyMemory->WorkplaceActor.Get();
+			AMS_BaseWorkPlace* Workplace = Cast<AMS_BaseWorkPlace>(MyMemory->WorkplaceActor.Get());
 			ResourceType CurrentQuestType = AICharacter->AssignedQuest.Type; // Get type for finish anim
 
 			AMS_WheatField* WheatFieldTarget = Cast<AMS_WheatField>(Workplace); // Workplace is the Target

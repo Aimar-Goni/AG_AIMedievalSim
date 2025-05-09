@@ -32,5 +32,4 @@ EBTNodeResult::Type UMS_GetBuildingLocation::ExecuteTask(UBehaviorTreeComponent&
 		return EBTNodeResult::Failed;
 	}
 
-	return EBTNodeResult::Failed;
 }
