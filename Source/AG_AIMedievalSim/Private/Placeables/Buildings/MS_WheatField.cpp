@@ -1,9 +1,9 @@
-#include "Placeables/Buildings//MS_WheatField.h" // Adjust path
+#include "Placeables/Buildings//MS_WheatField.h" 
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
-#include "AI/Manager/MS_AIManager.h" // Adjust path
+#include "AI/Manager/MS_AIManager.h" 
 #include "Kismet/GameplayStatics.h"
-#include "Engine/StaticMesh.h" // Include for mesh setting
+#include "Engine/StaticMesh.h" 
 
 AMS_WheatField::AMS_WheatField()
 {

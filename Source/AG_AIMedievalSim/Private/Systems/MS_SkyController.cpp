@@ -2,11 +2,10 @@
 
 
 
-#include "Systems/MS_SkyController.h" // Adjust path as needed
+#include "Systems/MS_SkyController.h" 
 #include "Engine/DirectionalLight.h"
 #include "Components/DirectionalLightComponent.h"
-#include "Systems/MS_TimeSubsystem.h" // Adjust path as needed
-#include "Kismet/GameplayStatics.h"
+#include "Systems/MS_TimeSubsystem.h"
 #include "Curves/CurveFloat.h"
 #include "Curves/CurveLinearColor.h"
 #include "Logging/LogMacros.h"

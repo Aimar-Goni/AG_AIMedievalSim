@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AI/Decorators/MS_BTDecorator_NeedToGatherItems.h" // Adjust path
+#include "AI/Decorators/MS_BTDecorator_NeedToGatherItems.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "AI/Characters/MS_AICharacter.h" // Adjust path
-#include "Systems/MS_InventoryComponent.h" // Adjust path
+#include "AI/Characters/MS_AICharacter.h" 
+#include "Systems/MS_InventoryComponent.h" 
 #include "AIController.h"
 
 UMS_BTDecorator_NeedToGatherItems::UMS_BTDecorator_NeedToGatherItems()

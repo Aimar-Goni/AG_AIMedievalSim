@@ -372,32 +372,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
         UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Overlapped with Target Storage %s."), *GetName(), *StorageBuilding->GetName());
 		Blackboard->SetValueAsBool("bAtStorage", true);
 		
-        // Storing GATHERED resources
-        if (Blackboard->GetValueAsBool(FName("bIsStoringGatheredItems")) && AssignedQuest.QuestID.IsValid())
-        {
-             ResourceType typeToStore = AssignedQuest.Type;
-             int32 amountToStore = Inventory_->GetResourceAmount(typeToStore);
-
-             if (amountToStore > 0)
-             {
-                 StorageBuilding->Inventory_->AddToResources(typeToStore, amountToStore);
-                 Inventory_->ExtractFromResources(typeToStore, amountToStore); // Remove from AI
-                 UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Stored %d %s (gathered) at %s."), *GetName(), amountToStore, *UEnum::GetValueAsString(typeToStore), *StorageBuilding->GetName());
-
-                 // Complete the GATHER quest
-                 CompleteCurrentQuest();
-
-                 Blackboard->SetValueAsBool(FName("bIsStoringGatheredItems"), false); // Reset state
-             }
-             else {
-                  UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached storage to store %s, but has none."), *GetName(), *UEnum::GetValueAsString(typeToStore));
-                  CompleteCurrentQuest(); 
-                  Blackboard->SetValueAsBool(FName("bIsStoringGatheredItems"), false);
-             }
-        }
-
         // Getting Food/Water for SELF 
-        else if (Blackboard->GetValueAsBool(FName("bGettingFood")))
+        if (Blackboard->GetValueAsBool(FName("bGettingFood")))
         {
             UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
             if (StorageInventory && StorageInventory->ExtractFromResources(ResourceType::BERRIES, 20) != -1)
