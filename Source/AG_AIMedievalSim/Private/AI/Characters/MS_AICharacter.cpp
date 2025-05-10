@@ -144,7 +144,7 @@ float AMS_AICharacter::CalculateBidValue(const FQuest& Quest)
 {
     if (!PathfindingSubsystem || !PawnStats_ || !WorkPlacesPool_.IsValid()) return 0.0f;
 
-    // --- Factors ---
+    //  Factors 
     float DistanceFactor = 1.0f;
     float NeedsPenalty = 1.0f;
     float RewardFactor = static_cast<float>(Quest.Reward);
@@ -370,60 +370,10 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 	if (StorageBuilding && CurrentTarget == StorageBuilding) // Only interact if it was the destination
 	{
         UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Overlapped with Target Storage %s."), *GetName(), *StorageBuilding->GetName());
-
-        // Fetching for Construction/Delivery 
-        if (Blackboard->GetValueAsBool(FName("bIsFetchingConstructionMaterials")) && AssignedQuest.QuestID.IsValid())
-        {
-            ResourceType typeNeeded = AssignedQuest.Type;
-            int32 amountNeededForTrip = AssignedQuest.Amount; // Amount for this specific trip
-
-            UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Attempting to fetch %d %s for Quest %s."),
-                *GetName(), amountNeededForTrip, *UEnum::GetValueAsString(typeNeeded), *AssignedQuest.QuestID.ToString());
-
-            UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
-            if (StorageInventory && StorageInventory->GetResourceAmount(typeNeeded) >= amountNeededForTrip)
-            {
-                // Extract from storage
-                int32 extractedAmount = StorageInventory->ExtractFromResources(typeNeeded, amountNeededForTrip);
-                if(extractedAmount > 0)
-                {
-                    // Add to AI inventory
-                    Inventory_->AddToResources(typeNeeded, extractedAmount);
-                    UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Successfully fetched %d %s from storage."), *GetName(), extractedAmount, *UEnum::GetValueAsString(typeNeeded));
-
-                    // Update State: Now delivering
-                    Blackboard->SetValueAsBool(FName("bIsFetchingConstructionMaterials"), false);
-                    Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), true);
-
-                    // Set new Target: The actual construction site
-                    AActor* Destination = AssignedQuest.TargetDestination.Get();
-                    if(Destination)
-                    {
-                        Blackboard->SetValueAsObject(FName("Target"), Destination);
-                        CreateMovementPath(Destination); 
-                    }
-                    else {
-                         UE_LOG(LogTemp, Error, TEXT("AICharacter %s: Fetched items but QuestTargetDestination is invalid! Quest stuck."), *GetName());
-                         // Handle error state in BT? Maybe drop items? Complete quest with failure?
-                    }
-                }
-                else {
-                    UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Storage %s ExtractFromResources failed (returned %d) even though check passed?"), *GetName(), *StorageBuilding->GetName(), extractedAmount);
-                    // BT needs to handle failure (wait and retry?)
-                }
-            }
-            else
-            {
-                UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached storage %s to fetch %d %s, but not enough available!"),
-                    *GetName(), *StorageBuilding->GetName(), amountNeededForTrip, *UEnum::GetValueAsString(typeNeeded));
-                // BT needs to handle failure (wait for resources, abandon quest?)
-                 Blackboard->SetValueAsBool(FName("bIsFetchingConstructionMaterials"), false); // Stop trying for now?
-                 // Maybe clear quest? Or just let AI idle until resources appear?
-            }
-        }
-
+		Blackboard->SetValueAsBool("bAtStorage", true);
+		
         // Storing GATHERED resources
-        else if (Blackboard->GetValueAsBool(FName("bIsStoringGatheredItems")) && AssignedQuest.QuestID.IsValid())
+        if (Blackboard->GetValueAsBool(FName("bIsStoringGatheredItems")) && AssignedQuest.QuestID.IsValid())
         {
              ResourceType typeToStore = AssignedQuest.Type;
              int32 amountToStore = Inventory_->GetResourceAmount(typeToStore);
@@ -502,6 +452,12 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 
          if (bIsDelivering && AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Site)
          {
+         	Blackboard->SetValueAsBool("bAtConstructionSite", true);
+
+
+
+
+         	
              ResourceType neededType = AssignedQuest.Type;
              int32 hasAmount = Inventory_->GetResourceAmount(neededType);
              int32 amountToDeliver = FMath::Min(hasAmount, AssignedQuest.Amount); // Deliver amount for this trip
@@ -533,6 +489,8 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
     {
         if (AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Field)
         {
+			Blackboard->SetValueAsBool("bAtWheatField", true);
+        	
             bool bActionDone = false;
             // Case 1: Planting Quest (using Amount == -1 convention)
             if (AssignedQuest.Amount == -1 && Field->GetCurrentFieldState() == EFieldState::Constructed)
@@ -577,23 +535,46 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 
 void AMS_AICharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor);
+       if (!OtherActor || OtherActor == this) return;
+
 	AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(GetController());
-    if (WorkPlace && AIController && AIController->GetBlackboardComponent())
+	if (!AIController || !AIController->GetBlackboardComponent()) return;
+	UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+
+    // Storage Building End Overlap 
+	AMS_StorageBuilding* StorageBuilding = Cast<AMS_StorageBuilding>(OtherActor);
+	if (StorageBuilding)
+	{
+        Blackboard->ClearValue(FName("bAtStorage"));
+        UE_LOG(LogTemp, Verbose, TEXT("AICharacter %s: ENDED Overlap with Storage %s."), *GetName(), *StorageBuilding->GetName());
+        return;
+	}
+
+	//  Workplace End Overlap 
+	AMS_BaseWorkPlace* WorkPlace = Cast<AMS_BaseWorkPlace>(OtherActor); 
+	if (WorkPlace)
+	{
+        Blackboard->ClearValue(FName("AtWorkLocation"));
+        UE_LOG(LogTemp, Verbose, TEXT("AICharacter %s: ENDED Overlap with Workplace %s."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
+        return;
+	}
+
+	//  WheatField End Overlap 
+	if (Cast<AMS_WheatField>(OtherActor))
+	{
+		Blackboard->ClearValue(FName("bAtWheatField"));
+		UE_LOG(LogTemp, Verbose, TEXT("AICharacter %s: ENDED Overlap with WheatField specific flags."), *GetNameSafe(this));
+	}
+	
+    //  Construction Site End Overlap 
+	AMS_ConstructionSite* Site = Cast<AMS_ConstructionSite>(OtherActor);
+    if (Site)
     {
-        UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
-        // Only clear if they were targeting this specific workplace
-        if (Blackboard->GetValueAsObject("Target") == WorkPlace)
-        {
-             // Check if currently supposed to be working there
-             if(Blackboard->GetValueAsBool(FName("AtWorkLocation")))
-             {
-                 //Blackboard->SetValueAsBool(FName("AtWorkLocation"), false);
-                 UE_LOG(LogTemp, Log, TEXT("AI Character '%s' left workplace '%s' trigger. Setting AtWorkLocation=false."), *GetNameSafe(this), *GetNameSafe(WorkPlace));
-                 // The Decorator on the PerformWorkAction sequence should abort the task.
-             }
-        }
+        Blackboard->ClearValue(FName("bAtConstructionSite"));
+        UE_LOG(LogTemp, Verbose, TEXT("AICharacter %s: ENDED Overlap with Construction Site %s."), *GetName(), *Site->GetName());
+        return;
     }
+
 }
 
 

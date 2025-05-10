@@ -19,7 +19,7 @@ EBTNodeResult::Type UMS_GetBuildingLocation::ExecuteTask(UBehaviorTreeComponent&
 	
 	if (!Site) return EBTNodeResult::Failed;
 
-	AICharacter->CreateMovementPath(Site);
+	AICharacter->Path_ = AICharacter->CreateMovementPath(Site);
 
 	if(AICharacter->Path_.Num() > 0)
 	{
