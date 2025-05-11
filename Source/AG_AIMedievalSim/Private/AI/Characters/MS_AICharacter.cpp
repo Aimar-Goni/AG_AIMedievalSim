@@ -466,44 +466,6 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
         if (AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Field)
         {
 			Blackboard->SetValueAsBool("bAtWheatField", true);
-        	
-            bool bActionDone = false;
-            // Case 1: Planting Quest (using Amount == -1 convention)
-            if (AssignedQuest.Amount == -1 && Field->GetCurrentFieldState() == EFieldState::Constructed)
-            {
-                if (Field->PlantSeeds()) bActionDone = true;
-            }
-            // Case 2: Watering Quest (AI needs to have fetched water first)
-            else if (AssignedQuest.Type == ResourceType::WATER && Field->GetCurrentFieldState() == EFieldState::Planted)
-            {
-                // Check if AI has water
-                if (Inventory_->GetResourceAmount(ResourceType::WATER) >= AssignedQuest.Amount)
-                {
-                    if (Field->WaterField())
-                    {
-                        Inventory_->ExtractFromResources(ResourceType::WATER, AssignedQuest.Amount); // Consume water
-                        bActionDone = true;
-                    }
-                } else { UE_LOG(LogTemp, Warning, TEXT("AI %s: Reached field %s to water, but has no water!"), *GetName(), *Field->GetName()); /* BT needs fallback */ }
-            }
-            // Case 3: Harvesting Quest
-            else if (AssignedQuest.Type == ResourceType::WHEAT && Field->GetCurrentFieldState() == EFieldState::ReadyToHarvest)
-            {
-                 FResource Harvested = Field->HarvestField();
-                 if (Harvested.Type != ResourceType::ERROR && Harvested.Amount > 0)
-                 {
-                     Inventory_->AddToResources(Harvested.Type, Harvested.Amount);
-                     bActionDone = true;
-                 }
-            }
-
-            // If action was successful, complete the current quest step
-            if (bActionDone)
-            {
-                UE_LOG(LogTemp, Log, TEXT("AI %s: Completed action (%s) at Field %s."), *GetName(), *UEnum::GetValueAsString(AssignedQuest.Type), *Field->GetName());
-                CompleteCurrentQuest(); // Complete this specific action quest
-                // Reset relevant blackboard states if needed
-            }
         }
         else { UE_LOG(LogTemp, Warning, TEXT("AI %s: Reached field %s but quest invalid/mismatch."), *GetName(), *Field->GetName()); }
     }

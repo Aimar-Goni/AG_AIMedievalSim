@@ -1,33 +1,34 @@
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Systems/MS_InventoryComponent.h" // For ResourceType
-#include "Movement/MS_MovementNode.h"    // For FIntPoint
-#include "TimerManager.h"              // For FTimerHandle
+#include "Systems/MS_InventoryComponent.h"
+#include "Movement/MS_MovementNode.h"
+#include "TimerManager.h"
+#include "Placeables/Interactables/MS_BaseWorkPlace.h"
 #include "MS_WheatField.generated.h"
 
-class AMS_AIManager; // Forward declare
+class AMS_AIManager;
 
-// Updated states for the detailed process
 UENUM(BlueprintType)
 enum class EFieldState : uint8
 {
-	Constructed		UMETA(DisplayName = "Constructed"), // Just built, empty earth
-	Planted			UMETA(DisplayName = "Planted"),     // Seeds sown, needs water
-	Watered			UMETA(DisplayName = "Watered"),		// Watered, short wait before sprout
-	Sprouting		UMETA(DisplayName = "Sprouting"),   // Small sprouts visible, needs growth time
-	Growing			UMETA(DisplayName = "Growing"),     // Larger plants visible, needs growth time
-	ReadyToHarvest	UMETA(DisplayName = "ReadyToHarvest") // Fully grown, ready to collect
+	Constructed		UMETA(DisplayName = "Constructed"),      // Just built, empty earth
+	Planted			UMETA(DisplayName = "Planted"),          // Seeds sown, needs water
+	Watered			UMETA(DisplayName = "Watered"),		     // Watered, now growing (triggers growth timer)
+	Growing			UMETA(DisplayName = "Growing"),          // Actively growing (visual change, no direct AI interaction needed here)
+	ReadyToHarvest	UMETA(DisplayName = "ReadyToHarvest"),   // Fully grown, ready to collect
+    Harvested       UMETA(DisplayName = "Harvested")         // Resources collected, field is now empty/reset
 };
 
 // Delegates to notify AIManager of state changes needing quests
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFieldNeedsPlanting, AMS_WheatField*, Field);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFieldNeedsWatering, AMS_WheatField*, Field);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFieldReadyToHarvest, AMS_WheatField*, Field); // Keep this
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFieldReadyToHarvest, AMS_WheatField*, Field);
 
 UCLASS()
-class AG_AIMEDIEVALSIM_API AMS_WheatField : public AActor
+class AG_AIMEDIEVALSIM_API AMS_WheatField : public AMS_BaseWorkPlace
 {
 	GENERATED_BODY()
 
@@ -37,64 +38,52 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION() // Make UFUNCTION for timer binding
-	void OnWateredTimerComplete(); 
-
-    UFUNCTION() // Make UFUNCTION for timer binding
-    void OnSproutTimerComplete(); 
-
-	UFUNCTION() // Make UFUNCTION for timer binding
-	void OnGrowthTimerComplete(); 
-
-    /** Finds and caches the AI Manager */
+	UFUNCTION()
+	void OnWateringGrowthTimerComplete(); // Timer after watering, moves to Growing, then ReadyToHarvest
+	void OnGrowingTimerComplete();
     void InitializeAIManager();
 
-
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WheatField|State") // Use VisibleAnywhere for state
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WheatField|State")
 	EFieldState CurrentState = EFieldState::Constructed;
 
-	// --- Configuration ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WheatField|Config")
-	float WateredToSproutDuration = 15.0f; // Time from watered until sprouts appear
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WheatField|Config")
-	float SproutToGrowthDuration = 45.0f; // Time from sprouts to larger plants (optional extra stage)
-
+	float WateredToGrowingDuration = 60.0f; // Total time from watered to ready for harvest (includes "Growing" phase)
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WheatField|Config")
-	float GrowthToHarvestDuration = 60.0f; // Time from larger plants to ready
+	float GrowingToReadyDuration = 60.0f; // Total time from watered to ready for harvest (includes "Growing" phase)
 
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WheatField|Config")
-	int32 HarvestAmount = 10; // Amount of Wheat yielded
-
-	// --- Location & Components ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WheatField|Location")
-	FIntPoint GridPosition_;
-
+	int32 HarvestAmount = 10;
+	
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USceneComponent> RootSceneComponent;
-
-    // --- Meshes for different states ---
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
 	TObjectPtr<UStaticMesh> MeshState_Constructed; // Empty tilled earth
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
-	TObjectPtr<UStaticMesh> MeshState_Planted; // Earth with maybe seed holes (optional)
+	TObjectPtr<UStaticMesh> MeshState_Planted; // Earth with seed pattern/small shoots
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
+	TObjectPtr<UStaticMesh> MeshState_Watered; 
+	
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
-	TObjectPtr<UStaticMesh> MeshState_Sprouting; // Small green sprouts
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
-	TObjectPtr<UStaticMesh> MeshState_Growing; // Medium height plants
+	TObjectPtr<UStaticMesh> MeshState_Growing; // Medium height green plants
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
 	TObjectPtr<UStaticMesh> MeshState_ReadyToHarvest; // Tall, golden wheat
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WheatField|Visuals")
+	TObjectPtr<UStaticMesh> MeshState_Harvested; // Tall, golden wheat
+	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	TObjectPtr<UStaticMeshComponent> MeshComponent; // Main visual component
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
 
-    // --- Delegates ---
+
     UPROPERTY(BlueprintAssignable, Category = "WheatField|Events")
     FOnFieldNeedsPlanting OnFieldNeedsPlanting;
 
@@ -105,28 +94,25 @@ public:
     FOnFieldReadyToHarvest OnFieldReadyToHarvest;
 
 
-	// --- AI Interaction Functions ---
-	UFUNCTION(BlueprintCallable, Category = "WheatField")
-	bool PlantSeeds(); // Returns true if successful
 
 	UFUNCTION(BlueprintCallable, Category = "WheatField")
-	bool WaterField(); // Returns true if successful
+	bool PerformPlanting(); // AI confirms planting action
 
 	UFUNCTION(BlueprintCallable, Category = "WheatField")
-	FResource HarvestField(); // Returns Wheat resource
+	bool PerformWatering(); // AI confirms watering action
+
+	UFUNCTION(BlueprintCallable, Category = "WheatField")
+	FResource PerformHarvesting(); // AI confirms harvesting action
 
     UFUNCTION(BlueprintPure, Category = "WheatField")
     EFieldState GetCurrentFieldState() const { return CurrentState; }
 
-
 private:
-	FTimerHandle WateredTimerHandle;
-    FTimerHandle SproutTimerHandle;
-    FTimerHandle GrowthTimerHandle;
+	FTimerHandle GrowthCycleTimerHandleWatered; // Single timer for post-watering growth
+	FTimerHandle GrowthCycleTimerHandleGrowing; // Single timer for post-watering growth
 
-    UPROPERTY() // Keep weak ptr to manager
+    UPROPERTY()
     TWeakObjectPtr<AMS_AIManager> AIManager;
 
-    // Helper to change state, update mesh, and potentially broadcast
     void ChangeState(EFieldState NewState);
 };

@@ -209,7 +209,7 @@ Fix the not having resource source
 1.  **Saving/Loading:** How will game state (AI positions, inventories, building states, time) be saved and loaded? This is complex; maybe defer beyond the month.
 2.  **UI Feedback:** Display AI status (working, sleeping), money, maybe current quest. Display building progress. Indicate low resources for the AIManager.
 3.  **Balancing:** How much reward per quest? How much do drinks cost? How fast do needs decay? How long does work take? How much wood per building? Initial values will need tuning.
-4.  **Error Handling:** What if pathfinding fails? What if AIManager can't find a free spot to build? What if an AI tries to interact with a destroyed object? Add checks for null pointers (`IsValid()`).
+4.  **Error Handling:** What if paEthfinding fails? What if AIManager can't find a free spot to build? What if an AI tries to interact with a destroyed object? Add checks for null pointers (`IsValid()`).
 5.  **Performance:** Spawning many actors or complex BTs can slow things down. Keep pooling active. Profile if needed. Bidding system might need optimization if many AIs bid simultaneously.
 6.  **AIManager Inventory:** Seriously define how this works (central storage vs. aggregated view). This impacts construction and quest generation.
 7.  **Resource Consumption:** How is Wheat used? Does it need processing (Mill, Bakery)? How do AIs decide *what* to eat if they have Berries and Wheat products?
@@ -217,6 +217,4 @@ Fix the not having resource source
 9.  **AI State Management:** Ensure clear transitions between states (Idle, GoingToWork, Working, GoingHome, Sleeping, GoingToPub, Bidding etc.) in the Behavior Tree and character state variables. Use Blackboard keys effectively.
 10. **Tool Requirements:** Do AIs need tools (axe for wood)? Add logic for acquiring/carrying tools if necessary.
 
-
-
-Hay un error donde despues de recoger los materiales de construccion, el path se queda loco y pilla como siguiente nodo la posicion de mundo del storage
+Epifanio16

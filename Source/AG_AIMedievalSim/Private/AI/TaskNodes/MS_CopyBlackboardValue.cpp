@@ -1,6 +1,7 @@
 #include "AI/TaskNodes/MS_CopyBlackboardValue.h" 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
+#include "AI/Characters/MS_AICharacter.h"
 #include "GameFramework/Actor.h" 
 
 UMS_CopyBlackboardValue::UMS_CopyBlackboardValue()
@@ -29,6 +30,7 @@ EBTNodeResult::Type UMS_CopyBlackboardValue::ExecuteTask(UBehaviorTreeComponent&
 {
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 	const AAIController* Controller = OwnerComp.GetAIOwner();
+	auto* AICharacter = Controller ? Cast<AMS_AICharacter>(Controller->GetPawn()) : nullptr;
 
 
 	if (!Blackboard || !Controller)
@@ -55,7 +57,8 @@ EBTNodeResult::Type UMS_CopyBlackboardValue::ExecuteTask(UBehaviorTreeComponent&
 
     // Set the value in the destination key
     Blackboard->SetValueAsObject(DestinationBlackboardKey.SelectedKeyName, SourceObject);
-
+	AICharacter->CreateMovementPath(Cast<AActor>(SourceObject));
+	
     UE_LOG(LogTemp, Verbose, TEXT("Task '%s': Copied value from '%s' (%s) to '%s'."),
         *GetNodeName(),
         *SourceBlackboardKey.SelectedKeyName.ToString(),

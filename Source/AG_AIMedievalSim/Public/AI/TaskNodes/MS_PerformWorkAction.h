@@ -3,30 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Systems/MS_InventoryComponent.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Systems/MS_InventoryComponent.h" 
 #include "MS_PerformWorkAction.generated.h"
 
 class UAnimMontage;
-class AMS_BaseWorkPlace;
+class AMS_BaseWorkPlace; 
+class AMS_WheatField;  
 
-// Structure to hold memory for this node
 USTRUCT()
 struct FMSPerformWorkActionMemory
 {
 	GENERATED_BODY()
 
-	/** Time when the task started */
 	float StartTime = -1.0f;
-
-	/** Cached pointer to the workplace actor */
-	TWeakObjectPtr<AActor> WorkplaceActor;
-
-	/** Whether the animation started playing */
+	TWeakObjectPtr<AMS_BaseWorkPlace> WorkplaceActor; // Can be BaseWorkPlace or derived like WheatField
 	bool bAnimationStarted = false;
-
-    /** Keep track of which montage actually started playing for cleanup */
-    UPROPERTY() // UPROPERTY prevents GC
+    UPROPERTY()
     TObjectPtr<UAnimMontage> ActiveWorkMontage = nullptr;
 };
 
@@ -39,25 +32,37 @@ class AG_AIMEDIEVALSIM_API UMS_PerformWorkAction : public UBTTaskNode
 public:
 	UMS_PerformWorkAction();
 
-	/** Duration of the work action in seconds. */
 	UPROPERTY(EditAnywhere, Category = "Task")
 	float WorkDuration = 3.0f;
 
-	/** Blackboard key selector for the Target Workplace actor. */
+	//  Blackboard Keys 
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector BlackboardKey_WorkplaceTarget;
+	FBlackboardKeySelector BlackboardKey_WorkplaceTarget; // The Workplace, WheatField, etc.
 
-	/** Blackboard key selector for the boolean indicating the AI is at the location. */
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector BlackboardKey_IsAtLocation;
+	FBlackboardKeySelector BlackboardKey_IsAtTargetWorkplace; // Proximity flag
 
-	// --- Animation Mapping ---
+    UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector BlackboardKey_QuestType; // To determine action type for fields
 
-	/** Maps ResourceType (from AI's Quest) to the Animation Montage to play while working. */
-	UPROPERTY(EditAnywhere, Category = "Animation", meta = (DisplayName = "Work Montages By Resource"))
+    UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector BlackboardKey_QuestAmount; // For specific actions like watering amount
+
+	//  Animation Mapping 
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (DisplayName = "Work Montages By Resource/Action"))
 	TMap<ResourceType, TObjectPtr<UAnimMontage>> WorkMontages;
 
-    /** Default Montage if no specific one is found for the ResourceType */
+    // Specific montages for field actions if ResourceType map isn't sufficient
+    UPROPERTY(EditAnywhere, Category = "Animation")
+	TObjectPtr<UAnimMontage> PlantingMontage;
+    UPROPERTY(EditAnywhere, Category = "Animation")
+	TObjectPtr<UAnimMontage> WateringMontage;
+    UPROPERTY(EditAnywhere, Category = "Animation")
+	TObjectPtr<UAnimMontage> HarvestingMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (DisplayName = "Finish Montages By Resource/Action"))
+	TMap<ResourceType, TObjectPtr<UAnimMontage>> FinishWorkMontages;
+
     UPROPERTY(EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> DefaultWorkMontage;
 
@@ -69,6 +74,5 @@ protected:
     virtual void InitializeMemory(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTMemoryInit::Type InitType) const override;
 	virtual void CleanupMemory(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTMemoryClear::Type CleanupType) const override;
 
-	/** Helper function to stop montage and clean up blackboard key */
-	void CleanupTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory);
+	void CleanupTaskState(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory);
 };

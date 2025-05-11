@@ -99,6 +99,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI Manager|Quests")
     void RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID);
 
+	void InitializeFieldListeners();
+
 protected:
 
 	// Generates resource gathering quests for a specific resource type if needed. 
@@ -118,11 +120,6 @@ protected:
 	void UpdateHousingState();
 	
 	void InitializeCentralStorage();
-
-	void InitializeFieldListeners();
-
-	UFUNCTION()
-	void OnWheatFieldReady(AMS_WheatField* ReadyField);
 	
 	bool ShouldBuildWheatField() const;
 	
@@ -176,6 +173,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
 	int32 WheatFieldWoodCost = 25;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	int32 MaxWheatField  = 5;
+	
 	/** Class reference for the Wheat Field building. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
 	TSubclassOf<AMS_WheatField> WheatFieldClass;

@@ -454,7 +454,7 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
 bool AMS_AIManager::ShouldBuildWheatField() const
 {
 	
-	const int32 MaxFields = 5; 
+	const int32 MaxFields = MaxWheatField; 
 	TArray<AActor*> FoundFields;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), WheatFieldClass, FoundFields);
 
@@ -609,66 +609,72 @@ void AMS_AIManager::InitializeFieldListeners()
 		AMS_WheatField* Field = Cast<AMS_WheatField>(FieldActor);
 		if (Field)
 		{
-			// Bind to all relevant state changes
 			Field->OnFieldNeedsPlanting.AddDynamic(this, &AMS_AIManager::OnWheatFieldNeedsPlanting);
 			Field->OnFieldNeedsWatering.AddDynamic(this, &AMS_AIManager::OnWheatFieldNeedsWatering);
-			Field->OnFieldReadyToHarvest.AddDynamic(this, &AMS_AIManager::OnWheatFieldReadyToHarvest);
+			Field->OnFieldReadyToHarvest.AddDynamic(this, &AMS_AIManager::OnWheatFieldReadyToHarvest); 
 
-			// Immediately generate quests if field is already in a waiting state
+			// Initial checks
 			switch(Field->GetCurrentFieldState())
 			{
-			case EFieldState::Constructed: OnWheatFieldNeedsPlanting(Field); break;
-			case EFieldState::Planted:     OnWheatFieldNeedsWatering(Field); break;
+			case EFieldState::Constructed: 
+			case EFieldState::Harvested: OnWheatFieldNeedsPlanting(Field); break;
+			case EFieldState::Planted: OnWheatFieldNeedsWatering(Field); break;
 			case EFieldState::ReadyToHarvest: OnWheatFieldReadyToHarvest(Field); break;
-			default: break; // Other states don't need immediate quests
+			default: break;
 			}
 		}
 	}
 }
 
-void AMS_AIManager::OnWheatFieldReady(AMS_WheatField* ReadyField)
+void AMS_AIManager::OnWheatFieldNeedsPlanting(AMS_WheatField* Field)
 {
-	if (!ReadyField) return;
+    if (!Field || Field->GetCurrentFieldState() != EFieldState::Constructed) return; // Double check state
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs planting."), *Field->GetName());
 
-	UE_LOG(LogTemp, Log, TEXT("AIManager: WheatField %s is ready for harvest."), *ReadyField->GetName());
-
-	// Check if a harvest quest for THIS specific field already exists
-	bool bQuestForThisFieldExists = false;
-	for (const FQuest& q : AvailableQuests_)
-	{
-		if (q.Type == ResourceType::WHEAT && q.TargetDestination == ReadyField) {
-			bQuestForThisFieldExists = true;
-			break;
-		}
-	}
-	for (const auto& pair : AssignedQuests_)
-	{
-		AMS_AICharacter* character = pair.Value.Get();
-		if (character && character->AssignedQuest.Type == ResourceType::WHEAT && character->AssignedQuest.TargetDestination == ReadyField) {
-			bQuestForThisFieldExists = true;
-			break;
-		}
-	}
-
-
-	if (!bQuestForThisFieldExists)
-	{
-		// Create a HARVEST quest targeting this specific field
-		int32 reward = CalculateGoldReward(ResourceType::WHEAT, ReadyField->HarvestAmount);
-		FQuest harvestQuest(ResourceType::WHEAT, ReadyField->HarvestAmount, reward, ReadyField); // Target is the field itself
-
-		AvailableQuests_.Add(harvestQuest);
-		StartBidTimer(harvestQuest);
-		OnQuestAvailable.Broadcast(harvestQuest);
-
-		UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Harvest Quest ID %s for WheatField %s."), *harvestQuest.QuestID.ToString(), *ReadyField->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("AIManager: Harvest quest for WheatField %s already exists or is assigned."), *ReadyField->GetName());
-	}
+    if (!DoesIdenticalQuestExist(ResourceType::WHEAT, -1, Field))
+    {
+        FQuest plantQuest(ResourceType::WHEAT, -1, 2, Field); // Small reward for planting
+        AvailableQuests_.Add(plantQuest);
+        StartBidTimer(plantQuest);
+        OnQuestAvailable.Broadcast(plantQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated PLANTING Quest ID %s for Field %s."), *plantQuest.QuestID.ToString(), *Field->GetName());
+    }
 }
 
+void AMS_AIManager::OnWheatFieldNeedsWatering(AMS_WheatField* Field)
+{
+    if (!Field || Field->GetCurrentFieldState() != EFieldState::Planted) return;
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs watering."), *Field->GetName());
+	
+    if (!DoesIdenticalQuestExist(ResourceType::WATER, 1, Field))
+    {
+        int32 waterAmountNeeded = 1; // For one watering action
+        int32 reward = CalculateGoldReward(ResourceType::WATER, waterAmountNeeded) + 1; 
+        FQuest waterQuest(ResourceType::WATER, waterAmountNeeded, reward, Field);
+
+        AvailableQuests_.Add(waterQuest);
+        StartBidTimer(waterQuest);
+        OnQuestAvailable.Broadcast(waterQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated WATERING Quest ID %s for Field %s (Fetch %d Water)."), *waterQuest.QuestID.ToString(), *Field->GetName(), waterAmountNeeded);
+    }
+}
+
+void AMS_AIManager::OnWheatFieldReadyToHarvest(AMS_WheatField* Field)
+{
+    if (!Field || Field->GetCurrentFieldState() != EFieldState::ReadyToHarvest) return;
+    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s ready for harvest."), *Field->GetName());
+
+    if (!DoesIdenticalQuestExist(ResourceType::WHEAT, Field->HarvestAmount, Field))
+    {
+        int32 reward = CalculateGoldReward(ResourceType::WHEAT, Field->HarvestAmount);
+        FQuest harvestQuest(ResourceType::WHEAT, Field->HarvestAmount, reward, Field);
+
+        AvailableQuests_.Add(harvestQuest);
+        StartBidTimer(harvestQuest);
+        OnQuestAvailable.Broadcast(harvestQuest);
+        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated HARVEST Quest ID %s for Field %s (Yield %d)."), *harvestQuest.QuestID.ToString(), *Field->GetName(), Field->HarvestAmount);
+    }
+}
 void AMS_AIManager::UpdateHousingState()
 {
     CurrentPopulation = 0;
@@ -732,72 +738,4 @@ void AMS_AIManager::UpdateHousingState()
         UE_LOG(LogTemp, Log, TEXT("AIManager Housing Check: Housing needed (Pop %d > Cap %d). Checking construction conditions."), CurrentPopulation, TotalHousingCapacity);
         CheckAndInitiateConstruction(); // Prioritize house
     
-}
-
-void AMS_AIManager::OnWheatFieldNeedsPlanting(AMS_WheatField* Field)
-{
-    if (!Field) return;
-    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs planting."), *Field->GetName());
-
-
-    // Check if planting quest already exists for this field
-     bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WHEAT, -1, Field); // Use -1 Amount as placeholder for "action" quest?
-
-    if (!bQuestExists)
-    {
-        // Reward for planting? Or is the harvest the reward? Let's say small reward.
-        FQuest plantQuest(ResourceType::WHEAT, -1, 2, Field); // Amount -1 signifies "Plant" action? BT needs to interpret.
-        plantQuest.QuestID = FGuid::NewGuid(); // Ensure unique ID
-
-        AvailableQuests_.Add(plantQuest);
-        StartBidTimer(plantQuest);
-        OnQuestAvailable.Broadcast(plantQuest);
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Planting Quest ID %s for Field %s."), *plantQuest.QuestID.ToString(), *Field->GetName());
-    }
-}
-
-UFUNCTION()
-void AMS_AIManager::OnWheatFieldNeedsWatering(AMS_WheatField* Field)
-{
-     if (!Field) return;
-    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs watering."), *Field->GetName());
-
-    // Create a "Watering" quest. Requires AI to fetch water first.
-    // This is similar to construction: Fetch Water, Deliver to Field.
-
-    // Check if watering quest already exists
-    bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WATER, 1, Field); // 1 Water unit needed? Adjust amount.
-
-    if (!bQuestExists)
-    {
-        int32 waterAmountNeeded = 1; // How much water per watering action?
-        int32 reward = CalculateGoldReward(ResourceType::WATER, waterAmountNeeded); // Small reward for fetching water
-        FQuest waterQuest(ResourceType::WATER, waterAmountNeeded, reward, Field); // Target is the field
-
-        AvailableQuests_.Add(waterQuest);
-        StartBidTimer(waterQuest);
-        OnQuestAvailable.Broadcast(waterQuest);
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Watering Quest ID %s for Field %s."), *waterQuest.QuestID.ToString(), *Field->GetName());
-    }
-}
-
-UFUNCTION()
-void AMS_AIManager::OnWheatFieldReadyToHarvest(AMS_WheatField* Field) // Renamed function
-{
-     if (!Field) return;
-    UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s ready for harvest."), *Field->GetName());
-
-    // Create a "Harvest" quest.
-    bool bQuestExists = DoesIdenticalQuestExist(ResourceType::WHEAT, Field->HarvestAmount, Field);
-
-     if (!bQuestExists)
-    {
-        int32 reward = CalculateGoldReward(ResourceType::WHEAT, Field->HarvestAmount);
-        FQuest harvestQuest(ResourceType::WHEAT, Field->HarvestAmount, reward, Field); // Target is the field
-
-        AvailableQuests_.Add(harvestQuest);
-        StartBidTimer(harvestQuest);
-        OnQuestAvailable.Broadcast(harvestQuest);
-        UE_LOG(LogTemp, Log, TEXT("AIManager: Generated Harvest Quest ID %s for Field %s."), *harvestQuest.QuestID.ToString(), *Field->GetName());
-    }
 }
