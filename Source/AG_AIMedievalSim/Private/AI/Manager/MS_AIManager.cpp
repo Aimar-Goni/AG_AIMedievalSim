@@ -42,6 +42,8 @@ void AMS_AIManager::BeginPlay()
     // }
 	InitializeFieldListeners();
 	GetWorldTimerManager().SetTimer(HousingCheckTimerHandle, this, &AMS_AIManager::UpdateHousingState, HousingCheckInterval, true, 5.0f);
+
+	GetWorldTimerManager().SetTimer(TavernCheckTimerHandle, this, &AMS_AIManager::CheckAndInitiateConstruction, TavernCheckInterval, true); 
 }
 
 void AMS_AIManager::InitializeCentralStorage()
@@ -410,26 +412,26 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
 	bool bIsWheatField = false;
 	int32 woodAmount = GetCentralStorageInventory() ? GetCentralStorageInventory()->GetResourceAmount(ResourceType::WOOD) : 0;
 
-	if (CurrentPopulation > TotalHousingCapacity || (CurrentPopulation > 0 && TotalHousingCapacity == 0) ) // Also build if pop >0 and no houses
+	if (CurrentPopulation > TotalHousingCapacity || (CurrentPopulation > 0 && TotalHousingCapacity == 0) ) 
 	{
-		if (HouseBuildingClass && StorageInventory->GetResourceAmount(ResourceType::WOOD) >= HouseWoodCost) // Fallback to house if not prioritizing but possible
-		{
-			BuildingToSpawn = HouseBuildingClass;
-			RequiredResource = ResourceType::WOOD;
-			ResourceCost = HouseWoodCost;
-			UE_LOG(LogTemp, Log, TEXT("AIManager: Considering non-priority House Construction."));
-		}
+		BuildingToSpawn = HouseBuildingClass;
+		RequiredResource = ResourceType::WOOD;
+		ResourceCost = HouseWoodCost;
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Prioritizing House Construction."));
 	}
-	else if (ShouldBuildWheatField() && WheatFieldClass && woodAmount >= WheatFieldWoodCost) // Add ShouldBuildWheatField() logic
+	else if (ShouldBuildTavern() && TavernBuildingClass && woodAmount >= TavernWoodCost)
+	{
+		BuildingToSpawn = TavernBuildingClass;
+		RequiredResource = ResourceType::WOOD; 
+		ResourceCost = TavernWoodCost;
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Conditions met for Tavern Construction."));
+	}
+	else if (ShouldBuildWheatField() && WheatFieldClass && woodAmount >= WheatFieldWoodCost)
 	{
 		BuildingToSpawn = WheatFieldClass;
 		RequiredResource = ResourceType::WOOD;
 		ResourceCost = WheatFieldWoodCost;
-		bIsWheatField = true;
-		UE_LOG(LogTemp, Log, TEXT("AIManager: Considering Wheat Field Construction."));
 	}
-
-
 
     // --- Proceed if a building type was selected ---
     if (BuildingToSpawn && RequiredResource != ResourceType::ERROR && ResourceCost > 0)
@@ -738,4 +740,50 @@ void AMS_AIManager::UpdateHousingState()
         UE_LOG(LogTemp, Log, TEXT("AIManager Housing Check: Housing needed (Pop %d > Cap %d). Checking construction conditions."), CurrentPopulation, TotalHousingCapacity);
         CheckAndInitiateConstruction(); // Prioritize house
     
+}
+
+bool AMS_AIManager::ShouldBuildTavern() const
+{
+	if (!AICharacterClass || !TavernBuildingClass) return false; // Need classes to check
+
+	UWorld* World = GetWorld();
+	if (!World) return false;
+
+	// 1. Check Max Taverns Limit
+	TArray<AActor*> FoundTaverns;
+	UGameplayStatics::GetAllActorsOfClass(World, TavernBuildingClass, FoundTaverns);
+	if (FoundTaverns.Num() >= MaxTaverns)
+	{
+		return false;
+	}
+
+	// 2. Check Average Population Happiness
+	TArray<AActor*> FoundCharacters;
+	UGameplayStatics::GetAllActorsOfClass(World, AICharacterClass, FoundCharacters);
+
+	if (FoundCharacters.IsEmpty()) return false; // No population, no need for a pub
+
+	float TotalHappiness = 0.0f;
+	int32 ValidCharacterCount = 0;
+	for (AActor* CharActor : FoundCharacters)
+	{
+		AMS_AICharacter* AIChar = Cast<AMS_AICharacter>(CharActor);
+		if (AIChar && AIChar->PawnStats_)
+		{
+			TotalHappiness += AIChar->PawnStats_->GetHappiness();
+			ValidCharacterCount++;
+		}
+	}
+
+	if (ValidCharacterCount == 0) return false;
+
+	float AverageHappiness = TotalHappiness / static_cast<float>(ValidCharacterCount);
+
+	if (AverageHappiness < MinAverageHappinessForTavernConsideration)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AIManager: Average happiness (%.1f) is below threshold (%.1f). Considering Tavern."), AverageHappiness, MinAverageHappinessForTavernConsideration);
+		return true;
+	}
+
+	return false;
 }

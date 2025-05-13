@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Systems/MS_ResourceSystem.h"        
 #include "Placeables/Buildings/MS_StorageBuildingPool.h"
+#include "Placeables/Buildings/MS_Tavern.h"
 #include "Placeables/Buildings/MS_BulletingBoardPool.h"
 #include "Placeables/Buildings/MS_ConstructionSite.h"
 #include "Systems/MS_InventoryComponent.h"
@@ -122,7 +123,9 @@ protected:
 	void InitializeCentralStorage();
 	
 	bool ShouldBuildWheatField() const;
-	
+
+	bool ShouldBuildTavern() const; 
+
 	UFUNCTION()
 	void OnWheatFieldNeedsPlanting(AMS_WheatField* Field);
 	UFUNCTION()
@@ -176,10 +179,31 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
 	int32 MaxWheatField  = 5;
 	
-	/** Class reference for the Wheat Field building. */
+	// Class reference for the Wheat Field building. 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
 	TSubclassOf<AMS_WheatField> WheatFieldClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	int32 TavernWoodCost = 75;
+
+	// Class reference for the Tavern building. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	TSubclassOf<AMS_Tavern> TavernBuildingClass;
+
+	// How often (in seconds) to check if a Tavern should be built. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	float TavernCheckInterval = 5.0f; 
+
+	// Minimum average happiness of the population before considering building a pub. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	float MinAverageHappinessForTavernConsideration = 40.0f;
+
+	// Maximum number of Pubs allowed. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Construction")
+	int32 MaxTaverns = 1;
+
+	FTimerHandle TavernCheckTimerHandle;
+	
 private:
 
 	int32 CurrentPopulation = 0;

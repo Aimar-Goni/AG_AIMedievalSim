@@ -345,13 +345,15 @@ void AMS_AICharacter::CheckIfHungry() {
     {
         UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
         bool bIsHungry = PawnStats_->IsHungry();
-        bool bIsThirsty = PawnStats_->IsThirsty();
+		bool bIsThirsty = PawnStats_->IsThirsty();
+		bool bIsSad = PawnStats_->IsSad();
 
         Blackboard->SetValueAsBool(FName("bIsHungry"), bIsHungry); 
         Blackboard->SetValueAsBool(FName("bGettingFood"), bIsHungry); 
 		Blackboard->SetValueAsBool(FName("bIsThirsty"), bIsThirsty);
 		Blackboard->SetValueAsBool(FName("bGettingWater"), bIsThirsty);
-		
+		Blackboard->SetValueAsBool(FName("bIsSad"), bIsSad);
+
 	}
 }
 
