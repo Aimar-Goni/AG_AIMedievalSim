@@ -2,10 +2,10 @@
 
 
 
-#include "Systems/MS_SkyController.h" 
+#include "MS_SkyController.h" 
 #include "Engine/DirectionalLight.h"
 #include "Components/DirectionalLightComponent.h"
-#include "Systems/MS_TimeSubsystem.h"
+#include "MS_TimeSubsystem.h"
 #include "Curves/CurveFloat.h"
 #include "Curves/CurveLinearColor.h"
 #include "Logging/LogMacros.h"
