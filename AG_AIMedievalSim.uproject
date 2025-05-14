@@ -22,14 +22,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "AG_DynamicTimeAndSky",
-			"Enabled": true
-		},
-		{
-			"Name": "CustomMovementPlugin",
-			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

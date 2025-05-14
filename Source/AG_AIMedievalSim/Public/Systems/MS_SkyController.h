@@ -12,7 +12,7 @@ class UCurveFloat;
 class UCurveLinearColor;
 
 UCLASS()
-class AG_DYNAMICTIMEANDSKY_API AMS_SkyController : public AActor
+class AG_AIMEDIEVALSIM_API AMS_SkyController : public AActor
 {
 	GENERATED_BODY()
 
