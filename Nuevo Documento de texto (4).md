@@ -188,10 +188,6 @@ Okay, this is a significant expansion! Let's break it down into manageable steps
             *   Base bid could be related to `Quest.Reward`.
             *   Final Bid = `(BaseReward / TotalPathLength) * NeedsModifier`.
 
-*   **Step 14: System Integration & Testing**
-    *   **What:** Test interactions between all systems.
-    *   **How:** Playtest extensively. Do AIs correctly prioritize needs vs. work vs. sleep vs. pub? Does construction complete? Does bidding work? Fix bugs. Add logging where needed.
-
 *   **Step 15: (If Time) Add Animation Polish**
     *   **What:** Connect actual animations.
     *   **How:**
