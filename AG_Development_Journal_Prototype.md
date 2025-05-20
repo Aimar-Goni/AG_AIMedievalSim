@@ -633,9 +633,9 @@ void AMS_MovementNodeMeshStarter::DebugDrawNodes()
 {
     for (auto& NodePair : NodeMap)
     {
-        FNode* Node = NodePair.Value;
+        TSharedPtr<FMoveNode> Node = NodePair.Value;
         DrawDebugSphere(GetWorld(), Node->Position, 50.0f, 16, FColor::Blue, false, -1.0f);
-        for (FNode* Neighbor : Node->Neighbors)
+        for (TSharedPtr<FMoveNode> Neighbor : Node->Neighbors)
         {
             DrawDebugLine(GetWorld(), Node->Position, Neighbor->Position, FColor::Green, false, -1.0f);
         }
