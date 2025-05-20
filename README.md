@@ -5,7 +5,7 @@
 **Date:** 19/05/2025
 
 **Repository Link:** https://github.com/Aimar-Goni/AG_AIMedievalSim <br>
-**Itch.io Build Link:** [Link to your Itch.io page for the build] 
+**Itch.io Build Link:** *(Add link)*
 
 ### Project Outline 
 
@@ -579,7 +579,7 @@ User testing and performance profiling were critical throughout the development 
 
 #### Source Code/Project Files
 The complete source code for Ales And Fables is publicly available on GitHub, organized into two primary Unreal Engine plugins:
-*   **Repository Link:** [https://github.com/yourusername/Ales And Fables](https://github.com/yourusername/Ales And Fables) *(Replace with your actual link)*
+*   **Repository Link:** *(Add link)*
 
 1.  **`AlesAndFables` Plugin:** Contains the core simulation logic, including:
     *   AI Character (`MS_AICharacter.h/.cpp`): Manages AI state, needs, inventory, quest handling, and interactions.
@@ -595,28 +595,25 @@ The complete source code for Ales And Fables is publicly available on GitHub, or
     *   Node Generation (`MS_MovementNodeMeshStarter.h/.cpp`): Procedurally creates the initial pathfinding grid.
     *   Node Data (`MS_MovementNode.h` for `FMoveNode`): Defines the structure of a pathfinding node.
 
-The project can be compiled and run using Unreal Engine 5.4. Ensure both plugins are enabled in your Unreal project.
+The project can be compiled and run using Unreal Engine 5.4.
 
 #### Build Link
 A playable build of Ales And Fables demonstrating the AI behaviors, resource management, and dynamic world can be downloaded from Itch.io:
-*   **Build Link:** [https://yourusername.itch.io/ag-aimedievalsim](https://yourusername.itch.io/ag-aimedievalsim) *(Replace with your actual link)*
+*   **Build Link:** *(Add link)*
 
 **Instructions to Run:**
 1.  Download the `.zip` file from the Itch.io page.
 2.  Extract the contents to a folder on your computer.
-3.  Run the `YourProjectName.exe` (e.g., `AlesAndFables.exe`) located in the extracted folder.
-4.  System Requirements: Windows 10/11, DirectX 11/12 compatible GPU, ~4GB RAM (typical for UE projects).
+3.  Run the `AG_MedievalSim.exe` located in the extracted folder.
+4.  System Requirements: Windows 10/11, DirectX 11/12 compatible GPU, ~4GB RAM.
 
 #### Video Demonstration
 A video demonstrating key features of Ales And Fables in action is embedded below / available at the following link:
 
-**Video Link:** [https://youtu.be/your_video_id](https://youtu.be/your_video_id) *(Replace with your actual video link)*
+**Video Link:**  *(Add video link)*
 
 
-### Reflection (Suggested Word Count: 500 words)
-Here's a condensed version of your text that stays under 500 words while retaining all key information:
-
----
+### Reflection 
 
 #### Research Effectiveness
 
