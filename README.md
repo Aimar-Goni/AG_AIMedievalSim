@@ -11,7 +11,7 @@
 
 AG_AIMedievalSim is an ambitious simulation project developed within Unreal Engine 5, designed to explore complex AI-driven behaviors. The core concept revolves around creating a multi-agent system where AI characters, or "pawns," autonomously manage their needs, execute tasks, and interact with a persistent world. The purpose extends beyond a simple game; it aims to serve as a flexible framework or plugin-set (`AlesAndFables` and `CustomMovementPlugin`), enabling users to rapidly prototype and deploy sophisticated AI simulations. This involves pawns that can gather resources like wood, berries, and water, construct buildings, farm, and engage in leisure activities, all while responding to emergent world states and system defined quests.
 
-![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-1.png)
+![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-1.png)
 [FIG DESC: Figure 1. Overview of the AG_AIMedievalSim environment, showcasing AI pawns engaged in various activities, highlighting the dynamic nature of the simulation.]
 
 The initial goals for AG_AIMedievalSim were multi-faceted:
@@ -23,7 +23,7 @@ Design a system where AI agents can identify resource scarcities, accept gatheri
 4.  **Establish a Quest Management and Bidding System:** Allow the `AMS_AIManager` to generate quests based on resource needs or construction projects, and enable AI agents to evaluate and "bid" on these quests, fostering a simple economic simulation.
 5.  **Modular Plugin Architecture:** Structure the core functionalities into two distinct plugins: `AlesAndFables` for the simulation-specific logic (AI characters, manager, quests, medieval assets) and `CustomMovementPlugin` for the generic pathfinding subsystem, making the latter potentially reusable in other projects.
 
-    ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-2.png)
+    ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-2.png)
 
     [FIG DESC: Figure 2. System architecture diagram of AG_AIMedievalSim, showing the interaction between key components like the AI Manager, individual AI Characters, the Pathfinding Subsystem, and Workplaces.]
 
@@ -32,7 +32,7 @@ Several challenges were anticipated and encountered:
 *   **Pathfinding Complexity and Performance:** Developing a custom A* pathfinding system that could handle dynamic changes and scale to numerous agents without significant performance degradation required careful optimization of node management and path recalculation logic.
 *   **Behavior Tree Complexity:** Designing and debugging intricate Behavior Trees for varied AI tasks (gathering, delivering, building) became increasingly complex. Ensuring logical flow and preventing AI agents from getting stuck in loops or making irrational decisions was a continuous effort.
 
-    ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image.png)
+    ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image.png)
     [FIG DESC: Figure 3. The root of the primary Behavior Tree for `AMS_AICharacter`. This selector node prioritizes satisfying needs (e.g., hunger), then active quests, then idle behaviors like wandering. Key Blackboard flags like `bIsHungry` and `bHasQuest` drive the execution flow.]
 
     [CODE SNIPPET: AlesAndFables/Source/AlesAndFables/Public/AI/Characters/MS_AICharacter.h - AMS_AICharacter::PawnStats_ declaration.]
@@ -69,7 +69,7 @@ The development of Ales And Fables was designed to integrate insights from exist
     *   **Analysis & Influence:** RimWorld uses a sophisticated work prioritization system that players can configure. While Ales And Fables doesn't offer direct player control over priorities, the underlying principle of AI evaluating available tasks against their current needs and capabilities was adopted. For example, an AI in my project with low hunger (`PawnStats_->IsHungry()` is true) would favor a "Get Food" task over a "Gather Wood" quest. This is managed in the Behavior Tree using decorators that check Blackboard flags like `bIsHungry` and `bHasQuest`. The `CalculateBidValue` function in `AMS_AICharacter` also reflects this, where needs heavily penalize the bid for new quests.
 
 
-        ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-3.png) <br>
+        ![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-3.png) <br>
         [FIG DESC: Figure 5. A screenshot from *RimWorld* (Ludeon Studios, 2018) displaying the colonist interface with visible need bars and work priorities. This visual representation of pawn state directly inspired the `UMS_PawnStatComponent` in AG_AIMedievalSim.]
 
         [CODE SNIPPET: AlesAndFables/Source/AlesAndFables/Private/AI/Characters/MS_AICharacter.cpp - AMS_AICharacter::CalculateBidValue - NeedsPenalty calculation.]
@@ -102,11 +102,11 @@ The development of Ales And Fables was designed to integrate insights from exist
     *   **Analysis & Influence:** The Guild’s AI often appears to follow predefined schedules for their roles. I adapted this by having the `AMS_AIManager` generate resource-specific quests which AI then bid on. This creates a more dynamic "work schedule" than a fixed one, driven by systemic needs. The `MS_TimeSubsystem` and its `OnDayStart`/`OnNightStart` delegates were foundational for allowing AI behavior to change based on the time of day, such as prioritizing going home to sleep using `MS_FindHouse` task and `MS_SleepTask` when `IsNightTime()` is true. The `AMS_House` class itself provides a basic shelter and occupancy system.
 
 
-        ![IMAGE: The Guild 2 - Screenshot showing characters moving between buildings in a medieval town.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-4.png)
+        ![IMAGE: The Guild 2 - Screenshot showing characters moving between buildings in a medieval town.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-4.png)
         
         [FIG DESC: Figure 7. Gameplay screenshot from *The Guild 2* (4HEAD Studios, 2006), illustrating AI characters performing daily routines and moving between various town locations. This informed the desire for AG_AIMedievalSim's AI to exhibit similar scheduled behaviors, particularly with the day/night cycle.]
 
-        ![BLUEPRINT IMAGE: AlesAndFables/AI/Decorators/MS_BTDecorator_IsNightTime.uasset - Logic inside the IsNightTime decorator.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-5.png)
+        ![BLUEPRINT IMAGE: AlesAndFables/AI/Decorators/MS_BTDecorator_IsNightTime.uasset - Logic inside the IsNightTime decorator.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-5.png)
 
         [FIG DESC: Figure 8. Blueprint graph for `UMS_BTDecorator_IsNightTime`. This decorator queries the `UMS_TimeSubsystem` to check if `IsNightTime()` is true. It's used in the Behavior Tree to gate behaviors like sleeping, ensuring AIs only attempt to sleep during appropriate hours, similar to scheduled activities in *The Guild*.]
 
@@ -121,7 +121,7 @@ The development of Ales And Fables was designed to integrate insights from exist
         5.  Delivering materials (handled in `AMS_AICharacter::OnOverlapBegin` with the site).
         6.  `AMS_ConstructionSite` updates its `CurrentAmount` and completes construction if `AmountRequired` is met.
 
-        ![IMAGE: Banished - Screenshot showing citizens carrying resources (logs, stone) to a building under construction.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-6.png)  
+        ![IMAGE: Banished - Screenshot showing citizens carrying resources (logs, stone) to a building under construction.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-6.png)  
 
         [FIG DESC: Figure 9. A scene from *Banished* (Shining Rock Software, 2014) where citizens are actively transporting resources to a construction site. This logistical loop directly inspired the multi-step construction quest system in AG_AIMedievalSim.]
 
@@ -159,11 +159,11 @@ The development of Ales And Fables was designed to integrate insights from exist
     *   **Relevance & Application:** Chapter 4 (Decision Making) and Chapter 5 (Behavior Trees) were particularly influential. The book's explanation of Behavior Trees nodes like Sequences, Selectors, Decorators, and Tasks provided the foundational knowledge for designing the AI logic in `AlesAndFables`.
     *   **Analysis & Influence:** Millington and Funge emphasise the modularity and reusability of Behavior Tree tasks and services. This principle guided the creation of many specific task nodes in my project, such as `MS_FindNearestWorkSite, and `FlipBoolTask`. Each task is designed to be a self-contained unit of behaviour. For example, `UMS_BTDecorator_NeedToGatherItems` checks if the AI's inventory (`AIChar->Inventory_->GetResourceAmount(QuestType)`) is less than the `QuestAmount` on the Blackboard. This decorator, combined with a Sequence node, ensures the AI only attempts to gather if needed.
 
-        ![IMAGE: Diagram of a simple Behavior Tree (Selector, Sequence, Task, Decorator) based on Millington & Funge's explanations.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-7.png)
+        ![IMAGE: Diagram of a simple Behavior Tree (Selector, Sequence, Task, Decorator) based on Millington & Funge's explanations.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-7.png)
        
         [FIG DESC: Figure 11. A conceptual diagram illustrating basic Behavior Tree components (Selector, Sequence, Task, Decorator) as described by Millington & Funge (2009). This structure forms the basis of AI decision-making in AG_AIMedievalSim.]
 
-        ![BLUEPRINT IMAGE: AlesAndFables/AI/Tasks/FlipBoolTask.uasset - Logic for the FlipBoolTask.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-8.png)
+        ![BLUEPRINT IMAGE: AlesAndFables/AI/Tasks/FlipBoolTask.uasset - Logic for the FlipBoolTask.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-8.png)
        
         [FIG DESC: Figure 12. The `UFlipBoolTask` ExecuteTask implementation. This simple C++ task allows the Behavior Tree to toggle a boolean value on the Blackboard, a utility inspired by the modular task design advocated in "AI for Games."]
        
@@ -189,7 +189,7 @@ The development of Ales And Fables was designed to integrate insights from exist
     *   **Relevance & Application:** This was the primary guide for implementing the A* algorithm within `UMS_PathfindingSubsystem::FindPathNodes`. The use of `TSet<TSharedPtr<FMoveNode>> OpenSet`, `TSet<TSharedPtr<FMoveNode>> ClosedSet`, `TMap<TSharedPtr<FMoveNode>, float> GScore`, and `TMap<TSharedPtr<FMoveNode>, float> FScore` directly follows Patel's described A* implementation. The Manhattan distance heuristic was chosen for its efficiency on a grid.
     *   **Analysis & Influence:** Patel's guide stresses the importance of an admissible and consistent heuristic for A* to find the optimal path. My `Heuristic` function calculates Manhattan distance: `FMath::Abs(NodeA->GridPosition.X - NodeB->GridPosition.X) + FMath::Abs(NodeA->GridPosition.Y - NodeB->GridPosition.Y);`. This choice was made because my `FMoveNode` structures are on a grid, and Manhattan distance is computationally cheaper than Euclidean while still being admissible for grid movement, where diagonal moves are not significantly cheaper or disallowed. The ability to handle blocked nodes (`BlockedNodes` TSet in `UMS_PathfindingSubsystem`) and update paths dynamically (`OnPathUpdated` delegate) was an extension inspired by the need for a responsive world, going beyond the basic A* tutorial.
 
-        ![IMAGE: RedBlobGames - Screenshot of Amit Patel's A* interactive diagram showing open/closed sets and pathfinding.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-9.png)
+        ![IMAGE: RedBlobGames - Screenshot of Amit Patel's A* interactive diagram showing open/closed sets and pathfinding.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-9.png)
 
         [FIG DESC: Figure 13. An illustrative screenshot from Amit Patel's A* Pathfinding guide on RedBlobGames.com, showing the visualization of the open set, closed set, and path. This clear explanation was crucial for implementing the A* algorithm in `UMS_PathfindingSubsystem`.]
 
@@ -254,10 +254,10 @@ The development of Ales And Fables was designed to integrate insights from exist
         ```
         The documentation on Blackboard Key Selectors (`FBlackboardKeySelector`) and how to filter them (e.g., `AddObjectFilter`, `AddBoolFilter`) was essential for making custom nodes configurable from the Behavior Tree editor. This allowed tasks like `UMS_CopyBlackboardValue` to be generic.
 
-        ![IMAGE: Unreal Engine Docs - Screenshot of the Behavior Tree documentation page.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-10.png)
+        ![IMAGE: Unreal Engine Docs - Screenshot of the Behavior Tree documentation page.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-10.png)
         [FIG DESC: Figure 15. A screenshot of the official Unreal Engine Behavior Tree documentation. This resource was fundamental for understanding how to create and integrate custom C++ nodes.]
 
-        ![BLUEPRINT IMAGE: AlesAndFables/AI/Tasks/MS_FindRandomWanderLocation.uasset - Decorator usage with the FindRandomWanderLocation task in a BT.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-11.png)
+        ![BLUEPRINT IMAGE: AlesAndFables/AI/Tasks/MS_FindRandomWanderLocation.uasset - Decorator usage with the FindRandomWanderLocation task in a BT.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-11.png)
         [FIG DESC: Figure 16. `UMS_FindRandomWanderLocation` task node as seen in the Behavior Tree editor. It uses `FBlackboardKeySelector` for `BlackboardKey_TargetLocation`, allowing designers to specify the output key directly in the editor, a feature detailed in UE documentation.]
 
 2.  **Unreal Engine Documentation. *Custom C++ Pathfinding with A**. Epic Games Forums / Community Wiki (Often more practical examples here). 
@@ -265,7 +265,7 @@ The development of Ales And Fables was designed to integrate insights from exist
     *   **Relevance & Application:** Implementing `UMS_PathfindingSubsystem` and `AMS_MovementNodeMeshStarter` required going beyond standard NavMesh. Community examples of A* in C++ for Unreal, often found on forums or developer blogs, likely provided patterns for managing the node graph (`TMap<FIntPoint, TSharedPtr<FMoveNode>> NodeMap`), neighbour connections, and the A* algorithm itself.
     *   **Analysis & Influence:** The challenge with custom pathfinding is integrating it smoothly. Community resources often show how to make a subsystem accessible globally, which is how `PathfindingSubsystem` is used by AI characters and the `AMS_AIManager`. The `AMS_MovementNodeMeshStarter`'s approach of raycasting to generate a grid of `FMoveNode`s and then connecting neighbours is a common technique discussed in such custom pathfinding tutorials. The dynamic update, allowing the pathfinding grid to react to in-game changes is an advanced feature that makes the custom system more robust than a static grid.
 
-        ![IMAGE: AG_AIMedievalSim - Debug draw of the pathfinding grid generated by `AMS_MovementNodeMeshStarter` over the terrain.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-12.png)
+        ![IMAGE: AG_AIMedievalSim - Debug draw of the pathfinding grid generated by `AMS_MovementNodeMeshStarter` over the terrain.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-12.png)
         [FIG DESC: Figure 17. Debug visualization of the pathfinding node grid generated by `AMS_MovementNodeMeshStarter`. Nodes are placed based on raycasts, and connections (not shown here) are established if paths between them are clear. This custom grid approach was informed by community examples.]
 
         [CODE SNIPPET: CustomMovementPlugin/Source/CustomMovementPlugin/Private/Movement/MS_PathfindingSubsystem.cpp - UMS_PathfindingSubsystem::SetNodeBlockedStatus - Broadcasting path updates.]
@@ -318,7 +318,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Basic Behavior Tree and Blackboard setup, with `SelfActor` key.
     *   **Tools:** Visual Studio for C++, Unreal Engine editor for Blueprint/BT setup.
 
-    ![IMAGE: AG_AIMedievalSim - Unreal Engine editor showing the two plugins in the project structure.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-13.png)
+    ![IMAGE: AG_AIMedievalSim - Unreal Engine editor showing the two plugins in the project structure.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-13.png)
     
     [FIG DESC: Figure 18. Unreal Engine project browser highlighting the `AlesAndFables` and `CustomMovementPlugin` modules, demonstrating the modular architecture established early in development.]
 
@@ -353,10 +353,10 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Implemented `UMS_PathfindingSubsystem` (as a `UGameInstanceSubsystem`) to store the `NodeMap` and contain the A* algorithm (`FindPathNodes`, `FindPathPoints`). This used `TSet` for open/closed sets and `TMap` for scores as per A* theory.
         *   Added functionality to `BlockNode`, `UnblockNode`, and the `OnPathUpdated` delegate to handle dynamic changes.
 
-            ![](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-12.png)
+            ![](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-12.png)
             [FIG DESC: Figure 20. Image demonstrating the `AMS_MovementNodeMeshStarter`'s raycasting process during initialization. Green lines indicate successful floor detection for node placement, while red might indicate no suitable surface. (This is illustrative; actual debug may vary).]
 
-            ![IMAGE: AG_AIMedievalSim - Debug lines showing an AI character's calculated A* path from the `PathfindingSubsystem` to a target.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-14.png)
+            ![IMAGE: AG_AIMedievalSim - Debug lines showing an AI character's calculated A* path from the `PathfindingSubsystem` to a target.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-14.png)
             [FIG DESC: Figure 21. In-game screenshot with pathfinding debug visualization. The yellow sphere represents the A* path calculated by `UMS_PathfindingSubsystem` for an AI agent moving towards its target (red sphere).]
         
     *   **Techniques:** A* algorithm, grid generation, raycasting for obstacle detection.
@@ -371,7 +371,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Developed Behavior Tree tasks: `MS_FindNearestWorkSite` (queries `WorkPlacesPool_` on `AMS_AICharacter`), `MS_GeneratePathToTarget`, `MS_FollowNodePath`, `MS_PerformWorkAction` (calls `TakeResources()` and adds to AI's `Inventory_`).
         *   AI characters could now find a workplace of a specific type, path to it, "work" for a duration, and collect resources.
 
-            [BLUEPRINT IMAGE: AlesAndFables/Placeables/Interactables/BP_TreeWorkPlace.uasset - Blueprint for a TreeWorkPlace, showing its StaticMesh and configuration of `ResourceType_` and `ResourceAmount_`.]![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-15.png)
+            [BLUEPRINT IMAGE: AlesAndFables/Placeables/Interactables/BP_TreeWorkPlace.uasset - Blueprint for a TreeWorkPlace, showing its StaticMesh and configuration of `ResourceType_` and `ResourceAmount_`.]![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-15.png)
             [FIG DESC: Figure 22. Blueprint editor view of `BP_TreeWorkPlace` (derived from `AMS_BaseWorkPlace`). It shows the assigned tree mesh and default properties like `ResourceType_` set to `WOOD` and `ResourceAmount_` set to a default value, making it a configurable resource node.]
 
 
@@ -382,7 +382,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Created `AMS_AIManager` to:
             *   Monitor resource levels in a central storage (`CentralStorageBuilding`).
 
-                ![IMAGE: AG_AIMedievalSim -  UI showing current resource levels in central storage and quests generated by `AMS_AIManager`.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-16.png)
+                ![IMAGE: AG_AIMedievalSim -  UI showing current resource levels in central storage and quests generated by `AMS_AIManager`.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-16.png)
                 
                 [FIG DESC: Figure 23. A UI overlay  displaying the `AMS_AIManager`'s status: current central storage inventory levels.]
 
@@ -443,12 +443,12 @@ The development of Ales And Fables was an iterative process, structured into sev
     *   **Implementation:**
         *   **Construction:** `AMS_ConstructionSite` actor. `AMS_AIManager` initiates construction (`StartBuildingProject`), generating delivery quests. AI fetches from storage (`MS_FetchFromStorage`), delivers to site. Site completes (`CompleteConstruction`) and spawns final building.
 
-            ![IMAGE: AG_AIMedievalSim - A construction site (`AMS_ConstructionSite` actor with scaffolding mesh) with an AI character nearby, possibly delivering resources.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-17.png)
+            ![IMAGE: AG_AIMedievalSim - A construction site (`AMS_ConstructionSite` actor with scaffolding mesh) with an AI character nearby, possibly delivering resources.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-17.png)
             [FIG DESC: Figure 25. An `AMS_ConstructionSite` in-game, visually represented by scaffolding. An AI character is shown interacting or moving towards it, fulfilling a delivery quest generated by the `AMS_AIManager`.]
 
         *   **Farming:** `AMS_WheatField` with states (`EFieldState`). AIManager generates quests for planting, watering, harvesting based on field state and `OnFieldNeedsPlanting` etc. delegates. `MS_PerformWorkAction` handles field-specific actions.
 
-            ![IMAGE: AG_AIMedievalSim - Composite image showing `AMS_WheatField` in different EFieldState: Planted, Growing, ReadyToHarvest, with corresponding meshes.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-18.png)
+            ![IMAGE: AG_AIMedievalSim - Composite image showing `AMS_WheatField` in different EFieldState: Planted, Growing, ReadyToHarvest, with corresponding meshes.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-18.png)
 
             [FIG DESC: Figure 26. A visual progression of the `AMS_WheatField` through its different states (`EFieldState`). Each state (Constructed, Planted, Growing, ReadyToHarvest) is represented by a different static mesh, updated via `AMS_WheatField::ChangeState`.]
 
@@ -456,7 +456,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   **Tavern/Leisure:** `AMS_Tavern`. AIManager checks `ShouldBuildTavern`. AI uses `MS_FindNearestTavern` and `MS_BuyDrink` to increase happiness.
         *   **Time & Sky:** `MS_TimeSubsystem` for day/night cycle and `MS_SkyController` to update directional light.
 
-            ![IMAGE: AG_AIMedievalSim - Side-by-side screenshots showing the sky at midday vs. night, demonstrating `AMS_SkyController`'s effect on lighting.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/FinalPluginInterface/Images/image-19.png)
+            ![IMAGE: AG_AIMedievalSim - Side-by-side screenshots showing the sky at midday vs. night, demonstrating `AMS_SkyController`'s effect on lighting.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-19.png)
 
             [FIG DESC: Figure 27. Comparison of the game world's lighting at midday versus nighttime. The `AMS_SkyController` adjusts the directional light's rotation, intensity, and color based on the `UMS_TimeSubsystem`'s current hour.]
 
