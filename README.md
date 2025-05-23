@@ -610,7 +610,60 @@ A playable build of Ales And Fables demonstrating the AI behaviors, resource man
 #### Video Demonstration
 A video demonstrating key features of Ales And Fables in action is embedded below / available at the following link:
 
-**Video Link:**  https://youtu.be/Dd3h-lJASMQ
+**Video Link:**  https://youtu.be/LFalMgVUfE0
+
+### Project Schedule 
+
+|Card Name                                             |Start Date              |Finish Date             |Checklist Item                                                       |Item State|
+|------------------------------------------------------|------------------------|------------------------|---------------------------------------------------------------------|----------|
+|Add New Job Types                                     |2025-02-03              |2025-05-20              |Farm Vegetables                                                      |complete  |
+|Add New Job Types                                     |2025-02-03              |2025-05-20              |Water Vegetables                                                     |complete  |
+|Add New Job Types                                     |2025-02-03              |2025-05-20              |Plant Vegetables                                                     |complete  |
+|Agent Behaviour                                       |2025-02-03              |2025-05-20              |Add economy                                                          |complete  |
+|Agent Behaviour                                       |2025-02-03              |2025-05-20              |Add day/night cicle and sleep                                        |complete  |
+|Building construction                                 |2025-03-23              |2025-02-03              |                                                                     |complete  |
+|Movement system                                       |2025-02-03              |2025-05-20              |Improve the point generation to work inside homes and with slopes    |incomplete|
+|Movement system                                       |2025-02-03              |2025-04-06              |Optimize the pathfinding                                             |complete  |
+|Movement system                                       |2025-02-03              |2025-04-06              |Add dynamic path modification with enviroment                        |complete  |
+|Job assigment                                         |2024-10-01              |2025-05-20              |Implement bidding logic for agents                                   |complete  |
+|Job assigment                                         |2024-10-01              |2025-05-20              |Prioritize bids based on needs and distance                          |complete  |
+|Job assigment                                         |2024-10-01              |2024-10-19              |Create a "Billboard" system for job postings                         |complete  |
+|Level design                                          |2024-10-01              |2025-05-20              |Add enviroment                                                       |complete  |
+|Level design                                          |2024-10-01              |2025-05-20              |Add main buildings                                                   |complete  |
+|Level design                                          |2024-10-01              |2024-10-19              |Add task completion static positions                                 |complete  |
+|Agent Movement                                        |2024-10-01              |2025-02-03              |                                                                     |complete  |
+|Agent Movement                                        |2024-10-01              |2025-02-03              |Use eqs to add points to the navmesh                                 |complete  |
+|Agent Movement                                        |2024-10-01              |2025-02-03              |Write the movement algorithm that thakes the points and creates roads|complete  |
+|Agent Movement                                        |2024-10-01              |2024-10-01              |Add the navmesh to the worldmap                                      |complete  |
+|Core Manager AI                                       |2024-10-01              |2024-11-04              |Design the Manager class                                             |complete  |
+|Core Manager AI                                       |2024-10-01              |2024-11-04              |Implement job postings based on village needs                        |complete  |
+|Core Manager AI                                       |2024-10-01              |2024-11-04              |Track village resources                                              |complete  |
+|Village Statistics System                             |2024-10-01              |2024-10-29              |Update and monitor stats in real-time                                |complete  |
+|Village Statistics System                             |2024-10-01              |2024-10-29              |Track village-wide stats (population, resources)                     |complete  |
+|Base AI Agent Class                                   |2024-10-01              |2024-10-26              |Add functions to update needs over time                              |complete  |
+|Base AI Agent Class                                   |2024-10-01              |2024-10-26              |Add properties: needs (hunger, thirst, energy, money)                |complete  |
+|Base AI Agent Class                                   |2024-10-01              |2024-10-26              |Implement basic agent behaviors (idle, walk, gather)                 |complete  |
+|Base AI Agent Class                                   |2024-10-01              |2024-10-26              |Create Agent C++ class                                               |complete  |
+|Village resources                                     |2024-10-01              |2024-10-22              |Define resource types (wood, food, water)                            |complete  |
+|Village resources                                     |2024-10-01              |2024-10-22              |Create UI to display village resources                               |complete  |
+|Village resources                                     |2024-10-01              |2024-10-22              |Implement resource gathering and storage                             |complete  |
+|Job Classes                                           |2024-10-01              |2024-10-22              |Implement resource collection logic                                  |complete  |
+|Job Classes                                           |2024-10-01              |2024-10-22              |Implement job actions                                                |complete  |
+|Job Classes                                           |2024-10-01              |2024-10-22              |Create job classes                                                   |complete  |
+|AI Controller (MANAGER)                               |2024-10-01              |2024-10-19              |Create an AIController class                                         |complete  |
+|Agent behaviours                                      |2024-10-01              |2024-10-07              |Implement tasks and conditions for Behavior Tree                     |complete  |
+|Agent behaviours                                      |2024-10-01              |2024-10-07              |Create a basic Behavior Tree                                         |complete  |
+|Agent behaviours                                      |2024-10-01              |2024-10-07              |Set up Blackboard for agent-specific data                            |complete  |
+|Agent Stats natural decline                           |2024-10-01              |2025-05-20              |                                                                     |complete  |
+|AI Agent Base behaviours                              |2024-10-01              |2025-05-20              |                                                                     |complete  |
+|Add Agent Stats                                       |2024-10-01              |2025-04-06              |                                                                     |complete  |
+|Basic MANAGER                                         |2024-10-01              |2025-04-06              |                                                                     |complete  |
+|BASIC CHARACTER                                       |2024-09-30              |2025-05-20              |                                                                     |complete  |
+|Create an AIController to manage agent decision-making|2024-09-30              |2025-05-20              |                                                                     |complete  |
+|Add functions to update needs over time               |2024-09-30              |2024-10-19              |                                                                     |complete  |
+|Implement basic agent behaviors (idle, walk)          |2024-09-30              |2025-05-20              |                                                                     |complete  |
+|Create a base Agent C++ class                         |2024-09-30              |2025-05-20              |                                                                     |complete  |
+|Add properties: needs (hunger, thirst, energy, money) |2024-09-30              |2024-10-19              |                                                                     |complete  |
 
 
 ### Reflection 
