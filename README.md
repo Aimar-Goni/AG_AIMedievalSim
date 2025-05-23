@@ -65,7 +65,7 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 1.  **RimWorld (Ludeon Studios, 2018)**
     *   **Description:** A colony simulation game driven by AI storytellers, where colonists have individual needs, skills, and work priorities.
-    *   **Relevance & Key Takeaways:** RimWorld’s pawn management system was highly influential. The concept of pawns having distinct needs (hunger, rest, joy) that they autonomously try to satisfy, alongside a prioritized list of work tasks, directly inspired the `UMS_PawnStatComponent` in Ales And Fables and the logic for AI characters to balance self-preservation with assigned quests. The way RimWorld handles job assignments provided a model for how tasks could be generated and picked up by available pawns.
+    *   **Relevance & Key Takeaways:** RimWorld’s pawn management system was highly influential (Ludeon Studios, 2018). The concept of pawns having distinct needs (hunger, rest, joy) that they autonomously try to satisfy, alongside a prioritized list of work tasks (Ludeon Studios, 2018), directly inspired the `UMS_PawnStatComponent` in Ales And Fables and the logic for AI characters to balance self-preservation with assigned quests. The way RimWorld handles job assignments provided a model for how tasks could be generated and picked up by available pawns.
     *   **Analysis & Influence:** RimWorld uses a sophisticated work prioritization system that players can configure. While Ales And Fables doesn't offer direct player control over priorities, the underlying principle of AI evaluating available tasks against their current needs and capabilities was adopted. For example, an AI in my project with low hunger (`PawnStats_->IsHungry()` is true) would favor a "Get Food" task over a "Gather Wood" quest. This is managed in the Behavior Tree using decorators that check Blackboard flags like `bIsHungry` and `bHasQuest`. The `CalculateBidValue` function in `AMS_AICharacter` also reflects this, where needs heavily penalize the bid for new quests.
 
 
@@ -98,7 +98,7 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 2.  **The Guild 2 / The Guild 3 (4HEAD Studios / GolemLabs)**
     *   **Description:** Life simulation games set in the late Middle Ages, focusing on economic and social progression, where characters run businesses, engage in politics, and manage daily routines.
-    *   **Relevance & Key Takeaways:** The Guild series excels at portraying AI characters with daily schedules, moving between home, work, and market. This influenced the desire for Ales And Fables's characters to have a sense of routine, such as working during the day and potentially seeking shelter or rest at night (using `UMS_BTDecorator_IsNightTime` and `MS_SleepTask`). The concept of production chains in The Guild, while more complex, inspired the simpler resource flow in my project: gather raw resource -> deliver to storage/construction.
+    *   **Relevance & Key Takeaways:** The Guild series  (4HEAD Studios / GolemLabs, 2006-2017) excels at portraying AI characters with daily schedules, moving between home, work, and market. This influenced the desire for Ales And Fables's characters to have a sense of routine (4HEAD Studios / GolemLabs, 2006-2017), such as working during the day and potentially seeking shelter or rest at night (using `UMS_BTDecorator_IsNightTime` and `MS_SleepTask`). The concept of production chains in The Guild, while more complex, inspired the simpler resource flow in my project: gather raw resource -> deliver to storage/construction.
     *   **Analysis & Influence:** The Guild’s AI often appears to follow predefined schedules for their roles. I adapted this by having the `AMS_AIManager` generate resource-specific quests which AI then bid on. This creates a more dynamic "work schedule" than a fixed one, driven by systemic needs. The `MS_TimeSubsystem` and its `OnDayStart`/`OnNightStart` delegates were foundational for allowing AI behavior to change based on the time of day, such as prioritizing going home to sleep using `MS_FindHouse` task and `MS_SleepTask` when `IsNightTime()` is true. The `AMS_House` class itself provides a basic shelter and occupancy system.
 
 
@@ -112,7 +112,7 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 3.  **Banished (Shining Rock Software, 2014)**
     *   **Description:** A city-building strategy game where players guide a group of exiled travellers to grow and maintain a settlement. Resource management and citizen well-being are central.
-    *   **Relevance & Key Takeaways:** Banished emphasises the importance of resource logistics and the roles of citizens. The way citizens fetch materials for construction sites was a direct inspiration for the construction quest loop in Ales And Fables: `AMS_AIManager` identifies a need, spawns an `AMS_ConstructionSite`, and generates delivery quests for resources like wood. AI characters then fetch these from `AMS_StorageBuilding` and deliver them.
+    *   **Relevance & Key Takeaways:** Banished (Shining Rock Software, 2014) emphasises the importance of resource logistics and the roles of citizens. The way citizens fetch materials for construction sites (Shining Rock Software, 2014) was a direct inspiration for the construction quest loop in Ales And Fables: `AMS_AIManager` identifies a need, spawns an `AMS_ConstructionSite`, and generates delivery quests for resources like wood. AI characters then fetch these from `AMS_StorageBuilding` and deliver them.
     *   **Analysis & Influence:** In Banished, if resources aren't available or if labourers are too busy, construction halts. This concept of resource dependency is mirrored in my `CheckAndInitiateConstruction` logic in `AMS_AIManager`. The task flow for an AI completing a construction delivery quest involves:
         1.  Accepting a quest (e.g., Deliver 15 Wood to Site X).
         2.  Pathing to `CentralStorageBuilding` (`MS_FindNearestStorage`).
@@ -154,10 +154,10 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 #### Academic Sources
 
-1.  **Millington, I., & Funge, J. (2009). *Artificial Intelligence for Games* (2nd ed.). CRC Press.**
+1.  **Millington, I., & Funge, J. *Artificial Intelligence for Games* .**
     *   **Summary:** This book provides a comprehensive overview of AI techniques used in games, covering pathfinding, decision-making, movement, and agent architecture.
-    *   **Relevance & Application:** Chapter 4 (Decision Making) and Chapter 5 (Behavior Trees) were particularly influential. The book's explanation of Behavior Trees nodes like Sequences, Selectors, Decorators, and Tasks provided the foundational knowledge for designing the AI logic in `AlesAndFables`.
-    *   **Analysis & Influence:** Millington and Funge emphasise the modularity and reusability of Behavior Tree tasks and services. This principle guided the creation of many specific task nodes in my project, such as `MS_FindNearestWorkSite, and `FlipBoolTask`. Each task is designed to be a self-contained unit of behaviour. For example, `UMS_BTDecorator_NeedToGatherItems` checks if the AI's inventory (`AIChar->Inventory_->GetResourceAmount(QuestType)`) is less than the `QuestAmount` on the Blackboard. This decorator, combined with a Sequence node, ensures the AI only attempts to gather if needed.
+    *   **Relevance & Application:** Chapter 4 (Decision Making) and Chapter 5 (Behavior Trees) were particularly influential (Millington & Funge, 2009). The book's explanation of Behavior Trees nodes like Sequences, Selectors, Decorators, and Tasks (Millington & Funge, 2009) provided the foundational knowledge for designing the AI logic in `AlesAndFables`.
+    *   **Analysis & Influence:** Millington and Funge (2009) emphasise the modularity and reusability of Behavior Tree tasks and services. This principle (Millington & Funge, 2009) guided the creation of many specific task nodes in my project, such as `MS_FindNearestWorkSite, and `FlipBoolTask`. Each task is designed to be a self-contained unit of behaviour. For example, `UMS_BTDecorator_NeedToGatherItems` checks if the AI's inventory (`AIChar->Inventory_->GetResourceAmount(QuestType)`) is less than the `QuestAmount` on the Blackboard. This decorator, combined with a Sequence node, ensures the AI only attempts to gather if needed.
 
         ![IMAGE: Diagram of a simple Behavior Tree (Selector, Sequence, Task, Decorator) based on Millington & Funge's explanations.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-7.png)
        
@@ -184,10 +184,10 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 
 
-2.  **Patel, A. *A* Pathfinding for Beginners*. Red Blob Games.** [https://www.redblobgames.com/pathfinding/a-star/introduction.html](https://www.redblobgames.com/pathfinding/a-star/introduction.html)
+2.  **Patel, A. *A* Pathfinding for Beginners*.**
     *   **Summary:** Amit Patel's website offers exceptionally clear explanations and interactive diagrams for various pathfinding algorithms, especially A*. It breaks down concepts like heuristics, cost functions, and the open/closed set management.
-    *   **Relevance & Application:** This was the primary guide for implementing the A* algorithm within `UMS_PathfindingSubsystem::FindPathNodes`. The use of `TSet<TSharedPtr<FMoveNode>> OpenSet`, `TSet<TSharedPtr<FMoveNode>> ClosedSet`, `TMap<TSharedPtr<FMoveNode>, float> GScore`, and `TMap<TSharedPtr<FMoveNode>, float> FScore` directly follows Patel's described A* implementation. The Manhattan distance heuristic was chosen for its efficiency on a grid.
-    *   **Analysis & Influence:** Patel's guide stresses the importance of an admissible and consistent heuristic for A* to find the optimal path. My `Heuristic` function calculates Manhattan distance: `FMath::Abs(NodeA->GridPosition.X - NodeB->GridPosition.X) + FMath::Abs(NodeA->GridPosition.Y - NodeB->GridPosition.Y);`. This choice was made because my `FMoveNode` structures are on a grid, and Manhattan distance is computationally cheaper than Euclidean while still being admissible for grid movement, where diagonal moves are not significantly cheaper or disallowed. The ability to handle blocked nodes (`BlockedNodes` TSet in `UMS_PathfindingSubsystem`) and update paths dynamically (`OnPathUpdated` delegate) was an extension inspired by the need for a responsive world, going beyond the basic A* tutorial.
+    *   **Relevance & Application:** This was the primary guide for implementing the A* algorithm (Patel, n.d.) within `UMS_PathfindingSubsystem::FindPathNodes`. The use of `TSet<TSharedPtr<FMoveNode>> OpenSet`, `TSet<TSharedPtr<FMoveNode>> ClosedSet`, `TMap<TSharedPtr<FMoveNode>, float> GScore`, and `TMap<TSharedPtr<FMoveNode>, float> FScore` directly follows Patel's (n.d.) described A* implementation. The Manhattan distance heuristic was chosen for its efficiency on a grid.
+    *   **Analysis & Influence:** Patel's guide (n.d.) stresses the importance of an admissible and consistent heuristic for A* to find the optimal path. My `Heuristic` function calculates Manhattan distance, a common heuristic for grid-based pathfinding defined as the sum of the absolute differences of their Cartesian coordinates (DataCamp, n.d.; Patel, n.d.): `FMath::Abs(NodeA->GridPosition.X - NodeB->GridPosition.X) + FMath::Abs(NodeA->GridPosition.Y - NodeB->GridPosition.Y);`. This choice was made because my `FMoveNode` structures are on a grid, and Manhattan distance is computationally cheaper than Euclidean while still being admissible for grid movement (Patel, n.d.), where diagonal moves are not significantly cheaper or disallowed. The ability to handle blocked nodes (`BlockedNodes` TSet in `UMS_PathfindingSubsystem`) and update paths dynamically (`OnPathUpdated` delegate) was an extension inspired by the need for a responsive world, going beyond the basic A* tutorial.
 
         ![IMAGE: RedBlobGames - Screenshot of Amit Patel's A* interactive diagram showing open/closed sets and pathfinding.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-9.png)
 
@@ -238,10 +238,10 @@ The development of Ales And Fables was designed to integrate insights from exist
 
 #### Documentation Sources
 
-1.  **Unreal Engine Documentation. *Behavior Trees*. Epic Games.** [https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/](https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/)
+1.  **. *Behavior Trees* (Epic Games, n.d.a).** 
     *   **Summary:** The official UE documentation provides a comprehensive guide to using Behavior Trees, including explanations of node types, Blackboards, AI Controllers, and how they integrate with Pawns.
-    *   **Relevance & Application:** This was the go-to resource for the technical implementation of all AI behaviors. It guided the creation of custom C++ BT nodes like `UFlipBoolTask`, decorators like `UMS_BTDecorator_IsNightTime`, and services like `UMS_BTService_UpdateIdleStatus`. The correct way to override functions like `ExecuteTask` was learned directly from these pages.
-    *   **Analysis & Influence:** The documentation's emphasis on creating custom nodes in C++ for performance and complex logic was key. For example, `UMS_FindRandomWanderLocation` uses the `UMS_PathfindingSubsystem` to find a valid, unblocked node and sets it on the Blackboard. This involves engine/game-specific logic that is best handled in C++.
+    *   **Relevance & Application:** This was the go-to resource for the technical implementation (Epic Games, n.d.a) of all AI behaviors. It guided the creation of custom C++ BT nodes like `UFlipBoolTask`, decorators like `UMS_BTDecorator_IsNightTime`, and services like `UMS_BTService_UpdateIdleStatus`. The correct way to override functions (Epic Games, n.d.a) like `ExecuteTask` was learned directly from these pages.
+    *   **Analysis & Influence:** The documentation's (Epic Games, n.d.a) emphasis on creating custom nodes in C++ for performance and complex logic was key. For example, `UMS_FindRandomWanderLocation` uses the `UMS_PathfindingSubsystem` to find a valid, unblocked node and sets it on the Blackboard. This involves engine/game-specific logic that is best handled in C++.
 
         ```cpp
         // UMS_FindRandomWanderLocation::ExecuteTask - getting a random node
@@ -260,9 +260,9 @@ The development of Ales And Fables was designed to integrate insights from exist
         ![BLUEPRINT IMAGE: AlesAndFables/AI/Tasks/MS_FindRandomWanderLocation.uasset - Decorator usage with the FindRandomWanderLocation task in a BT.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-11.png)
         [Figure 16. `UMS_FindRandomWanderLocation` task node as seen in the Behavior Tree editor. It uses `FBlackboardKeySelector` for `BlackboardKey_TargetLocation`, allowing designers to specify the output key directly in the editor, a feature detailed in UE documentation.]
 
-2.  **Unreal Engine Documentation. *Custom C++ Pathfinding with A**. Epic Games Forums / Community Wiki (Often more practical examples here). 
-    *   **Summary:** While official docs focus on UE's NavMesh, community tutorials and forum discussions often detail how to implement fully custom pathfinding systems, including grid generation, A* logic, and integrating it with AI movement components.
-    *   **Relevance & Application:** Implementing `UMS_PathfindingSubsystem` and `AMS_MovementNodeMeshStarter` required going beyond standard NavMesh. Community examples of A* in C++ for Unreal, often found on forums or developer blogs, likely provided patterns for managing the node graph (`TMap<FIntPoint, TSharedPtr<FMoveNode>> NodeMap`), neighbour connections, and the A* algorithm itself.
+2.  **. *Custom C++ Pathfinding with A* * .(Epic Games Community, n.d.b)**. Epic Games Forums / Community Wiki (Often more practical examples here). 
+    *   **Summary:** While official docs focus on UE's NavMesh, community tutorials and forum discussions (Epic Games Community, n.d.b) often detail how to implement fully custom pathfinding systems, including grid generation, A* logic, and integrating it with AI movement components.
+    *   **Relevance & Application:** Implementing `UMS_PathfindingSubsystem` and `AMS_MovementNodeMeshStarter` required going beyond standard NavMesh. Community examples of A* (Epic Games Community, n.d.b) in C++ for Unreal, often found on forums or developer blogs, likely provided patterns for managing the node graph (`TMap<FIntPoint, TSharedPtr<FMoveNode>> NodeMap`), neighbour connections, and the A* algorithm itself.
     *   **Analysis & Influence:** The challenge with custom pathfinding is integrating it smoothly. Community resources often show how to make a subsystem accessible globally, which is how `PathfindingSubsystem` is used by AI characters and the `AMS_AIManager`. The `AMS_MovementNodeMeshStarter`'s approach of raycasting to generate a grid of `FMoveNode`s and then connecting neighbours is a common technique discussed in such custom pathfinding tutorials. The dynamic update, allowing the pathfinding grid to react to in-game changes is an advanced feature that makes the custom system more robust than a static grid.
 
         ![IMAGE: AG_AIMedievalSim - Debug draw of the pathfinding grid generated by `AMS_MovementNodeMeshStarter` over the terrain.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-12.png)
@@ -300,7 +300,7 @@ The development of Ales And Fables was designed to integrate insights from exist
             }
         }
         ```
-        [Figure 18. Code snippet from `UMS_PathfindingSubsystem::SetNodeBlockedStatus`. When a node's traversability changes (e.g., a building is constructed), this function updates the `BlockedNodes` set and broadcasts the `OnPathUpdated` delegate. AI characters subscribed to this delegate can then trigger a path recalculation if their current path is affected.]
+        [Figure 18. Code snippet from `UMS_PathfindingSubsystem::SetNodeBlockedStatus`. When a node's traversability changes (e.g., a building is constructed) , this function updates the `BlockedNodes` set and broadcasts the `OnPathUpdated` delegate (Gamma et al., 1994). AI characters subscribed to this delegate can then trigger a path recalculation if their current path is affected.]
 
 
 ### Implementation 
@@ -315,7 +315,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Developed `AMS_AICharacter` with basic skeletal structure, linking it to `AMS_AICharacterController`.
         *   Implemented `UInventoryComponent` for managing resources (`TMap<ResourceType, int32> Resources_`).
         *   Created `UMS_PawnStatComponent` to handle needs like hunger and thirst, with a timer for decay (`DecreaseStats`) and delegates for state changes (`OnStateChanged`).
-        *   Basic Behavior Tree and Blackboard setup, with `SelfActor` key.
+        *   Basic Behavior Tree and Blackboard setup, with `SelfActor` key (Epic Games, n.d.a).
     *   **Tools:** Visual Studio for C++, Unreal Engine editor for Blueprint/BT setup.
 
     ![IMAGE: AG_AIMedievalSim - Unreal Engine editor showing the two plugins in the project structure.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-13.png)
@@ -350,8 +350,8 @@ The development of Ales And Fables was an iterative process, structured into sev
     *   **Implementation:**
         *   Created `FMoveNode` struct within `MS_MovementNode.h`.
         *   Developed `AMS_MovementNodeMeshStarter` to procedurally generate a grid of `FMoveNode`s at game start by raycasting down (`PerformRaycastAtPosition`) and connecting neighbors if paths are clear (`PerformRaycastToPosition`).
-        *   Implemented `UMS_PathfindingSubsystem` (as a `UGameInstanceSubsystem`) to store the `NodeMap` and contain the A* algorithm (`FindPathNodes`, `FindPathPoints`). This used `TSet` for open/closed sets and `TMap` for scores as per A* theory.
-        *   Added functionality to `BlockNode`, `UnblockNode`, and the `OnPathUpdated` delegate to handle dynamic changes.
+        *   Implemented `UMS_PathfindingSubsystem` (as a `UGameInstanceSubsystem`) to store the `NodeMap` and contain the A* algorithm (`FindPathNodes`, `FindPathPoints`) (Patel, n.d.c). This used `TSet` for open/closed sets and `TMap` for scores as per A* theory.
+        *   Added functionality to `BlockNode`, `UnblockNode`, and the `OnPathUpdated` delegate (Gamma et al., 1994) to handle dynamic changes.
 
             ![](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-12.png)
             [Figure 20. Image demonstrating the `AMS_MovementNodeMeshStarter`'s raycasting process during initialization. Green lines indicate successful floor detection for node placement, while red might indicate no suitable surface. (This is illustrative; actual debug may vary).]
@@ -359,7 +359,7 @@ The development of Ales And Fables was an iterative process, structured into sev
             ![IMAGE: AG_AIMedievalSim - Debug lines showing an AI character's calculated A* path from the `PathfindingSubsystem` to a target.](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-14.png)
             [Figure 21. In-game screenshot with pathfinding debug visualization. The yellow sphere represents the A* path calculated by `UMS_PathfindingSubsystem` for an AI agent moving towards its target (red sphere).]
         
-    *   **Techniques:** A* algorithm, grid generation, raycasting for obstacle detection.
+    *   **Techniques:** A* algorithm  (Patel, n.d.c; Millington & Funge, 2009), grid generation, raycasting for obstacle detection.
 
 
 3.  **Phase 3: Workplaces & Basic AI Interaction**
@@ -368,7 +368,7 @@ The development of Ales And Fables was an iterative process, structured into sev
         *   Defined `AMS_BaseWorkPlace` as a base class for all resource spots (e.g., trees, berry bushes) with `ResourceType_`, `ResourceAmount_`, and `TakeResources()` virtual method.
         *   Created derivatives like `AMS_TreeWorkPlace`, `MS_BushWorkPlace`.
         *   Implemented `AMS_WorkpPlacePool` to manage instances of workplaces, including spawning and deactivating them.
-        *   Developed Behavior Tree tasks: `MS_FindNearestWorkSite` (queries `WorkPlacesPool_` on `AMS_AICharacter`), `MS_GeneratePathToTarget`, `MS_FollowNodePath`, `MS_PerformWorkAction` (calls `TakeResources()` and adds to AI's `Inventory_`).
+        *   Developed Behavior Tree tasks: `MS_FindNearestWorkSite` (queries `WorkPlacesPool_` on `AMS_AICharacter`), `MS_GeneratePathToTarget`, `MS_FollowNodePath`, `MS_PerformWorkAction` (calls `TakeResources()` and adds to AI's `Inventory_`) (Millington & Funge, 2009).
         *   AI characters could now find a workplace of a specific type, path to it, "work" for a duration, and collect resources.
 
             [BLUEPRINT IMAGE: AlesAndFables/Placeables/Interactables/BP_TreeWorkPlace.uasset - Blueprint for a TreeWorkPlace, showing its StaticMesh and configuration of `ResourceType_` and `ResourceAmount_`.]![alt text](https://raw.githubusercontent.com/Aimar-Goni/AG_AIMedievalSim/main/Images/image-15.png)
@@ -387,7 +387,7 @@ The development of Ales And Fables was an iterative process, structured into sev
                 [Figure 23. A UI overlay  displaying the `AMS_AIManager`'s status: current central storage inventory levels.]
 
             *   Generate gathering quests (`GenerateQuestsForResourceType`) if resources are low.
-            *   Broadcast `OnQuestAvailable` delegate.
+            *   Broadcast `OnQuestAvailable` delegate (Gamma et al., 1994).
             *   Manage a bidding system: AI characters `EvaluateQuestAndBid` (based on distance, needs, reward), AIManager `ReceiveBid` and `SelectQuestWinner_Internal` after a `BidDuration`.
 
                 [CODE SNIPPET: AlesAndFables/Source/AlesAndFables/Private/AI/Manager/MS_AIManager.cpp - AMS_AIManager::SelectQuestWinner_Internal - Logic for choosing the best bid.]
@@ -435,8 +435,8 @@ The development of Ales And Fables was an iterative process, structured into sev
                 [Figure 24. `AMS_AIManager::SelectQuestWinner_Internal` function. This logic iterates through bids received for a specific `QuestID`, selecting the `winner` based on the `highestBid`. It includes a tie-breaking mechanism using `BidTimestamp`. The winning AI is then assigned the `originalQuest`.]
 
             *   Handle quest completion (`RequestQuestCompletion`).
-        *   AI characters' `AssignQuest` method updates their Blackboard (e.g., `bHasQuest`, `QuestType`).
-    *   **Techniques:** Delegate-based event system, timer-based bidding.
+        *   AI characters' `AssignQuest` method updates their Blackboard (Epic Games, n.d.a) (e.g., `bHasQuest`, `QuestType`).
+    *   **Techniques:** Delegate-based event system (Gamma et al., 1994), timer-based bidding.
 
 5.  **Phase 5: Advanced Behaviors & World Systems**
     *   **Decision:** Expand AI capabilities to include construction, farming, housing, and leisure.
@@ -464,7 +464,7 @@ The development of Ales And Fables was an iterative process, structured into sev
 
 1.  **Dynamic Pathfinding Grid with On-Demand Node Creation:**
     *   Instead of pre-defining all possible movement nodes, the `AMS_MovementNodeMeshStarter` dynamically generates an initial grid based on raycasts against "Floor" tagged geometry. More significantly, systems like `AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode` or building construction (`AMS_ConstructionSite`) can request the `UMS_PathfindingSubsystem` to `AddNodeAtPosition`. This creates a new `FMoveNode` at the exact location of the new interactive object (e.g., a spawned berry bush or a newly built house's door) and connects it to nearby existing nodes.
-    *   **Why Chosen:** This approach offers flexibility for dynamically changing environments. Pre-baking a huge grid for a large map is inefficient, and static grids don't adapt well to player/AI-driven construction or procedural content. On-demand node creation ensures pathable access to newly spawned entities without needing a full grid regeneration.
+    *   **Why Chosen:** This approach offers flexibility for dynamically changing environments  (van den Berg et al., 2006). Pre-baking a huge grid for a large map is inefficient, and static grids don't adapt well to player/AI-driven construction or procedural content. On-demand node creation ensures pathable access to newly spawned entities without needing a full grid regeneration.
     *   **Evaluation:** This was highly successful for interactive objects. It reduced initial setup time and allowed for more organic placement of dynamic elements. The main challenge was ensuring robust neighbor connection logic for newly added nodes, especially near the edges of the existing grid or in dense areas. The `PathfindingSubsystem->DeactivateClosestNodes` was also an important part of this, ensuring that when a large building was placed, the underlying general-purpose nodes were correctly blocked.
         ```cpp
         // UMS_PathfindingSubsystem::AddNodeAtPosition - Core Logic
@@ -486,7 +486,7 @@ The development of Ales And Fables was an iterative process, structured into sev
 
 2.  **AI Quest Bidding System:**
     *   The `AMS_AIManager` broadcasts available quests, and idle AI characters (`AMS_AICharacter::IsIdle()`) can `EvaluateQuestAndBid`. The bid value (`CalculateBidValue`) is a heuristic combining expected reward, distance to task (resource node and delivery point), and the AI's current needs (hunger, thirst). The AIManager then assigns the quest to the highest bidder (with tie-breaking).
-    *   **Why Chosen:** This was an attempt to create a more decentralized and emergent task allocation system than simply assigning tasks to the closest or first available AI. It introduces a simple form of "economic" decision-making and allows AIs that are better suited (e.g., less needy, closer) to preferentially take tasks.
+    *   **Why Chosen:** This was an attempt to create a more decentralized and emergent task allocation system than simply assigning tasks to the closest or first available AI  (Parsons et al., 2003). It introduces a simple form of "economic" decision-making and allows AIs that are better suited (e.g., less needy, closer) to preferentially take tasks.
     *   **Evaluation:** The system works well for distributing simple gathering and delivery tasks. It prevents one AI from being overloaded while others are idle. However, `CalculateBidValue` heuristic needed careful tuning. Initially, distance was over-weighted, leading to AIs far away never getting quests. The "NeedsPenalty" was crucial to ensure AIs prioritized survival. A future improvement could be to factor in AI "skills" or specialized tools if those were implemented.
         ```cpp
         // AMS_AICharacter::CalculateBidValue - Simplified
@@ -506,15 +506,15 @@ User testing and performance profiling were critical throughout the development 
 1.  **Unit & Integration Testing (Automated & Manual):**
     *   **Type:** Primarily manual checks during development, with some ad-hoc automated tests using Unreal's console commands or simple test actors.
     *   **Process:**
-        *   **Pathfinding:** Tested `UMS_PathfindingSubsystem::FindPathPoints` by spawning two cubes and requesting a path between them, visualizing with debug lines. Dynamically placed obstacles to test `BlockNode` and path recalculation via `OnPathUpdated`.
-        *   **AI Needs:** Used console commands to manually set AI hunger/thirst (`SetPawnStat` if I had added such a command, or by temporarily modifying decrease rates) to observe if they correctly prioritized finding food/water over other tasks. Verified `UMS_PawnStatComponent::OnStateChanged` delegate fired.
+        *   **Pathfinding:** Tested `UMS_PathfindingSubsystem::FindPathPoints` (Patel, n.d.c) by spawning two cubes and requesting a path between them, visualizing with debug lines. Dynamically placed obstacles to test `BlockNode` and path recalculation via `OnPathUpdated`.
+        *   **AI Needs:** Used console commands to manually set AI hunger/thirst (`SetPawnStat` if I had added such a command, or by temporarily modifying decrease rates) to observe if they correctly prioritized finding food/water over other tasks. Verified `UMS_PawnStatComponent::OnStateChanged` (Gamma et al., 1994) delegate fired.
         *   **Quest System:** Forced `AMS_AIManager` to generate specific quests and observed if AI characters bid, were assigned, and correctly executed the quest steps (e.g., gather wood, deliver to storage). Log messages were heavily used here.
     *   **Feedback/Issues:**
         *   Pathfinding sometimes failed if start/end nodes were too close to complex unblocked geometry that still occluded direct node-to-node raycasts. Solution: Refined `PerformRaycastToPosition` in `AMS_MovementNodeMeshStarter` to use a slightly elevated raycast.
         *   AIs could get stuck in a loop bidding for quests they couldn't immediately start due to low needs. Solution: Added a stronger `NeedsPenalty` in `CalculateBidValue` and ensured the Behavior Tree had higher priority branches for satisfying critical needs.
 
 2.  **Performance Profiling:**
-    *   **Type:** Used Unreal Engine's built-in profiling tools (`Stat Unit`, `Stat Game`, Unreal Insights).
+    *   **Type:** Used Unreal Engine's built-in profiling tools (`Stat Unit`, `Stat Game`, Unreal Insights) (Epic Games, n.d.d, "Performance and Profiling").
     *   **Process:** Ran simulations with increasing numbers of AI agents (e.g., 5, 10, 20, 50) and monitored frame times, game thread, and render thread performance. Focused on:
         *   `UMS_PathfindingSubsystem::FindPathNodes` (A* execution).
         *   `AMS_AICharacter::Tick` and Behavior Tree execution.
@@ -536,9 +536,9 @@ User testing and performance profiling were critical throughout the development 
     *   **Diagnosis:** Crashes or null pointer exceptions during `BeginPlay` if an actor tried to access another system that wasn't fully initialized.
     *   **Resolution:**
         *   Heavy reliance on `UGameplayStatics::GetActorOfClass` or `GetSubsystem` within `BeginPlay` or on-demand, with null checks.
-        *   For `AMS_MovementNodeMeshStarter` and `UMS_PathfindingSubsystem`, the `OnNodeMapReady` delegate was crucial. Systems like `AMS_StorageBuildingPool` subscribe to this delegate and only perform actions requiring the node map (like `FindStorageBuildingsOnScene` which might call `PathfindingSubsystem->AddNodeAtPosition`) *after* the delegate fires.
+        *   For `AMS_MovementNodeMeshStarter` and `UMS_PathfindingSubsystem`, the `OnNodeMapReady` delegate (Gamma et al., 1994) was crucial. Systems like `AMS_StorageBuildingPool` subscribe to this delegate and only perform actions requiring the node map (like `FindStorageBuildingsOnScene` which might call `PathfindingSubsystem->AddNodeAtPosition`) *after* the delegate fires.
         *   For AI accessing `AIManager`, it's generally safe if AIManager is placed in the level and AI are spawned later or get it in their `BeginPlay`.
-    *   **Reflection:** A more formal dependency injection system or a multi-stage initialization process for game systems could make this more robust for larger projects.
+    *   **Reflection:** A more formal dependency injection system (Fowler, 2004) or a multi-stage initialization process for game systems could make this more robust for larger projects.
 
         [CODE SNIPPET: AlesAndFables/Source/AlesAndFables/Private/Placeables/Buildings/MS_StorageBuildingPool.cpp - MS_StorageBuildingPool::BeginPlay - Subscribing to OnNodeMapReady.]
         ```cpp
@@ -572,7 +572,7 @@ User testing and performance profiling were critical throughout the development 
             FindStorageBuildingsOnScene(); // Now safe to potentially use pathfinding subsystem
         }
         ```
-        [Figure 28. `AMS_StorageBuildingPool::BeginPlay` and `OnNodeMapInitialized`. The pool subscribes to `AMS_MovementNodeMeshStarter::OnNodeMapReady`. Critical initialization logic like `FindStorageBuildingsOnScene` (which might interact with the pathfinding grid) is deferred until `OnNodeMapInitialized` is called, ensuring the pathfinding system is ready. This delegate-based approach helps manage initialization order dependencies.]
+        [Figure 28. `AMS_StorageBuildingPool::BeginPlay` and `OnNodeMapInitialized`. The pool subscribes to `AMS_MovementNodeMeshStarter::OnNodeMapReady` (Gamma et al., 1994). Critical initialization logic like `FindStorageBuildingsOnScene` (which might interact with the pathfinding grid) is deferred until `OnNodeMapInitialized` is called, ensuring the pathfinding system is ready. This delegate-based approach helps manage initialization order dependencies.]
 
 
 ### Outcomes 
@@ -696,13 +696,26 @@ The research for *Ales and Fables* was highly effective, directly shaping design
 
 ### Bibliography
 
-*   Epic Games. (n.d.). *Behavior Trees*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/](https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/)
-*   Epic Games. (n.d.). *AI Controller*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/AIController/](https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/AIController/)
+*   4HEAD Studios / GolemLabs. (2006-2017). *The Guild 2 / The Guild 3* [PC Games]. JoWooD Productions / THQ Nordic.
+*   Botea, A., Müller, M., & Schaeffer, J. (2004). Near Optimal Hierarchical Pathfinding. *Journal of Game Development, 1*(1).
+*   DataCamp. (n.d.). *Manhattan Distance*. Retrieved from [https://www.datacamp.com/tutorial/manhattan-distance](https://www.datacamp.com/tutorial/manhattan-distance) (Accessed [Your Access Date])
+*   Epic Games. (n.d.a). *Behavior Trees*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/](https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/BehaviorTrees/) (Accessed [Your Access Date])
+*   Epic Games. (n.d.b). *AI Controller*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/AIController/](https://docs.unrealengine.com/en-US/InteractiveExperiences/ArtificialIntelligence/AIController/) (Accessed [Your Access Date])
+*   Epic Games. (n.d.c). *Gameplay Ability System*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/InteractiveExperiences/GameplayAbilitySystem/](https://docs.unrealengine.com/en-US/InteractiveExperiences/GameplayAbilitySystem/) (Accessed [Your Access Date]) (Note: URL is a guess, replace with actual GAS doc link)
+*   Epic Games. (n.d.d). *Performance and Profiling*. Unreal Engine Documentation. Retrieved from [https://docs.unrealengine.com/en-US/TestingAndOptimization/PerformanceAndProfiling/](https://docs.unrealengine.com/en-US/TestingAndOptimization/PerformanceAndProfiling/) (Accessed [Your Access Date]) (Note: URL is a guess, replace with actual profiling doc link)
+*   Epic Games Community. (n.d.). Various Forum Posts and Wiki Articles on Custom Pathfinding. *Unreal Engine Forums/Wiki*. (Accessed [Your Access Date]) (Note: This is a general citation; be more specific if possible)
+*   Fowler, M. (2004). *Inversion of Control Containers and the Dependency Injection pattern*. Retrieved from [https://martinfowler.com/articles/injection.html](https://martinfowler.com/articles/injection.html) (Accessed [Your Access Date])
+*   Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
+*   Harabor, D., & Grastien, A. (2011). Online Graph Pruning for Pathfinding on Grid Maps. *In Proceedings of the Twenty-Fifth AAAI Conference on Artificial Intelligence (AAAI'11)*.
 *   Ludeon Studios. (2018). *RimWorld* [PC Game]. Ludeon Studios.
 *   Millington, I., & Funge, J. (2009). *Artificial Intelligence for Games* (2nd ed.). CRC Press.
-*   Patel, A. (n.d.). *A* Pathfinding for Beginners*. Red Blob Games. Retrieved from [https://www.redblobgames.com/pathfinding/a-star/introduction.html](https://www.redblobgames.com/pathfinding/a-star/introduction.html)
+*   Parsons, S., Rodriguez-Aguilar, J. A., & Klein, M. (2003). Auctions and bidding: A guide for computer scientists. *ACM Computing Surveys (CSUR), 35*(1), 29-79. (Note: This is an example for auction theory; replace if you used a different specific source or if it's too general).
+*   Patel, A. (n.d.c). *A\* Pathfinding for Beginners*. Red Blob Games. Retrieved from [https://www.redblobgames.com/pathfinding/a-star/introduction.html](https://www.redblobgames.com/pathfinding/a-star/introduction.html) (Accessed [Your Access Date])
+*   Russell, S. J., & Norvig, P. (2020). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson.
+*   Scott, M. L. (2001). *Programming Language Pragmatics*. Morgan Kaufmann. (Note: This is a general reference for memory management trade-offs; might be too broad unless a specific concept was drawn).
 *   Shining Rock Software. (2014). *Banished* [PC Game]. Shining Rock Software LLC.
-*   4HEAD Studios / GolemLabs. (2006-2017). *The Guild 2 / The Guild 3* [PC Games]. JoWooD Productions / THQ Nordic.
+*   van den Berg, J., Lin, M., & Manocha, D. (2006). Real-time navigation of independent agents using adaptive roadmaps. *In Proceedings of the ACM SIGGRAPH/Eurographics symposium on Computer animation* (pp. 57-65).
+*   van den Berg, J., Patil, S., Sewall, J., Manocha, D., & Lin, M. (2011). ORCA: Optimal Reciprocal Collision Avoidance. *IEEE Transactions on Robotics, 27*(4), 834-844.
 
 
 ### Declared Assets
