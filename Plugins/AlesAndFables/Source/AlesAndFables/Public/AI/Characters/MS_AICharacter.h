@@ -128,6 +128,4 @@ public:
     UFUNCTION(BlueprintPure, Category="AI|State")
     bool IsIdle() const;
 
-	//UFUNCTION()
-	//void NewQuestAdded();
 };

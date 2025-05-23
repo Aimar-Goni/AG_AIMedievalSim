@@ -1,8 +1,5 @@
 ## Plugin Documentation: AlesAndFables
 
-**Version:** (Specify your plugin version if applicable)
-**Last Updated:** (Date)
-
 ### Table of Contents
 
 1.  **Introduction**
@@ -824,4 +821,3 @@ Refer to the individual header files for full API details. This section highligh
         *   Does the BT have logic to handle needs? Are there available resources/workplaces?
 *   **Breakpoints**: Use C++ breakpoints in core logic functions to step through execution.
 
-This comprehensive documentation should serve as a strong foundation for understanding, using, and extending the `CustomMovementPlugin` and `AlesAndFables` plugins. Remember to consult the specific header files for precise API details and `UPROPERTY` configurations.
