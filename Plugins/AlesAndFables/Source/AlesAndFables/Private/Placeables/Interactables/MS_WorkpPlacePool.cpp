@@ -52,7 +52,7 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 		}
 
 		// Spawn new workplaces if necessary
-		for (int32 i = 0; i < 100; ++i)
+		for (int32 i = 0; i < 300; ++i)
 		{
 			int32 ClassIndex = i % WorkplaceClasses.Num(); // Cycle through available classes
 			TSubclassOf<AMS_BaseWorkPlace> SelectedClass = WorkplaceClasses[ClassIndex];

@@ -16,9 +16,9 @@ void UMS_PoolManager::Initialize()
         : World->SpawnActor<AMS_StorageBuildingPool>();
 
     // Initialize StorageBuildingPool
-    FoundActor = UGameplayStatics::GetActorOfClass(World, AMS_WorkpPlacePool::StaticClass());
-    WorkPlacePool = FoundActor ? Cast<AMS_WorkpPlacePool>(FoundActor)
-        : World->SpawnActor<AMS_WorkpPlacePool>();
+    // FoundActor = UGameplayStatics::GetActorOfClass(World, AMS_WorkpPlacePool::StaticClass());
+    // WorkPlacePool = FoundActor ? Cast<AMS_WorkpPlacePool>(FoundActor)
+    //     : World->SpawnActor<AMS_WorkpPlacePool>();
 }
 
 AMS_StorageBuildingPool* UMS_PoolManager::GetStorageBuildingPool() const
