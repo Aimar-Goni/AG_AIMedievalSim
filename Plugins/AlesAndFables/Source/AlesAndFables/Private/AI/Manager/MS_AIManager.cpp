@@ -84,6 +84,7 @@ void AMS_AIManager::Tick(float DeltaTime)
 
 	for (ResourceType type : ManagedResourceTypes)
 	{
+		if (type != ResourceType::WHEAT)
 		GenerateQuestsForResourceType(type);
 	}
 	
@@ -274,13 +275,16 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
 
 		for (const FBidInfo& bid : bids)
 		{
+			AMS_AICharacter* bidder = bid.Bidder.Get();
+			
             // Ensure the bidder is still valid before considering the bid
-			if (bid.Bidder.IsValid())
+			if (bid.Bidder.IsValid() && !bidder->AssignedQuest.QuestID.IsValid())
 			{
 				if (bid.BidValue > highestBid)
 				{
 					highestBid = bid.BidValue;
 					winner = bid.Bidder.Get();
+					
                     winningBidTimestamp = bid.BidTimestamp;
 				}
                 // Medieval Tie-breaking: First come, first served (lowest timestamp wins)
