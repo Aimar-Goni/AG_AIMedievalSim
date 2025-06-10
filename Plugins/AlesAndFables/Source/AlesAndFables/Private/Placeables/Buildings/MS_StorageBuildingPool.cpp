@@ -68,6 +68,7 @@ void AMS_StorageBuildingPool::FindStorageBuildingsOnScene() {
 				PathfindingSubsystem->DeactivateClosestNodes(storage->GetActorLocation(), OutDeactivatedNodePositions, 4);
 				// Adds the billboard to the navigation mesh
 				storage->GridPosition_ =  PathfindingSubsystem->AddNodeAtPosition(storage->GetActorLocation());
+				PathfindingSubsystem->BlockNodeGrid(storage->GridPosition_);
 				n_StorageBuldings_++;
 
 			}

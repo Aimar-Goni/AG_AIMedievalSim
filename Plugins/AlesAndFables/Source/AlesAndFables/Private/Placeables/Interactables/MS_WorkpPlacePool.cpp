@@ -47,6 +47,8 @@ void AMS_WorkpPlacePool::FindWorkplacesOnScene() {
 				ActiveWorkplaces_.Add(TWeakObjectPtr<AMS_BaseWorkPlace>(workPlace));
 				// Adds the workplace to the navigation mesh
 				workPlace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(workPlace->GetActorLocation());
+				PathfindingSubsystem->BlockNodeGrid(workPlace->GridPosition_);
+				
 				n_workplaces_++;
 			}
 		}
@@ -109,7 +111,8 @@ void AMS_WorkpPlacePool::ReactivateWorkplace(AMS_BaseWorkPlace* Workplace, const
 void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 {
 	UMS_PathfindingSubsystem* PathfindingSubsystem = GetGameInstance()->GetSubsystem<UMS_PathfindingSubsystem>();
-	if (!PathfindingSubsystem || WorkplaceClasses.Num() == 0) return;
+	if (WorkplaceClasses.Num() == 0) return;
+	if (!PathfindingSubsystem) return;
 
 	if (!bSpawning) return;
 	
@@ -136,10 +139,12 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	if (NewWorkplace)
 	{
 		// Register workplace node and block original node
-		PathfindingSubsystem->BlockNode(NodeWorldLocation);
 		NewWorkplace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NodeWorldLocation);
 
 		ReactivateWorkplace(NewWorkplace, NodeWorldLocation);
+		PathfindingSubsystem->BlockNodeGrid(NodeGrid);
+		PathfindingSubsystem->BlockNodeGrid(NewWorkplace->GridPosition_);
+
 	}
 }
 

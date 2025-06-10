@@ -381,7 +381,16 @@ bool UMS_PathfindingSubsystem::GetRandomFreeNode(FVector& OutLocation, FIntPoint
     TArray<FIntPoint> FreeNodeKeys;
     for(const auto& Pair : NodeMap)
     {
-        if(!IsNodeBlocked(Pair.Key)) // Check if node is NOT blocked
+        bool bHasBlockedNeighbor = false;
+        for (auto FreeNodeKey : Pair.Value->Neighbors)
+        {
+            if (IsNodeBlocked(FreeNodeKey.Key.Get()->GridPosition)) 
+            {
+                bHasBlockedNeighbor = true;
+                break;
+            }
+        }
+        if (!bHasBlockedNeighbor)
         {
             FreeNodeKeys.Add(Pair.Key);
         }

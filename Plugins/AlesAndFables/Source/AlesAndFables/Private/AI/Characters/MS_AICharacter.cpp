@@ -529,7 +529,7 @@ TArray<FIntPoint> AMS_AICharacter::CreateMovementPath(AActor* TargetActor) {
 	}
 
 	TSharedPtr<FMoveNode> Begin = PathfindingSubsystem->FindClosestNodeToActor(this);
-	TSharedPtr<FMoveNode> End = PathfindingSubsystem->FindClosestNodeToActor(TargetActor);
+	TSharedPtr<FMoveNode> End = PathfindingSubsystem->FindClosestNodeToActor(TargetActor).Get()->Neighbors.begin().Key();
 
     if(!Begin.IsValid() || !End.IsValid())
     {
@@ -538,7 +538,7 @@ TArray<FIntPoint> AMS_AICharacter::CreateMovementPath(AActor* TargetActor) {
     }
 
 	Path_ = PathfindingSubsystem->FindPathPoints(Begin, End);
-
+	Path_.Add(PathfindingSubsystem->FindClosestNodeToActor(TargetActor)->GridPosition); // Add end position to path
     if(Path_.Num() > 0)
     {
          UE_LOG(LogTemp, Verbose, TEXT("CreateMovementPath: Found path with %d nodes for %s to %s."), Path_.Num(), *GetName(), *TargetActor->GetName());
