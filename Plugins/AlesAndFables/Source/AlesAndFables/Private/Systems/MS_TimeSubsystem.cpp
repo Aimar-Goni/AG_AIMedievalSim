@@ -108,17 +108,17 @@ void UMS_TimeSubsystem::Tick(float DeltaTime)
 	if (bEnableOnScreenDebug && GEngine)
 	{
 		// Display Day and Hour
-		GEngine->AddOnScreenDebugMessage(1, // Key: Overwrite message 1
-			0.0f,                             // TimeToDisplay (0.0f = 1 frame)
-			FColor::Cyan,                     // Color
-			FString::Printf(TEXT("Day: %d | Hour: %.0f"), CurrentDay, CurrentHour) // Text
-		);
+		// GEngine->AddOnScreenDebugMessage(1, // Key: Overwrite message 1
+		// 	0.0f,                             // TimeToDisplay (0.0f = 1 frame)
+		// 	FColor::Cyan,                     // Color
+		// 	FString::Printf(TEXT("Day: %d | Hour: %.0f"), CurrentDay, CurrentHour) // Text
+		// );
 
 		// Display Time Scale
-		GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Green, FString::Printf(TEXT("Time Scale: %.1fx"), TimeScale));
+		//GEngine->AddOnScreenDebugMessage(2, 0.0f, FColor::Green, FString::Printf(TEXT("Time Scale: %.1fx"), TimeScale));
 
 		// Display Day/Night State
-		GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Yellow, FString::Printf(TEXT("State: %s"), IsDayTime() ? TEXT("Day") : TEXT("Night")));
+		//GEngine->AddOnScreenDebugMessage(3, 0.0f, FColor::Yellow, FString::Printf(TEXT("State: %s"), IsDayTime() ? TEXT("Day") : TEXT("Night")));
 	}
 }
 
