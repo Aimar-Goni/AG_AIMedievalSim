@@ -286,6 +286,37 @@ void AMS_AICharacter::AssignQuest(const FQuest& Quest)
     }
 }
 
+
+void AMS_AICharacter::FailCurrentQuest()
+{
+	if (AssignedQuest.QuestID.IsValid() && AIManager.IsValid()) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Requesting failure for Quest ID %s."), *GetName(), *AssignedQuest.QuestID.ToString());
+		AIManager->RequestQuestFail(this, AssignedQuest.QuestID);
+
+		AssignedQuest.QuestID.Invalidate(); // Mark quest as invalid/done internally
+		AssignedQuest.Type = ResourceType::ERROR;
+
+		// Update blackboard
+		AMS_AICharacterController* AIController = Cast<AMS_AICharacterController>(GetController());
+		if (AIController && AIController->GetBlackboardComponent())
+		{
+			UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+			Blackboard->SetValueAsBool(FName("bHasQuest"), false);
+			Blackboard->ClearValue(FName("QuestType")); // Clear details
+			Blackboard->ClearValue(FName("QuestAmount"));
+			Blackboard->ClearValue(FName("QuestReward"));
+			Blackboard->ClearValue(FName("QuestID"));
+			Blackboard->ClearValue(FName("QuestTargetDestination"));
+			Blackboard->SetValueAsObject(FName("Target"), nullptr); // Clear target
+		}
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Tried to fail quest, but no valid quest assigned or AIManager invalid."), *GetName());
+	}
+}
+
 void AMS_AICharacter::CompleteCurrentQuest()
 {
     if (AssignedQuest.QuestID.IsValid() && AIManager.IsValid()) 
@@ -385,13 +416,21 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
                 Blackboard->SetValueAsBool(FName("bGettingFood"), false);
                 CheckIfHungry(); // Update need state
             	Path_ = CreateMovementPath( Cast<AActor>(AIController->GetBlackboardComponent()->GetValueAsObject("Target")));
-            } else
+            } else if (StorageInventory && StorageInventory->ExtractFromResources(ResourceType::WHEAT, 20) != -1)
+            {
+            	PawnStats_->ModifyHunger(100);
+            	UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Took Wheat for self from %s."), *GetName(), *StorageBuilding->GetName());
+            	Blackboard->SetValueAsBool(FName("bGettingFood"), false);
+            	CheckIfHungry(); // Update need state
+            	Path_ = CreateMovementPath( Cast<AActor>(AIController->GetBlackboardComponent()->GetValueAsObject("Target")));
+            }
+            else 
             {
             	Blackboard->SetValueAsBool(FName("bEmergencyFood"), true);
-	            UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Berries for self from %s."), *GetName(), *StorageBuilding->GetName());
+            	UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Failed to take Berries for self from %s."), *GetName(), *StorageBuilding->GetName());
             }
         }
-        else if (Blackboard->GetValueAsBool(FName("bGettingWater")))
+        if (Blackboard->GetValueAsBool(FName("bGettingWater")))
         {
              UInventoryComponent* StorageInventory = StorageBuilding->Inventory_;
             if (StorageInventory && StorageInventory->ExtractFromResources(ResourceType::WATER, 20) != -1)
@@ -431,11 +470,7 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
          if (bIsDelivering && AssignedQuest.QuestID.IsValid() && AssignedQuest.TargetDestination == Site)
          {
          	Blackboard->SetValueAsBool("bAtConstructionSite", true);
-
-
-
-
-         	
+   	
              ResourceType neededType = AssignedQuest.Type;
              int32 hasAmount = Inventory_->GetResourceAmount(neededType);
              int32 amountToDeliver = FMath::Min(hasAmount, AssignedQuest.Amount); // Deliver amount for this trip
@@ -452,9 +487,17 @@ void AMS_AICharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
              }
              else
              {
-                 UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached site %s for delivery, but has no %s."), *GetName(), *Site->GetName(), *UEnum::GetValueAsString(neededType));
-                 // BT needs to handle failure (e.g., go back to storage?)
-                 Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), false); // Reset state
+				UE_LOG(LogTemp, Warning, TEXT("AICharacter %s: Reached site %s for delivery, but has no %s."), *GetName(), *Site->GetName(), *UEnum::GetValueAsString(neededType));
+
+             	//FailCurrentQuest(); Doesnt work
+
+             	if(Site->AddResource(AssignedQuest.Amount)) // Site completed
+             	{ UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered final %d %s to %s. Construction complete."), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName()); }
+             	else { UE_LOG(LogTemp, Log, TEXT("AICharacter %s: Delivered %d %s to %s. Progress: %d/%d"), *GetName(), amountToDeliver, *UEnum::GetValueAsString(neededType), *Site->GetName(), Site->CurrentAmount, Site->AmountRequired); }
+             	CompleteCurrentQuest(); // Complete THIS delivery trip quest
+             	Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), false); // Reset state
+             	
+				Blackboard->SetValueAsBool(FName("bIsDeliveringConstructionMaterials"), false); // Reset state
              }
          }
           else {

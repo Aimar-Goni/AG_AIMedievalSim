@@ -164,7 +164,7 @@ void UMS_PerformWorkAction::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
             UE_LOG(LogTemp, Verbose, TEXT("%s: Interacting with WheatField %s (State: %s, QuestTypeBB: %s, QuestAmountBB: %d)"),
                 *GetNodeName(), *WheatFieldTarget->GetName(), *UEnum::GetValueAsString(FieldState), *UEnum::GetValueAsString(QuestTypeBB), QuestAmountBB);
 
-            if (QuestAmountBB == -1 && FieldState == EFieldState::Constructed) // PLANTING
+            if (QuestAmountBB == -1 && (FieldState == EFieldState::Constructed || FieldState == EFieldState::Harvested)) // PLANTING
             {
                 if (WheatFieldTarget->PerformPlanting()) bActionSuccessful = true;
             }

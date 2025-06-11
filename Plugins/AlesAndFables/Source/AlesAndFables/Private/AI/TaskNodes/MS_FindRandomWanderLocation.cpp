@@ -83,11 +83,12 @@ EBTNodeResult::Type UMS_FindRandomWanderLocation::ExecuteTask(UBehaviorTreeCompo
         if (AICharacter->PathfindingSubsystem) // Use character's cached subsystem
         {
             TSharedPtr<FMoveNode> StartNode = AICharacter->PathfindingSubsystem->FindClosestNodeToActor(AICharacter);
-            TSharedPtr<FMoveNode> EndNode = AICharacter->PathfindingSubsystem->FindNodeByGridPosition(RandomGridLocation); // Use the grid pos we got
-
+            TSharedPtr<FMoveNode> EndNode = AICharacter->PathfindingSubsystem->FindNodeByGridPosition(RandomGridLocation).Get()->Neighbors.begin().Key(); // Use the grid pos we got
+        	
             if(StartNode.IsValid() && EndNode.IsValid())
             {
                 AICharacter->Path_ = AICharacter->PathfindingSubsystem->FindPathPoints(StartNode, EndNode);
+            	AICharacter->Path_.Add(EndNode->GridPosition); // Add end position to path
                 if (AICharacter->Path_.Num() > 0)
                 {
                     AICharacter->CurrentNodeIndex = 0; 

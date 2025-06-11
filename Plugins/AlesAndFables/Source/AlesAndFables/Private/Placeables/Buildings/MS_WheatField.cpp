@@ -96,7 +96,7 @@ void AMS_WheatField::ChangeState(EFieldState NewState)
 
 bool AMS_WheatField::PerformPlanting()
 {
-    if (CurrentState == EFieldState::Constructed)
+    if (CurrentState == EFieldState::Constructed || CurrentState == EFieldState::Harvested)
     {
         ChangeState(EFieldState::Planted);
         return true;

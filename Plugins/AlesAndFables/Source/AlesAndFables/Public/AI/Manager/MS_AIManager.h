@@ -85,7 +85,7 @@ public:
     float BidDuration = 3.0f;
 	
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
-    int32 LowResourceThreshold = 50;
+    int32 LowResourceThreshold = 100;
 	
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI Manager|Quests")
     int32 MaxResourcePerQuest = 15;
@@ -96,6 +96,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "AI Manager|Quests")
     void RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID);
 
+	UFUNCTION(BlueprintCallable, Category = "AI Manager|Quests")
+	void RequestQuestFail(AMS_AICharacter* Character, FGuid QuestID);
+
+	
 	void InitializeFieldListeners();
 
 protected:
@@ -122,6 +126,8 @@ protected:
 
 	bool ShouldBuildTavern() const; 
 
+	bool ShouldBuildHouse() const;
+	
 	UFUNCTION()
 	void OnWheatFieldNeedsPlanting(AMS_WheatField* Field);
 	UFUNCTION()

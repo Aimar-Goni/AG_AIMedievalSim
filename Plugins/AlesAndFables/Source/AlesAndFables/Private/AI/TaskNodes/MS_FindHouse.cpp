@@ -22,7 +22,7 @@ EBTNodeResult::Type UMS_FindHouse::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     Blackboard->SetValueAsBool("bHasFoundHouse", false);
 
     AMS_House* MyHouse = AIChar->GetAssignedHouse();
-    if (MyHouse && MyHouse->HasSpace()) // Check if house exists AND has space
+    if (MyHouse) // Check if house exists AND has space
     {
         Blackboard->SetValueAsObject(BlackboardKey_Target.SelectedKeyName, MyHouse);
         Blackboard->SetValueAsBool("bHasFoundHouse", true);

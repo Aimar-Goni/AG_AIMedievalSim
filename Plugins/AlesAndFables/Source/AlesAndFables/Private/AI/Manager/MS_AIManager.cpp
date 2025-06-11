@@ -342,6 +342,64 @@ void AMS_AIManager::SelectQuestWinner_Internal(FGuid QuestID)
     }
 }
 
+
+void AMS_AIManager::RequestQuestFail(AMS_AICharacter* Character, FGuid QuestID)
+{
+	if (!Character) return;
+
+	// Verify assignment
+	if (AssignedQuests_.Contains(QuestID) && AssignedQuests_[QuestID] == Character)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIManager: Quest %s failed by %s. Sending it to bid again."),
+			   *QuestID.ToString(), *Character->GetName());
+
+		AvailableQuests_.RemoveAll([QuestID](const FQuest& q){ return q.QuestID == QuestID; });
+		BidTimers.Remove(QuestID);
+		
+		// Remove from assigned list
+		AssignedQuests_.Remove(QuestID);
+
+		// If it's a delivery quest, remove it from the specific site's tracking list
+		for (auto& Pair : ActiveConstructionDeliveryQuests)
+		{
+			if (Pair.Key.IsValid()) // Check if site still exists
+			{
+				Pair.Value.Remove(QuestID); // Remove the ID from the site's list
+			}
+		}
+
+		// Find the original quest
+		FQuest* OriginalQuest = AvailableQuests_.FindByPredicate([QuestID](const FQuest& Quest) {
+			return Quest.QuestID == QuestID;
+		});
+
+		if (OriginalQuest)
+		{
+			AvailableQuests_.RemoveAll([QuestID](const FQuest& q) { return q.QuestID == QuestID; });
+
+			// Add quest back to the available list
+			AvailableQuests_.Add(*OriginalQuest);
+
+			// Restart the bidding timer
+			StartBidTimer(*OriginalQuest);
+
+			// Notify listeners a quest is available
+			OnQuestAvailable.Broadcast(*OriginalQuest);
+
+			UE_LOG(LogTemp, Log, TEXT("AIManager: Quest %s sent back to available quests and bidding started."), *QuestID.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AIManager: Failed quest %s could not find its original quest data."), *QuestID.ToString());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AIManager: %s attempted to fail Quest %s, but it was not assigned or is invalid."),
+			   *Character->GetName(), *QuestID.ToString());
+	}
+}
+
 void AMS_AIManager::RequestQuestCompletion(AMS_AICharacter* Character, FGuid QuestID)
 {
 	if(!Character) return;
@@ -412,7 +470,7 @@ void AMS_AIManager::CheckAndInitiateConstruction() // Added parameter
 	bool bIsWheatField = false;
 	int32 woodAmount = GetCentralStorageInventory() ? GetCentralStorageInventory()->GetResourceAmount(ResourceType::WOOD) : 0;
 
-	if (CurrentPopulation > TotalHousingCapacity || (CurrentPopulation > 0 && TotalHousingCapacity == 0) ) 
+	if (ShouldBuildHouse() && HouseBuildingClass && woodAmount >= HouseWoodCost) 
 	{
 		BuildingToSpawn = HouseBuildingClass;
 		RequiredResource = ResourceType::WOOD;
@@ -459,7 +517,24 @@ bool AMS_AIManager::ShouldBuildWheatField() const
 	const int32 MaxFields = MaxWheatField; 
 	TArray<AActor*> FoundFields;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), WheatFieldClass, FoundFields);
+	int32 CurrentFields = FoundFields.Num();
+	
+	TArray<AActor*> FoundConstructionSites;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ConstructionSiteClass, FoundConstructionSites);
+	for (AActor* SiteActor : FoundConstructionSites)
+	{
+		AMS_ConstructionSite* ConstructionSite = Cast<AMS_ConstructionSite>(SiteActor);
+		if (ConstructionSite && ConstructionSite->BuildingClassToSpawn == WheatFieldClass)
+		{
+			CurrentFields++;
+		}
+	}
 
+	if (CurrentFields >= MaxFields)
+	{
+		return false;
+	}
+	
 	UInventoryComponent* StorageInv = GetCentralStorageInventory();
 	int32 CurrentWheat = StorageInv ? StorageInv->GetResourceAmount(ResourceType::WHEAT) : 0;
 
@@ -475,6 +550,36 @@ bool AMS_AIManager::FindSuitableBuildLocation(int32 SizeX, int32 SizeY, FVector&
     {
         FVector RandomNodeLocation;
         FIntPoint StartNodeGridPos;
+
+		
+		FVector ClosestLocation = FVector::ZeroVector;
+		FIntPoint ClosestGridPos = FIntPoint::ZeroValue;
+		float ClosestDistance = FLT_MAX;
+		const FVector OriginGridPos(0, 0, 0);
+
+		for (int i = 0; i < 20; ++i)
+		{
+			FVector TempNodeLocation;
+			FIntPoint TempGridPos;
+
+			if (PathfindingSubsystemCache->GetRandomFreeNode(TempNodeLocation, TempGridPos))
+			{
+				float Distance = FVector::Dist(OriginGridPos, TempNodeLocation);
+				if (Distance < ClosestDistance)
+				{
+					ClosestDistance = Distance;
+					ClosestLocation = TempNodeLocation;
+					ClosestGridPos = TempGridPos;
+				}
+			}
+		}
+
+		if (ClosestDistance < FLT_MAX)
+		{
+			RandomNodeLocation = ClosestLocation;
+			StartNodeGridPos = ClosestGridPos;
+		}
+    	
         if (PathfindingSubsystemCache->GetRandomFreeNode(RandomNodeLocation, StartNodeGridPos))
         {
             OutOccupiedNodes.Empty();
@@ -630,9 +735,13 @@ void AMS_AIManager::InitializeFieldListeners()
 
 void AMS_AIManager::OnWheatFieldNeedsPlanting(AMS_WheatField* Field)
 {
-    if (!Field || Field->GetCurrentFieldState() != EFieldState::Constructed) return; // Double check state
+    if (!Field) return; // Double check state
     UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs planting."), *Field->GetName());
 
+	if (Field->GetCurrentFieldState() != EFieldState::Constructed && Field->GetCurrentFieldState() != EFieldState::Harvested) return; // Double check state
+	UE_LOG(LogTemp, Log, TEXT("AIManager: Field %s needs planting."), *Field->GetName());
+	
+	
     if (!DoesIdenticalQuestExist(ResourceType::WHEAT, -1, Field))
     {
         FQuest plantQuest(ResourceType::WHEAT, -1, 2, Field); // Small reward for planting
@@ -677,6 +786,44 @@ void AMS_AIManager::OnWheatFieldReadyToHarvest(AMS_WheatField* Field)
         UE_LOG(LogTemp, Log, TEXT("AIManager: Generated HARVEST Quest ID %s for Field %s (Yield %d)."), *harvestQuest.QuestID.ToString(), *Field->GetName(), Field->HarvestAmount);
     }
 }
+
+
+bool AMS_AIManager::ShouldBuildHouse() const
+{
+	if (!AICharacterClass || !HouseBuildingClass) return false; // Need classes to check
+
+	UWorld* World = GetWorld();
+	if (!World) return false;
+
+	// 1. Count currently constructed houses
+	TArray<AActor*> FoundHouses;
+	UGameplayStatics::GetAllActorsOfClass(World, HouseBuildingClass, FoundHouses);
+	int32 CurrentHousingCapacity = 0;
+	for (AActor* HouseActor : FoundHouses)
+	{
+		AMS_House* House = Cast<AMS_House>(HouseActor);
+		if (House)
+		{
+			CurrentHousingCapacity += House->MaxOccupants;
+		}
+	}
+
+	// 2. Include planned constructions (e.g., construction sites)
+	TArray<AActor*> FoundConstructionSites;
+	UGameplayStatics::GetAllActorsOfClass(World, ConstructionSiteClass, FoundConstructionSites);
+	for (AActor* SiteActor : FoundConstructionSites)
+	{
+		AMS_ConstructionSite* ConstructionSite = Cast<AMS_ConstructionSite>(SiteActor);
+		if (ConstructionSite && ConstructionSite->BuildingClassToSpawn == HouseBuildingClass)
+		{
+			CurrentHousingCapacity += 2;
+		}
+	}
+
+	// 3. Check if the total capacity is enough for the population
+	return CurrentHousingCapacity < CurrentPopulation;
+}
+
 void AMS_AIManager::UpdateHousingState()
 {
     CurrentPopulation = 0;
@@ -729,6 +876,7 @@ void AMS_AIManager::UpdateHousingState()
                 if (House->HasSpace())
                 {
                     HomelessChar->SetAssignedHouse(House);
+                	House->CurrentOccupantCount++;
                     AvailableHouses.Remove(House); 
                     if(House->HasSpace()) AvailableHouses.Add(House); 
                     break; 
@@ -751,12 +899,26 @@ bool AMS_AIManager::ShouldBuildTavern() const
 
 	// 1. Check Max Taverns Limit
 	TArray<AActor*> FoundTaverns;
+	int32 CurrentTavern = 0;
 	UGameplayStatics::GetAllActorsOfClass(World, TavernBuildingClass, FoundTaverns);
-	if (FoundTaverns.Num() >= MaxTaverns)
+	CurrentTavern += FoundTaverns.Num();
+
+	TArray<AActor*> FoundConstructionSites;
+	UGameplayStatics::GetAllActorsOfClass(World, ConstructionSiteClass, FoundConstructionSites);
+	for (AActor* SiteActor : FoundConstructionSites)
+	{
+		AMS_ConstructionSite* ConstructionSite = Cast<AMS_ConstructionSite>(SiteActor);
+		if (ConstructionSite && ConstructionSite->BuildingClassToSpawn == TavernBuildingClass)
+		{
+			CurrentTavern++;
+		}
+	}
+
+	if (CurrentTavern >= MaxTaverns)
 	{
 		return false;
 	}
-
+	
 	// 2. Check Average Population Happiness
 	TArray<AActor*> FoundCharacters;
 	UGameplayStatics::GetAllActorsOfClass(World, AICharacterClass, FoundCharacters);

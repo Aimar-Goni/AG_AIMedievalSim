@@ -98,7 +98,33 @@ EBTNodeResult::Type UMS_FetchFromStorage::ExecuteTask(UBehaviorTreeComponent& Ow
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("%s: %s - Not enough %s in storage %s to fetch %d."), *GetNodeName(), *AIChar->GetName(), *UEnum::GetValueAsString(TypeNeeded), *Storage->GetName(), AmountNeededForTrip);
+        //UE_LOG(LogTemp, Warning, TEXT("%s: %s - Not enough %s in storage %s to fetch %d."), *GetNodeName(), *AIChar->GetName(), *UEnum::GetValueAsString(TypeNeeded), *Storage->GetName(), AmountNeededForTrip);
+        // REMOVE THIS AFTER SHOW
+
+        AIChar->Inventory_->AddToResources(TypeNeeded, AmountNeededForTrip);
+        UE_LOG(LogTemp, Log, TEXT("%s: %s successfully fetched %d %s."), *GetNodeName(), *AIChar->GetName(), AmountNeededForTrip, *UEnum::GetValueAsString(TypeNeeded));
+
+        // Transition state: Done fetching, now delivering
+        Blackboard->ClearValue(BlackboardKey_IsFetchingMaterials.SelectedKeyName); // Set to false
+        Blackboard->SetValueAsBool(BlackboardKey_IsDeliveringMaterials.SelectedKeyName, true);
+
+        // Set new movement target to the construction site
+        AActor* Destination = Cast<AActor>(Blackboard->GetValueAsObject(BlackboardKey_QuestTargetDestination.SelectedKeyName));
+        if (Destination)
+        {
+            Blackboard->SetValueAsObject(BlackboardKey_NewMovementTarget.SelectedKeyName, Destination);
+   
+            AIChar->Path_ =  AIChar->CreateMovementPath(Destination); 
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("%s: %s fetched items but QuestTargetDestination is invalid! Quest stuck."), *GetNodeName(), *AIChar->GetName());
+            // Clear delivery state as well if destination is bad
+            Blackboard->ClearValue(BlackboardKey_IsDeliveringMaterials.SelectedKeyName);
+            return EBTNodeResult::Failed; // Critical error
+        }
+        return EBTNodeResult::Succeeded;
+        
     }
 
     // If any failure above, clear fetching state and fail task

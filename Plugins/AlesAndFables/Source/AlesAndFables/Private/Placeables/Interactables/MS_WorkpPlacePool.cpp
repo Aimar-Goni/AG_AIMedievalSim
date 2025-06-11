@@ -139,11 +139,10 @@ void AMS_WorkpPlacePool::SpawnWorkplaceAtRandomNode()
 	if (NewWorkplace)
 	{
 		// Register workplace node and block original node
-		NewWorkplace->GridPosition_ = PathfindingSubsystem->AddNodeAtPosition(NodeWorldLocation);
+		NewWorkplace->GridPosition_ = NodeGrid;
 
 		ReactivateWorkplace(NewWorkplace, NodeWorldLocation);
 		PathfindingSubsystem->BlockNodeGrid(NodeGrid);
-		PathfindingSubsystem->BlockNodeGrid(NewWorkplace->GridPosition_);
 
 	}
 }

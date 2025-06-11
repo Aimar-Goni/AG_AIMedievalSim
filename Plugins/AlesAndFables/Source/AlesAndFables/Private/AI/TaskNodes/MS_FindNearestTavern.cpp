@@ -26,6 +26,7 @@ EBTNodeResult::Type UMS_FindNearestTavern::ExecuteTask(UBehaviorTreeComponent& O
     if(FoundPubs.Num() == 0)
     {
         UE_LOG(LogTemp, Warning, TEXT("%s: No Pubs found in the world for %s."), *GetNodeName(), *AIChar->GetName());
+        AIChar->PawnStats_->ModifyHappiness(100);
         Blackboard->ClearValue(BlackboardKey_TargetPub.SelectedKeyName);
         return EBTNodeResult::Failed;
     }
@@ -60,6 +61,7 @@ EBTNodeResult::Type UMS_FindNearestTavern::ExecuteTask(UBehaviorTreeComponent& O
 
     Blackboard->ClearValue(BlackboardKey_TargetPub.SelectedKeyName);
     Blackboard->ClearValue(FName("Target"));
+    AIChar->PawnStats_->ModifyHappiness(100);
     return EBTNodeResult::Failed;
 }
 

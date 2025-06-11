@@ -104,6 +104,8 @@ public:
     UFUNCTION(BlueprintCallable, Category="AI|Quests")
     void CompleteCurrentQuest();
 
+	void FailCurrentQuest();
+	
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
